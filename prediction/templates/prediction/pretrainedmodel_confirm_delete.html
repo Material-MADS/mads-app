@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+
+{% block title %}Delete Pretrained Model - {{ PROJECT_NAME_ABBR }}{% endblock %}
+
+
+{% block content %}
+
+<h2>Delete Pretrained model</h2>
+
+<p>Do you want to delete the model?</p>
+
+<form method="post">
+    <button class="ui red button">Delete</button>
+    {% csrf_token %}
+</form>
+
+<hr>
+
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% load ex_filters %}
+
+{% block title %}Prediction - {{PROJECT_NAME_ABBR}}{% endblock %}
+
+{% block local_style %}
+<style>
+#cc {
+    overflow: auto;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h2 class="ui header">{{pretrainedmodel.name}}</h2>
+
+{% if form.errors %}
+{% for field in form %}
+    {% for error in field.errors %}
+        <div class="ui negative message">
+            {{ error|escape }}
+        </div>
+    {% endfor %}
+{% endfor %}
+{% for error in form.non_field_errors %}
+    <div class="ui negative message">
+        {{ error|escape }}
+    </div>
+{% endfor %}
+{% endif %}
+
+
+{% if pretrainedmodel.description %}
+<div>{{pretrainedmodel.description | markdown_to_html}}</div>
+{% endif %}
+
+<div class="ui secondary stackable menu">
+
+    <div class="right item">
+        {% if pretrainedmodel.owner == user %}
+        <div>
+            <a class="ui blue button" href="{% url 'prediction:model-update' pretrainedmodel.id %}">Settings</a>
+        </div>
+        <div>
+            <a class="ui red button" href="{% url 'prediction:model-delete' pretrainedmodel.id %}">Delete</a>
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+<form class="ui form" action="" method="POST">
+    {% csrf_token %}
+    {{form}}
+    <input class="ui button" type="submit" value="Predict">
+</form>
+{% comment %}
+<div class="ui active inverted dimmer" id="dimmer">
+    <div class="ui text loader">Loading</div>
+</div> {% endcomment %}
+
+
+{% comment %} {% if outputs %} {% endcomment %}
+<h4>Prediction result</h4>
+
+<p>{{outputs.name}}:  {{outputs.value}}</p>
+
+{% comment %} {% endif %} {% endcomment %}
+
+<hr>
+
+{% endblock %}

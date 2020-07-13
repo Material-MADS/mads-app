@@ -1,0 +1,17 @@
+.tags-base-container {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+  margin: 5px;
+}
+
+.tag-container {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+  margin: 0 5px 0;
+}

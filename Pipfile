@@ -1,0 +1,67 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+bandit = "*"
+coverage = "*"
+django-debug-toolbar = "*"
+django-debug-toolbar-request-history = "*"
+django-naomi = "*"
+isort = "*"
+model-mommy = "*"
+pre-commit = "*"
+prospector = {extras = ["with-vulture"]}
+safety = "*"
+rope = "*"
+coreapi-cli = "*"
+
+[packages]
+django = "*"
+celery = {extras = ["redis"]}
+django-model-utils = "*"
+django-webpack-loader = "*"
+django-js-reverse = "*"
+django-import-export = "*"
+python-decouple = "*"
+brotlipy = "*"
+django-log-request-id = "*"
+dj-database-url = "*"
+gunicorn = "*"
+whitenoise = "*"
+psutil = "*"
+ipython = "*"
+django-guardian = "*"
+rules = "*"
+django-private-storage = "*"
+djangorestframework = "*"
+"django-tables2" = "*"
+django-filter = "*"
+"psycopg2-binary" = "*"
+django-crispy-forms = "*"
+pandas = "*"
+django-rest-framework-rules = "*"
+django-cors-headers = "*"
+scikit-learn = "*"
+numpy = "*"
+scipy = "*"
+coreapi = "*"
+django-datatables-view = "*"
+python-magic = "*"
+django-rest-auth = "*"
+djangorestframework-camel-case = "*"
+joblib = "*"
+django-markdownx = "*"
+django-crequest = "*"
+beautifulsoup4 = "*"
+jsonfield2 = "*"
+six = "*"
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+start = "python manage.py runserver"
+test = "coverage run manage.py test"
+coverage = "coverage html"

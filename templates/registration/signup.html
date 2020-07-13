@@ -1,0 +1,97 @@
+{% extends "base_simple.html" %}
+{% load static %}
+
+{% block title %}Sign up - {{PROJECT_NAME_ABBR}}{% endblock %}
+
+
+{% block content %}
+
+<h2 class="ui image header">
+  <img src="{% static PROJECT_ICON64_PATH %}" class="image">
+  <div class="content">Sign up</div>
+</h2>
+
+
+<form class="ui large form" method="post">{% csrf_token %}
+
+  <div class="ui left aligned stacked segment">
+
+    <!-- {% for field in form %}
+    <div class="field">
+      <div class="ui left aligned content">{{ field.label_tag }}</div>
+      {{ field }}
+      {% if field.help_text %}
+        <small style="display: none">{{ field.help_text }}</small>
+      {% endif %}
+      {% for error in field.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endfor %} -->
+
+    <div class="field">
+      {% with email=form.email %}
+      <div class="ui left aligned content">{{ email.label_tag }}</div>
+      {{ email }}
+      {% if email.help_text %}
+        <small style="display: none">{{ email.help_text }}</small>
+      {% endif %}
+      {% for error in email.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+      {% endwith %}
+    </div>
+
+    <div class="field">
+      {% with password1=form.password1 %}
+      <div class="ui left aligned content">{{ password1.label_tag }}</div>
+      {{ password1 }}
+      {% if password1.help_text %}
+        <small style="display: none">{{ password1.help_text }}</small>
+      {% endif %}
+      {% for error in password1.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+      {% endwith %}
+    </div>
+
+    <div class="field">
+      {% with password2=form.password2 %}
+      <div class="ui left aligned content">{{ password2.label_tag }}</div>
+      {{ password2 }}
+      {% if password2.help_text %}
+        <small style="display: none">{{ password2.help_text }}</small>
+      {% endif %}
+      {% for error in password2.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+      {% endwith %}
+    </div>
+
+    <div class="field">
+      {% with agreement=form.agreement %}
+      {{ agreement }}
+      I accept the <a class="ui primary" href="{% url 'terms'%}">Terms of Service</a>
+      {% if agreement.help_text %}
+        <small style="display: none">{{ agreement.help_text }}</small>
+      {% endif %}
+      {% for error in agreement.errors %}
+        <p style="color: red">{{ error }}</p>
+      {% endfor %}
+      {% endwith %}
+      </div>
+
+  <button class="ui fluid primary button" type="submit">Sign up</button>
+
+  </div>
+</form>
+
+<p></p>
+
+<div class="ui">
+  <p>
+    <a href="{% url 'home' %}">Go back to Home</a>
+</div>
+  </p>
+
+{% endblock %}

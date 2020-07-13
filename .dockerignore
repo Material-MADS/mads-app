@@ -1,0 +1,13 @@
+.git
+.gitignore
+.history
+.vscode
+node_modules
+
+.coverage
+*/coverage
+htmlcov
+.db
+logs
+
+README.md

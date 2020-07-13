@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% load static %}
+
+{% block title %}
+Prediction - {{PROJECT_NAME_ABBR}}
+{% endblock %}
+
+{% block local_style %}
+<style>
+    table.table thead th.sortable {
+        background: #f9fafb url({% static 'images/icons/sort_both.png' %}) no-repeat center right;
+    }
+    table.table thead th.asc {
+        background: #f9fafb url({% static 'images/icons/sort_asc.png' %}) no-repeat center right;
+    }
+    table.table thead th.desc {
+        background: #f9fafb url({% static 'images/icons/sort_desc.png' %}) no-repeat center right;
+     }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<h2>Prediction</h2>
+
+
+<p>You have access to the following pretrained models:</p>
+<ul>
+    <li><strong>Owned:</strong> {{ num_of_owned }}</li>
+    <li><strong>Shared:</strong> {{ num_of_shared }}</li>
+</ul>
+
+<div class="ui secondary  menu">
+    <div class="item">
+        {% if filter %}
+        <form action="" method="get" class="form form-inline">
+            <div class="ui action input">
+                {{ filter.form.name }}
+                {% comment %} {{ filter.form.owner }} {% endcomment %}
+                <button class="ui button">Apply Filter</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    {% comment %} <div class="right item">
+        <a class="ui blue button" href="{% url 'analysis:workspace-new' %}">Create new</a>
+    </div> {% endcomment %}
+</div>
+
+
+{% render_table table 'django_tables2/semantic.html' %}
+
+
+<hr>
+
+{% endblock %}

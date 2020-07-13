@@ -1,0 +1,107 @@
+version: "3.1"
+
+services:
+  db:
+    # environment:
+    #   POSTGRES_DB: "app_db"
+    #   POSTGRES_USER: "app_user"
+    #   POSTGRES_PASSWORD: "changeme"
+    env_file: .env
+    restart: always
+    image: postgres:9.6
+    expose:
+      - "5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  redis:
+    restart: always
+    image: redis:3.0
+    expose:
+      - "6379"
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # celery:
+  #   build: .
+  #   env_file: .env
+  #   command: celery worker --app=madsapp --loglevel=info
+  #   volumes:
+  #     - .:/code
+  #   depends_on:
+  #     - db
+  #     - redis
+
+  app:
+    # environment:
+    #   DATABASE_URL: postgres://app_user:changeme@db/app_db
+    #   REDIS_URL: redis://redis
+    #   DJANGO_MANAGEPY_MIGRATE: "on"
+    env_file: .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+
+    # command: bash -c "python manage.py migrate && gunicorn madsapp.wsgi -b 0.0.0.0:8000 --limit-request-line 8188 --log-file -"
+    command: ["./bin/wait-for-postgres.sh", "db", "sh", "./bin/start-app.sh"]
+    # command: ["sh", "./bin/start-app.sh"]
+    #, "&&", "gunicorn", "madsapp.wsgi", "-b", "0.0.0.0:8000", "--limit-request-line", "8188", "--log-file", "-"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./staticfiles:/usr/src/app/staticfiles
+      - ./mediafiles:/usr/src/app/mediafiles
+      - ./private_media:/usr/src/app/private_media
+    expose:
+      - "8000"
+    depends_on:
+      - db
+      - redis
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    # restart: always
+    image: nginx
+    container_name: ng01
+    ports:
+      - "80:80"
+      - "443:443"
+#    expose:
+#      - "80"
+#      - "443"
+    volumes:
+      # - .:/usr/src/app
+      - ./nginx:/etc/nginx/conf.d
+      - /Data/cert:/etc/ssl/certs
+      # - ./nginx/:/etc/nginx/
+      - ./staticfiles:/usr/src/app/staticfiles
+      - ./mediafiles:/usr/src/app/mediafiles
+      - ./private_media:/usr/src/app/private_media
+      - ./docs-static:/usr/src/app/docs-static
+      - ./logs:/var/log/nginx
+    depends_on:
+      - app
+    # volumes_from:
+    #   - app
+    # links:
+    #   - app:app
+    # logging:
+    #   driver: "json-file" # defaults if not specified
+    #   options:
+    #     max-size: "10m"
+    #     max-file: "5"
+
+volumes:
+  dbdata:

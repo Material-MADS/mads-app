@@ -1,0 +1,37 @@
+{% extends "base_workspace.html" %}
+
+{% load ex_filters %}
+
+{% block title %}Analysis - {{PROJECT_NAME_ABBR}}{% endblock %}
+
+{% block local_style %}
+<style>
+
+.workspace {
+  {% comment %} background-color: lightblue; {% endcomment %}
+}
+
+#mads-cmv {
+  padding: 10px;
+
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="workspace">
+
+<div id="mads-cmv"></div>
+
+
+</div>
+
+
+<script>
+  window.workspaceId = '{{object.id}}';
+</script>
+
+
+{% endblock %}

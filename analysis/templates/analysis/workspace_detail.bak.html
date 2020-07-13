@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% load ex_filters %}
+
+{% block title %}Analysis - {{PROJECT_NAME_ABBR}}{% endblock %}
+
+{% block local_style %}
+<style>
+#cc {
+    overflow: auto;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h2 class="ui header">{{workspace.name}}</h2>
+
+{% if workspace.description %}
+<div>{{workspace.description}}</div>
+{% endif %}
+
+<div class="ui secondary stackable menu">
+
+
+{% if columns|length and contents %}
+    <div class="item">
+
+        <div>
+            <div class="ui multiple dropdown labeled icon button" id="dropd">
+                <input type="hidden" name="selectedColumns" id="selectedColumns" value="{{columns|join:','|escape_dot}}">
+                <i class="filter icon"></i>
+                <span class="default text">Filter Columns</span>
+                <div class="menu">
+                    <div class="ui icon search input">
+                        <i class="search icon"></i>
+                        <input type="text" placeholder="Search columns...">
+                    </div>
+                    <div class="divider"></div>
+                    <div class="header">
+                        <i class="tags icon"></i>
+                        Columns
+                    </div>
+
+                    <div class="scrolling menu">
+                        {% for c in columns %}
+                        <div class="item" data-value="{{ c | escape_dot }}">{{ c | escape_dot }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div id="selectAllButton" class="ui teal button">Select All</div>
+        </div>
+
+        <div>
+            <div id="clearButton" class="ui teal button">Clear Selection</div>
+        </div>
+
+    </div>
+
+{% else %}
+    <div class="item">This type of data source cannot be displayed.</div>
+{% endif %}
+
+
+
+
+    <div class="right item">
+        {% if workspace.owner == user %}
+        <div>
+            <a class="ui blue button" href="{% url 'analysis:workspace-update' workspace.id %}">Settings</a>
+        </div>
+        <div>
+            <a class="ui red button" href="{% url 'analysis:workspace-delete' workspace.id %}">Delete</a>
+        </div>
+
+        {% endif %}
+
+
+    </div>
+</div>
+
+{% comment %}
+<div class="ui active inverted dimmer" id="dimmer">
+    <div class="ui text loader">Loading</div>
+</div> {% endcomment %}
+
+
+{% if contents%}
+<div class="container" id="cc">
+    <table id="example" class="display compact" width="100%"></table>
+</div>
+{% endif %}
+
+<hr>
+
+<script>
+
+// from https://stackoverflow.com/questions/33691507/datatables-columns-with-dot-in-header-not-displaying-correctly?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+//remove whitespace and dots from keys / attribute names
+function sanitizeData(jsonArray) {
+    var newKey;
+    jsonArray.forEach(function(item) {
+        for (key in item) {
+            // newKey = key.replace(/\s/g, '').replace(/\./g, '');
+            newKey = key.replace(/\./g, '__');
+            if (key != newKey) {
+                item[newKey]=item[key];
+                delete item[key];
+            }
+        }
+    })
+    return jsonArray;
+}
+
+//remove whitespace and dots from data : <propName> references
+function sanitizeColumns(jsonArray) {
+    var dataProp;
+    jsonArray.forEach(function(item) {
+        // dataProp = item['data'].replace(/\s/g, '').replace(/\./g, '');
+        dataProp = item['data'].replace(/\./g, '__');
+        item['data'] = dataProp;
+        item['title'] = dataProp;
+    })
+    return jsonArray;
+}
+
+
+{% if contents %}
+
+const dataSet = {{ contents | safe }};
+let columns = dataSet.schema.fields.map(i => {
+    return { 'data': i.name, 'title': i.name };
+});
+
+const data = sanitizeData(dataSet.data);
+columns = sanitizeColumns(columns);
+
+let table = $('#example').dataTable({
+    "data": data,
+    "columns": columns,
+    'drawCallback': () => { console.log('table - ready.')}
+});
+{% endif %}
+
+//const values = columns.map(c => {
+//    return { name: c.data, value: c.data };
+//});
+
+sel = $('#dropd').dropdown({
+//    placeholder: 'Filter Columns',
+//    values: values,
+    useLabels: false
+  })
+;
+
+$('#clearButton')
+  .on('click', function() {
+    sel
+      .dropdown('clear')
+    ;
+  })
+;
+
+$('#selectAllButton')
+  .on('click', function() {
+    sel
+      .dropdown('restore defaults')
+    ;
+  })
+;
+
+selected = $('#selectedColumns').on('change', () => {
+    const values = selected.val().split(',');
+
+    table.DataTable().columns().flatten().each(index => {
+        const column = table.DataTable().column(index);
+        const name = column.dataSrc();
+        if (name === 'index') {
+            column.visible(true);  // 'index' is always visible!!!
+        }
+        else if (values.includes(name)) {
+            column.visible(true);
+        } else {
+            column.visible(false);
+        }
+    });
+});
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,61 @@
+*.pyc
+/db.sqlite3
+/db_data/
+.DS_Store
+.env
+*/settings/local.py
+docker-compose.yml
+nginx/nginx.conf
+/staticfiles/*
+/mediafiles/*
+/private_media/*
+__pycache__/
+.cache
+*.bak
+
+# coverage result
+.coverage
+/coverage/
+htmlcov
+
+# pycharm
+.idea
+
+# data
+*.dump
+
+# npm
+node_modules/
+npm-debug.log
+
+#Folders
+.DS_Store
+
+# Webpack
+/assets/bundles/*
+/assets/webpack_bundles/*
+/webpack-stats.json
+/common-webpack-stats.json
+
+# Sass
+.sass-cache
+*.map
+
+# General
+/venv/
+/env/
+/output/
+/cache/
+
+logs/
+
+# Spritesmith
+spritesmith-generated/
+spritesmith.scss
+
+# templated email
+tmp_email/
+
+# VSCode
+.vscode
+.history

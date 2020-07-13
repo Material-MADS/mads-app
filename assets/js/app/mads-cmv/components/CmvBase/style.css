@@ -1,0 +1,27 @@
+.base-container {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+  margin: 5px;
+}
+
+.view-container {
+  display: inline-block;
+  flex: auto;
+  /*width: 400px;
+  height: 300px;*/
+  margin: 5px;
+  vertical-align: top;
+
+  order: 0;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  align-self: auto;
+  /*border: black dashed 1px;*/
+  border: 1px solid rgba(34, 36, 38, .15);
+  border-radius: .28571429rem;
+  box-shadow: 0 1px 2px 0 rgba(34, 36, 38, .15);
+}

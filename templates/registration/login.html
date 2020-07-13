@@ -1,0 +1,125 @@
+{% extends "base_simple.html" %}
+{% load static %}
+
+{% block title %}Log in - {{PROJECT_NAME_ABBR}}{% endblock %}
+
+
+{% block content %}
+
+
+<h2 class="ui image header">
+  <img src="{% static PROJECT_ICON64_PATH %}" class="image">
+  <div class="content">
+    Log-in to your account
+  </div>
+</h2>
+
+{% if form.errors %}
+<div class="ui error message">
+  <p>Your username and password didn't match. Please try again.</p>
+</div>
+{% endif %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+  <div class="ui warning message">
+    <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
+  </div>
+  {% else %}
+  <div class="ui warning message">
+    <p>Please login to see this page.</p>
+  </div>
+  {% endif %}
+{% endif %}
+
+
+
+<form class="ui large form" method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+
+  <div class="ui stacked segment">
+    <div class="field">
+      <div class="ui left icon input">
+        <i class="user icon"></i>
+        {% comment %}
+        <td>{{ form.username.label_tag }}</td> {% endcomment %} {% comment %} {{ form.username }} {% endcomment %}
+        <input type="text" name="username" placeholder="E-mail address">
+      </div>
+    </div>
+    <div class="field">
+      {% comment %}
+      <td>{{ form.password.label_tag }}</td> {% endcomment %} {% comment %}
+      <td>{{ form.password }}</td> {% endcomment %}
+
+      <div class="ui left icon input">
+        <i class="lock icon"></i>
+        <input type="password" name="password" placeholder="Password">
+      </div>
+    </div>
+
+    <input class="ui fluid large submit primary button" type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+  </div>
+
+  <div class="ui error message"></div>
+
+</form>
+
+
+
+
+
+{# Assumes you setup the password_reset view in your URLconf #}
+<div class="ui message">
+  <p>
+    <a href="{% url 'password_reset' %}">Lost password?</a>
+    {% if APP_DISABLE_SIGNUP is False %}
+    or <a href="{% url 'signup' %}">Signup</a>
+    {% endif %}
+  </p>
+</div>
+
+<div>
+  <a href="{% url 'home' %}">Go back to Home</a>
+</div>
+
+<script>
+  $(document)
+    .ready(function () {
+      $('.ui.form')
+        .form({
+          fields: {
+            email: {
+              identifier: 'username',
+              rules: [
+                {
+                  type: 'empty',
+                  prompt: 'Please enter your e-mail'
+                },
+                {
+                  type: 'email',
+                  prompt: 'Please enter a valid e-mail'
+                }
+              ]
+            },
+            password: {
+              identifier: 'password',
+              rules: [
+                {
+                  type: 'empty',
+                  prompt: 'Please enter your password'
+                },
+                {
+                  type: 'length[6]',
+                  prompt: 'Your password must be at least 6 characters'
+                }
+              ]
+            }
+          }
+        })
+        ;
+    })
+    ;
+</script>
+
+{% endblock %}

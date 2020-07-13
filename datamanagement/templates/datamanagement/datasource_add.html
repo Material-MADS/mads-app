@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+
+{% block title %}Add Data Source - {{ PROJECT_NAME_ABBR }}{% endblock %}
+
+{% block local_style %}
+<style>
+  ul.errorlist {display:none;}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<h2>Add Data Source</h2>
+
+{% if form.errors %}
+{% for field in form %}
+    {% for error in field.errors %}
+        <div class="ui negative message">
+            {{ error|escape }}
+        </div>
+    {% endfor %}
+{% endfor %}
+{% for error in form.non_field_errors %}
+    <div class="ui negative message">
+        {{ error|escape }}
+    </div>
+{% endfor %}
+{% endif %}
+
+<form class="ui equal width form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div>
+  {# Include the hidden fields #}
+  {% for hidden in form.hidden_fields %}
+  {{ hidden }}
+  {% endfor %}
+  {# Include the visible fields #}
+  {% for field in form.visible_fields %}
+      <div class="field">
+          {{ field.errors }}
+          {{ field.label_tag }} {{ field }}
+      </div>
+  {% endfor %}
+  </div>
+
+  <hr>
+
+  <div class="ui stackable two column grid">
+      <div class="column">
+          <div>Shared users:</div>
+          <div class="ui fluid action input">
+              <input type="text" placeholder="Email address" id="n-user">
+              <button class="ui button" id="add-users">Add</button>
+          </div>
+          <div>
+              <select size="5" id="s_users"></select>
+          </div>
+          <div>
+              <button class="ui right button" id="remove-users">Remove Selected</button>
+          </div>
+      </div>
+
+      <div class="column">
+          <div>Shared groups:</div>
+          <div class="ui fluid action input">
+              <input type="text" placeholder="Group name" id="n-group">
+              <button class="ui button" id="add-group">Add</button>
+          </div>
+          <div>
+              <select size="5" id="s_groups"></select>
+          </div>
+          <div>
+              <button class="ui right button" id="remove-groups">Remove Selected</button>
+          </div>
+      </div>
+
+  </div>
+
+  <hr>
+
+
+
+  <div class="ui four column grid">
+    <div class="column">
+      <button class="ui button" type="submit">Save</button>
+    </div>
+  </div>
+
+</form>
+
+<script>
+
+    const us = document.querySelector('#id_users_hidden');
+    const users = us.value.split(',');
+
+    const gs = document.querySelector('#id_groups_hidden');
+    const groups = gs.value.split(',');
+
+    const s_users = document.querySelector('#s_users');
+    const s_groups = document.querySelector('#s_groups');
+
+    const n_user = document.querySelector('#n-user');
+    const n_group = document.querySelector('#n-group');
+
+    users.forEach(user => {
+        if (user === '') return;
+
+        option = document.createElement('option');
+        option.value = user;
+        option.label = user;
+        s_users.options.add(option);
+    });
+
+    groups.forEach(group => {
+        if (group === '') return;
+
+        option = document.createElement('option');
+        option.value = group;
+        option.label = group;
+        s_groups.options.add(option);
+    });
+
+    function updateList() {
+        const users = []
+        for (let option of s_users.options) {
+            users.push(option.value)
+        }
+        us.value = users.join(',');
+
+        const groups = []
+        for (let option of s_groups.options) {
+            groups.push(option.value)
+        }
+        gs.value = groups.join(',');
+    }
+
+    function checkDuplication(elem, item) {
+        let options = elem.options;
+        for (let option of options) {
+            if (option.value === item) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    $('#add-users').on('click', (e) => {
+        e.preventDefault();
+
+        if (!n_user.value) {
+            return;
+        }
+
+        if (checkDuplication(s_users, n_user.value)) {
+            return;
+        }
+
+        let o = document.createElement('option');
+        o.value = n_user.value;
+        o.label = n_user.value;
+        s_users.options.add(o);
+
+        updateList();
+    });
+
+    $('#add-group').on('click', (e) => {
+        e.preventDefault();
+
+        if (!n_group.value) {
+            return;
+        }
+
+        if (checkDuplication(s_groups, n_group.value)) {
+            return;
+        }
+
+        let o = document.createElement('option');
+        o.value = n_group.value;
+        o.label = n_group.value;
+        s_groups.options.add(o);
+
+        updateList();
+    });
+
+$('#remove-users').on('click', e => {
+  e.preventDefault();
+
+  if (s_users.selectedIndex < 0) {
+    return;
+  }
+  s_users.remove(s_users.selectedIndex);
+  updateList();
+});
+
+$('#remove-groups').on('click', e => {
+  e.preventDefault();
+
+  if (s_groups.selectedIndex < 0) {
+    return;
+  }
+  s_groups.remove(s_groups.selectedIndex);
+  updateList();
+});
+
+    </script>
+
+<hr>
+
+
+{% endblock %}
