@@ -17,10 +17,10 @@ def get_classification(data):
     df = pd.DataFrame(dataset)
 
     df_train = df[feature_columns]
-    X = df_train.as_matrix()
+    X = df_train.values
 
     df_target = df[target_column]
-    y = df_target.as_matrix()
+    y = df_target.values
 
     model = None
 

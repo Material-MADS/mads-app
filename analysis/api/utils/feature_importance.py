@@ -23,7 +23,7 @@ def get_feature_importance(data):
     #     df = df.iloc[indices]
 
     df_train = df[train_columns]
-    X = df_train.as_matrix()
+    X = df_train.values
 
     df_target = df[target_columns]
     # y = df_target.as_matrix()
