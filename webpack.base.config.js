@@ -23,18 +23,10 @@ module.exports = [
             },
           },
         },
-        // {
-        //   test: /jquery\/dist\/jquery\.js$/,
-        //   loader: 'expose-loader?$',
-        // },
-        // {
-        //   test: /jquery\/dist\/jquery\.js$/,
-        //   loader: 'expose-loader?jQuery',
-        // },
         {
           test: require.resolve('jquery'),
           loader: 'expose-loader',
-          options: { exposes: ['$', 'jQuery'] },
+          options: { exposes: ['$', 'jQuery', 'jquery'] },
         },
         {
           test: /\.css$/,
@@ -82,10 +74,6 @@ module.exports = [
         filename: './common-webpack-stats.json',
       }),
       new webpack.ProvidePlugin({
-        $: 'jquery',
-        jQuery: 'jquery',
-        'window.jQuery': 'jquery',
-        'window.$': 'jquery',
         Tether: 'tether',
         'window.Tether': 'tether',
         Popper: ['popper.js', 'default'],

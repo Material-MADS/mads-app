@@ -49,7 +49,7 @@ baseConfig[1].module.rules.push(
   {
     test: require.resolve('jquery'),
     loader: 'expose-loader',
-    options: { exposes: ['$', 'jQuery'] },
+    options: { exposes: ['$', 'jQuery', 'jquery'] },
   }
 );
 
@@ -81,10 +81,6 @@ baseConfig[1].plugins = [
     },
   }),
   new webpack.ProvidePlugin({
-    $: 'jquery',
-    jQuery: 'jquery',
-    'window.jQuery': 'jquery',
-    'window.$': 'jquery',
     Tether: 'tether',
     'window.Tether': 'tether',
     Popper: ['popper.js', 'default'],

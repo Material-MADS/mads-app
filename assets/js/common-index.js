@@ -2,12 +2,13 @@
 // import ReactDOM from 'react-dom';
 
 import 'semantic-ui-css/semantic.min.css';
-
-import 'datatables.net';
 import 'datatables.net-dt/css/jquery.dataTables.css';
 
 import $ from 'jquery';
+
+//
 import 'semantic-ui-css';
+import 'imports-loader?imports=default|jquery|$!datatables.net';
 
 $(document).ready(() => {
   // fix menu when passed
@@ -20,11 +21,8 @@ $(document).ready(() => {
       $('.fixed.menu').transition('fade out');
     },
   });
-
   // create sidebar and attach to menu open
   $('.ui.sidebar').sidebar('attach events', '.toc.item');
-
-  // test
   $('#table_id').DataTable();
 });
 // ReactDOM.render(<TestButton />, document.getElementById('react-app'));
