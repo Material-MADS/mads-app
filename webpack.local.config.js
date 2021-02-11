@@ -5,7 +5,7 @@ const BundleTracker = require('webpack-bundle-tracker');
 const path = require('path');
 const baseConfig = require('./webpack.base.config');
 
-const nodeModulesDir = path.resolve(__dirname, 'node_modules');
+console.log(baseConfig);
 
 baseConfig[0].mode = 'development';
 baseConfig[1].mode = 'development';
@@ -32,19 +32,12 @@ baseConfig[1].output = {
 baseConfig[1].module.rules.push(
   {
     test: /\.jsx?$/,
-    exclude: [nodeModulesDir],
+    exclude: /node_modules\/(?!@bokeh\/bokehjs\/)/,
     loader: require.resolve('babel-loader'),
   },
   {
     test: /\.(woff(2)?|eot|ttf)(\?v=\d+\.\d+\.\d+)?$/,
-    use: [
-      {
-        loader: 'url-loader',
-        options: {
-          limit: 100000,
-        },
-      },
-    ],
+    type: 'asset',
   },
   {
     test: require.resolve('jquery'),
@@ -55,8 +48,6 @@ baseConfig[1].module.rules.push(
 
 baseConfig[1].plugins = [
   new webpack.HotModuleReplacementPlugin(),
-  new webpack.NamedModulesPlugin(),
-  new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
   new SpritesmithPlugin({
     src: {
       cwd: path.resolve(__dirname, 'assets/images/'),
@@ -84,6 +75,7 @@ baseConfig[1].plugins = [
     Tether: 'tether',
     'window.Tether': 'tether',
     Popper: ['popper.js', 'default'],
+    process: 'process/browser',
     Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
     Button: 'exports-loader?Button!bootstrap/js/dist/button',
     Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',
@@ -97,5 +89,14 @@ baseConfig[1].plugins = [
     Util: 'exports-loader?Util!bootstrap/js/dist/util',
   }),
 ];
+
+// baseConfig[1].optimization = {
+//   splitChunks: { chunks: 'all' },
+// };
+
+// baseConfig[1].node = {
+//   Buffer: false,
+//   process: false,
+// };
 
 module.exports = baseConfig;

@@ -9,12 +9,11 @@ import * as gPalette from 'google-palette';
 import { showMessage } from '../../actions/message';
 import { yellowBright } from 'ansi-colors';
 
-// import Bokeh from 'bokehjs/build/js/bokeh';
-// // import 'bokehjs/build/js/bokeh-widgets';
-// console.log(Bokeh);
+import * as Bokeh from '@bokeh/bokehjs';
+import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 
-const Category10 = Bokeh.require('api/palettes').Category10.Category10_10;
-const { Greys9 } = Bokeh.require('api/palettes');
+const Category10_10 = Category10.Category10_10;
 
 const defaultOptions = {
   title: 'Scatter',
@@ -52,7 +51,6 @@ function createEmptyChart(options) {
   // });
 
   // fig.output_backend = 'svg';
-
   return fig;
 }
 
@@ -210,13 +208,15 @@ class BokehScatter extends Component {
       this.mainFigure.yaxis[0].axis_label = yName;
 
       // selection
-      if (selectedIndices.length > 0) {
+      if (selectedIndices && selectedIndices.length > 0) {
         this.cds.selected.indices = selectedIndices;
         this.lastSelections = selectedIndices;
       }
 
       // color
-      const colors = new Array(x.length).fill(`#${Category10[0].toString(16)}`);
+      const colors = new Array(x.length).fill(
+        `#${Category10_10[0].toString(16)}`
+      );
       colorTags.forEach((colorTag) => {
         colorTag.itemIndices.forEach((i) => {
           colors[i] = colorTag.color;
@@ -226,8 +226,16 @@ class BokehScatter extends Component {
       let mapper = null;
       if (color) {
         const pal = gPalette('tol-rainbow', 256).map((c) => `#${c}`);
-        const low = df.get(color).values.min();
-        const high = df.get(color).values.max();
+        let low = df.get(color).values.min();
+        let high = df.get(color).values.max();
+        console.log('low:', low);
+        console.log('high:', high);
+        if (!low) {
+          low = 0;
+        }
+        if (!high) {
+          high = 0;
+        }
 
         console.log(high);
         window.pal = pal;
@@ -381,6 +389,7 @@ BokehScatter.propTypes = {
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   filteredIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
+  showMessage: PropTypes.func,
 };
 
 BokehScatter.defaultProps = {

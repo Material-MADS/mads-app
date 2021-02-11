@@ -5,6 +5,8 @@ import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
 
+import * as Bokeh from '@bokeh/bokehjs';
+
 const INITIAL_WIDTH = 800;
 
 class BokehTable extends Component {
@@ -201,6 +203,7 @@ class BokehTable extends Component {
       source: this.cds,
       columns: displayColumns,
       width: options.extent.width || INITIAL_WIDTH,
+      selection_color: 'red',
     });
 
     this.mainFigure = dataTable;
@@ -219,6 +222,7 @@ class BokehTable extends Component {
       this.mainFigure,
       this.rootNode.current
     );
+    window.fig = this.mainFigure;
 
     if (this.views) {
       this.clearChart();

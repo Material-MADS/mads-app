@@ -11,6 +11,7 @@ module.exports = [
       path: path.resolve('./assets/bundles/'),
       filename: 'bundle-common.js',
     },
+    name: 'common',
     module: {
       rules: [
         {
@@ -30,42 +31,27 @@ module.exports = [
         },
         {
           test: /\.css$/,
-          loaders: ['style-loader', 'css-loader', 'postcss-loader'],
+          use: ['style-loader', 'css-loader', 'postcss-loader'],
         },
         {
           test: /\.scss$/,
-          loaders: [
-            'style-loader',
-            'css-loader',
-            'postcss-loader',
-            'sass-loader',
-          ],
+          use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'],
         },
         {
           test: /\.(svg)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [
-            {
-              loader: 'url-loader',
-              options: {
-                limit: 100000,
-              },
-            },
-          ],
+          type: 'asset',
         },
         {
           test: /\.(woff(2)?|eot|ttf)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [
-            {
-              loader: 'url-loader',
-              options: {
-                limit: 100000,
-              },
-            },
-          ],
+          type: 'asset',
         },
         {
           test: /\.(jpg|png)?$/,
-          loaders: ['file-loader?name=i-[hash].[ext]'],
+          // use: ['file-loader?name=i-[contenthash].[ext]'],
+          type: 'asset/resource',
+          generator: {
+            filename: 'i-[contenthash][ext]',
+          },
         },
       ],
     },
@@ -77,6 +63,7 @@ module.exports = [
         Tether: 'tether',
         'window.Tether': 'tether',
         Popper: ['popper.js', 'default'],
+        process: 'process/browser',
         Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
         Button: 'exports-loader?Button!bootstrap/js/dist/button',
         Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',
@@ -99,35 +86,24 @@ module.exports = [
     output: {
       // defined in local or prod
     },
+    name: 'main',
     module: {
       rules: [
         {
           test: /\.css$/,
-          loaders: ['style-loader', 'css-loader', 'postcss-loader'],
+          use: ['style-loader', 'css-loader', 'postcss-loader'],
         },
         {
           test: /\.scss$/,
-          loaders: [
-            'style-loader',
-            'css-loader',
-            'postcss-loader',
-            'sass-loader',
-          ],
+          use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'],
         },
         {
           test: /\.(svg)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [
-            {
-              loader: 'url-loader',
-              options: {
-                limit: 100000,
-              },
-            },
-          ],
+          type: 'asset',
         },
         {
           test: /\.(jpg|png)?$/,
-          loaders: ['file-loader?name=i-[hash].[ext]'],
+          use: ['file-loader?name=i-[contenthash].[ext]'],
         },
       ],
     },
@@ -141,6 +117,9 @@ module.exports = [
         path.resolve(__dirname, 'assets/js/'),
       ],
       extensions: ['.js', '.jsx'],
+      alias: {
+        'babel-runtime': '@babel/runtime',
+      },
     },
   },
 ];

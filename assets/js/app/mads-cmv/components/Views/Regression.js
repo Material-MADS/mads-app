@@ -1,5 +1,8 @@
 // import { connect } from 'react-redux';
+import React from 'react';
 import { DataFrame } from 'pandas-js';
+import { Button, Modal, Card } from 'semantic-ui-react';
+import _ from 'lodash';
 
 import withCommandInterface from './ViewWrapper';
 import RegressionVis from '../VisComponents/RegressionVis';

@@ -134,13 +134,13 @@ STATICFILES_DIRS = (
 WEBPACK_LOADER = {
     'DEFAULT': {
         'CACHE': False,  # on DEBUG should be False
-        'STATS_FILE': base_dir_join('webpack-stats.json'),
+        'STATS_FILE': base_dir_join('assets/bundles/webpack-stats.json'),
         'POLL_INTERVAL': 0.1,
         'IGNORE': ['.+\.hot-update.js', '.+\.map']
     },
     'COMMON': {
         'BUNDLE_DIR_NAME': 'bundles/',
-        'STATS_FILE': 'common-webpack-stats.json',
+        'STATS_FILE': base_dir_join('assets/bundles/common-webpack-stats.json'),
     }
 }
 

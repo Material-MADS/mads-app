@@ -92,6 +92,7 @@ const config = [
       method: 'Linear',
       featureColumns: [],
       targetColumn: '',
+      folds: 5,
       mappings: {},
     },
   },

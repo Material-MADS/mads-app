@@ -38,7 +38,6 @@ module.exports = {
   globals: {
     Urls: false,
     coreapi: false,
-    Bokeh: false,
     $: false,
   },
   plugins: ['babel', 'react', 'react-hooks'],

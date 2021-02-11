@@ -6,12 +6,11 @@ import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
 import * as gPalette from 'google-palette';
 
-// import Bokeh from 'bokehjs/build/js/bokeh';
-// // import 'bokehjs/build/js/bokeh-widgets';
-// console.log(Bokeh);
+import * as Bokeh from '@bokeh/bokehjs';
+import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 
-const Category10 = Bokeh.require('api/palettes').Category10.Category10_10;
-const { Greys9 } = Bokeh.require('api/palettes');
+const Category10_10 = Category10.Category10_10;
 
 const defaultOptions = {
   title: 'Scatter',
@@ -186,7 +185,9 @@ class ClassificationVis extends Component {
       }
 
       // color
-      const colors = new Array(x.length).fill(`#${Category10[0].toString(16)}`);
+      const colors = new Array(x.length).fill(
+        `#${Category10_10[0].toString(16)}`
+      );
       colorTags.forEach((colorTag) => {
         colorTag.itemIndices.forEach((i) => {
           colors[i] = colorTag.color;

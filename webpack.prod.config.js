@@ -6,8 +6,6 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const baseConfig = require('./webpack.base.config');
 
-const nodeModulesDir = path.resolve(__dirname, 'node_modules');
-
 baseConfig[0].mode = 'production';
 baseConfig[1].mode = 'production';
 
@@ -21,13 +19,13 @@ baseConfig[0].output.publicPath = '/static/bundles/';
 baseConfig[1].output = {
   path: path.resolve('./assets/bundles/'),
   publicPath: '/static/bundles/',
-  filename: '[name]-[hash].js',
+  filename: '[name]-[contenthash].js',
 };
 
 baseConfig[1].module.rules.push(
   {
     test: /\.jsx?$/,
-    exclude: [nodeModulesDir],
+    exclude: /node_modules\/(?!@bokeh\/bokehjs\/)/,
     use: {
       loader: 'babel-loader',
       options: {
@@ -37,7 +35,10 @@ baseConfig[1].module.rules.push(
   },
   {
     test: /\.(woff(2)?|eot|ttf)(\?v=\d+\.\d+\.\d+)?$/,
-    loader: 'file-loader?name=fonts/[name].[ext]',
+    type: 'asset/resource',
+    generator: {
+      filename: 'fonts/[name][ext]',
+    },
   },
   {
     test: require.resolve('jquery'),
@@ -70,9 +71,9 @@ baseConfig[1].plugins = [
     retina: '@2x',
   }),
   new MiniCssExtractPlugin({
-    filename: '[name]-[hash].css',
-    disable: false,
-    allChunks: true,
+    filename: '[name]-[contenthash].css',
+    // disable: false,
+    // allChunks: true,
   }),
   new BundleTracker({
     filename: './webpack-stats.json',
@@ -87,6 +88,7 @@ baseConfig[1].plugins = [
     Tether: 'tether',
     'window.Tether': 'tether',
     Popper: ['popper.js', 'default'],
+    process: 'process/browser',
     Alert: 'exports-loader?Alert!bootstrap/js/dist/alert',
     Button: 'exports-loader?Button!bootstrap/js/dist/button',
     Carousel: 'exports-loader?Carousel!bootstrap/js/dist/carousel',

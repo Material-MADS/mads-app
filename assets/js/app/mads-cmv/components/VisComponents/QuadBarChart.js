@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import * as deepEqual from 'deep-equal';
 
-const Category10 = Bokeh.require('api/palettes').Category10.Category10_10;
-const { Greys9 } = Bokeh.require('api/palettes');
+import * as Bokeh from '@bokeh/bokehjs';
+import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+
+const Category10_10 = Category10.Category10_10;
 
 const defaultOptions = {
   title: 'Quad bar chart',
@@ -59,7 +62,7 @@ function QuadBarChart({
   let views = null;
   let selectedIndicesInternal = [];
 
-  const color = `#${Category10[0].toString(16)}`;
+  const color = `#${Category10_10[0].toString(16)}`;
 
   const createChart = async () => {
     const fig = createEmptyChart(options);
