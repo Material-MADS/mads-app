@@ -23,6 +23,7 @@ const dataset = (state = initialState, action) => {
     case DATASET_REMOVE_VIEW:
       return {
         ...state,
+        [action.id]: undefined,
       };
     default:
       return state;

@@ -49,7 +49,7 @@ class CmvBase extends React.Component {
           dataset={dataset}
           selection={selection}
           colorTags={colorTags}
-          removeView={actions.removeView}
+          removeView={actions.removeViewData}
           updateView={actions.updateView}
           updateSelection={actions.updateSelection}
           actions={actions}

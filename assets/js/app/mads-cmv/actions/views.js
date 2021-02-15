@@ -80,3 +80,8 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
       );
     });
 };
+
+export const removeViewData = (id) => (dispatch) => {
+  dispatch(datasetActions.removeDatasetView(id));
+  dispatch(removeView(id));
+};
