@@ -281,13 +281,11 @@ class RegressionVis extends Component {
         console.log(view);
       }
 
-      // const xMax = this.mainFigure.x_range.max;
-      // const yMax = this.mainFigure.y_range.max;
-      const yMax = Math.max.apply(null, y);
-      console.warn(yMax);
+      const xMax = Math.max.apply(null, x);
+      const xMin = Math.min.apply(null, x);
 
       const source = new Bokeh.ColumnDataSource({
-        data: { x: [0, yMax], y: [0, yMax] },
+        data: { x: [xMin, xMax], y: [xMin, xMax] },
       });
       let line = new Bokeh.Line({
         x: { field: 'x' },
