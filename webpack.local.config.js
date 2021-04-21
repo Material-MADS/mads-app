@@ -10,22 +10,25 @@ console.log(baseConfig);
 baseConfig[0].mode = 'development';
 baseConfig[1].mode = 'development';
 
+const serverAddr = process.env.DEV_SERVER_PUBLIC_ADDR || 'http://localhost';
+const serverPort = process.env.DEV_SERVER_PORT || 3000;
+
 // sourcemap
 baseConfig[0].devtool = 'inline-source-map';
 baseConfig[1].devtool = 'inline-source-map';
 
 baseConfig[1].entry = [
-  'webpack-dev-server/client?http://localhost:3000',
+  `webpack-dev-server/client?${serverAddr}:${serverPort}`,
   'webpack/hot/only-dev-server',
   'whatwg-fetch',
   '@babel/polyfill',
   './assets/js/index',
 ];
 
-baseConfig[0].output.publicPath = 'http://localhost:3000/assets/bundles/';
+baseConfig[0].output.publicPath = `${serverAddr}:${serverPort}/assets/bundles/`;
 baseConfig[1].output = {
   path: path.resolve('./assets/bundles/'),
-  publicPath: 'http://localhost:3000/assets/bundles/',
+  publicPath: `${serverAddr}:${serverPort}/assets/bundles/`,
   filename: '[name].js',
 };
 
