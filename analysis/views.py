@@ -24,32 +24,29 @@ from .helpers import WorkspaceTable
 from users.models import User
 
 
-
 # Create your views here.
 def index(request):
-    return render(request, 'analysis/index.html')
+    return render(request, "analysis/index.html")
+
 
 class WorkspaceActionMixin:
-
     @property
     def success_msg(self):
         return NotImplemented
 
     def get_context_data(self, **kwargs):
         context = super(WorkspaceActionMixin, self).get_context_data(**kwargs)
-        form = context['form']
-        form.fields['owner'].widget = forms.HiddenInput()
-        context['form'] = form
+        form = context["form"]
+        form.fields["owner"].widget = forms.HiddenInput()
+        context["form"] = form
         return context
 
     def get_success_url(self):
-        url = reverse_lazy('analysis:workspace-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy("analysis:workspace-detail", kwargs={"id": self.object.id})
         return url
 
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
 
     def form_valid(self, form):
@@ -70,11 +67,11 @@ class WorkspaceActionMixin:
 class FilteredWorkspaceListView(SingleTableMixin, FilterView):
     model = Workspace
     table_class = WorkspaceTable
-    template_name = 'analysis/index.html'
+    template_name = "analysis/index.html"
 
     paginate_by = 10
     filterset_class = OwnedResourceModelFilter
-    ordering = ['-id']
+    ordering = ["-id"]
 
     def get_queryset(self):
         # Fetch only accessible data sources
@@ -89,11 +86,11 @@ class FilteredWorkspaceListView(SingleTableMixin, FilterView):
             )
 
         queryset = queryset.filter(
-            Q(owner=u) |
-            Q(accessibility=Workspace.ACCESSIBILITY_PUBLIC) |
-            (
-                Q(accessibility=Workspace.ACCESSIBILITY_INTERNAL) &
-                (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+            Q(owner=u)
+            | Q(accessibility=Workspace.ACCESSIBILITY_PUBLIC)
+            | (
+                Q(accessibility=Workspace.ACCESSIBILITY_INTERNAL)
+                & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
             )
         ).distinct()
 
@@ -108,53 +105,41 @@ class FilteredWorkspaceListView(SingleTableMixin, FilterView):
             num_of_owned = qs.filter(owner=self.request.user).count()
 
         num_of_all = qs.count()
-        context['num_of_owned'] = num_of_owned
-        context['num_of_shared'] = num_of_all - num_of_owned
+        context["num_of_owned"] = num_of_owned
+        context["num_of_shared"] = num_of_all - num_of_owned
 
         return context
 
-    def get_table_data(self):
-        return self.get_queryset()
 
-
-class WorkspaceCreateView(
-    PermissionRequiredMixin, WorkspaceActionMixin, CreateView
-):
+class WorkspaceCreateView(PermissionRequiredMixin, WorkspaceActionMixin, CreateView):
     model = Workspace
     form_class = WorkspaceForm
-    template_name = 'analysis/workspace_create.html'
-    success_url = reverse_lazy('analysis:index')
-    success_msg = 'New workspace is saved.'
-    permission_required = 'analysis.add_workspace'
+    template_name = "analysis/workspace_create.html"
+    success_url = reverse_lazy("analysis:index")
+    success_msg = "New workspace is saved."
+    permission_required = "analysis.add_workspace"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = WorkspaceForm(initial={
-            'owner': self.request.user
-        })
-        form.fields['owner'].widget = forms.HiddenInput()
-        context['form'] = form
+        form = WorkspaceForm(initial={"owner": self.request.user})
+        form.fields["owner"].widget = forms.HiddenInput()
+        context["form"] = form
 
         return context
 
 
-
-class WorkspaceDetailView(
-    PermissionRequiredMixin, DetailView
-):
+class WorkspaceDetailView(PermissionRequiredMixin, DetailView):
     # model = Book
     model = Workspace
-    pk_url_kwarg = 'id'
-    permission_required = 'analysis.read_workspace'
+    pk_url_kwarg = "id"
+    permission_required = "analysis.read_workspace"
 
     def get_success_url(self):
-        url = reverse_lazy('analysis:workspace-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy("analysis:workspace-detail", kwargs={"id": self.object.id})
         return url
 
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -173,15 +158,14 @@ class WorkspaceDetailView(
 
         return context
 
-class WorkspaceUpdateView(
-    PermissionRequiredMixin, WorkspaceActionMixin, UpdateView
-):
+
+class WorkspaceUpdateView(PermissionRequiredMixin, WorkspaceActionMixin, UpdateView):
     model = Workspace
     form_class = WorkspaceForm
-    pk_url_kwarg = 'id'
-    template_name = 'analysis/workspace_update.html'
-    success_msg = 'The workspace is updated.'
-    permission_required = 'analysis.change_workspace'
+    pk_url_kwarg = "id"
+    template_name = "analysis/workspace_update.html"
+    success_msg = "The workspace is updated."
+    permission_required = "analysis.change_workspace"
 
     # fields = ('name', 'description', 'file', 'accessibility',
     #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
@@ -189,22 +173,19 @@ class WorkspaceUpdateView(
 
 class WorkspaceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Workspace
-    pk_url_kwarg = 'id'
-    success_url = reverse_lazy('analysis:index')
-    permission_required = 'analysis.delete_workspace'
+    pk_url_kwarg = "id"
+    success_url = reverse_lazy("analysis:index")
+    permission_required = "analysis.delete_workspace"
 
     def delete(self, request, *args, **kwargs):
         result = super().delete(request, *args, **kwargs)
-        messages.success(
-            self.request, 'The workspace is deleted.')
+        messages.success(self.request, "The workspace is deleted.")
         return result
 
 
-class WorkspaceNewView(
-    PermissionRequiredMixin, WorkspaceActionMixin, TemplateView
-):
-    template_name = 'analysis/workspace_default.html'
-    permission_required = 'analysis.add_workspace'
+class WorkspaceNewView(PermissionRequiredMixin, WorkspaceActionMixin, TemplateView):
+    template_name = "analysis/workspace_default.html"
+    permission_required = "analysis.add_workspace"
 
     def get_context_data(self, **kwargs):
         # context = super().get_context_data(**kwargs)
@@ -217,10 +198,9 @@ class WorkspaceNewView(
 
         return context
 
-class WorkspaceNewUnauthorizedView(
-    WorkspaceActionMixin, TemplateView
-):
-    template_name = 'analysis/workspace_default.html'
+
+class WorkspaceNewUnauthorizedView(WorkspaceActionMixin, TemplateView):
+    template_name = "analysis/workspace_default.html"
     # permission_required = 'analysis.add_workspace'
 
     def get_context_data(self, **kwargs):

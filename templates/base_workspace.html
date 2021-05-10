@@ -29,7 +29,8 @@
 
     <script src="{% static 'rest_framework/js/coreapi-0.1.1.js' %}"></script>
 
-    {% render_bundle 'main' 'js' %}
+    <!-- Webpack rendered Javascript -->
+    {% render_bundle 'main' 'js' 'DEFAULT' %}
 
     <style type="text/css">
       body {

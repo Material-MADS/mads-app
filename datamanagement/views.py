@@ -39,30 +39,30 @@ import rules
 
 
 from logging import getLogger
+
 logger = getLogger(__name__)
 
 
 class DataSourceActionMixin:
-
     @property
     def success_msg(self):
         return NotImplemented
 
     def get_context_data(self, **kwargs):
         context = super(DataSourceActionMixin, self).get_context_data(**kwargs)
-        form = context['form']
-        form.fields['owner'].widget = forms.HiddenInput()
-        context['form'] = form
+        form = context["form"]
+        form.fields["owner"].widget = forms.HiddenInput()
+        context["form"] = form
         return context
 
     def get_success_url(self):
-        url = reverse_lazy('datamanagement:datasource-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy(
+            "datamanagement:datasource-detail", kwargs={"id": self.object.id}
+        )
         return url
 
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
 
     def form_valid(self, form):
@@ -83,13 +83,11 @@ class DataSourceActionMixin:
 class FilteredDataSourceListView(SingleTableMixin, FilterView):
     table_class = DataSourceTable
     model = DataSource
-    template_name = 'datamanagement/index.html'
-    table_pagination = {
-        'per_page': 10
-    }
+    template_name = "datamanagement/index.html"
+    table_pagination = {"per_page": 10}
 
     filterset_class = DataSourceFilter
-    ordering = ['-id']
+    ordering = ["-id"]
 
     formhelper_class = DataSourceFilterHelper
 
@@ -107,19 +105,18 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
             )
 
         queryset = queryset.filter(
-            Q(owner=u) |
-            Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC) |
-            (
-                Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL) &
-                (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+            Q(owner=u)
+            | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
+            | (
+                Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
+                & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
             )
         ).distinct()
 
         return queryset
 
     def get_context_data(self, **kwargs):
-        context = super(FilteredDataSourceListView,
-                        self).get_context_data(**kwargs)
+        context = super(FilteredDataSourceListView, self).get_context_data(**kwargs)
         qs = self.get_queryset()
         if self.request.user.is_anonymous:
             num_of_owned = 0
@@ -127,82 +124,71 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
             num_of_owned = qs.filter(owner=self.request.user).count()
 
         num_of_all = qs.count()
-        context['num_of_owned'] = num_of_owned
-        context['num_of_shared'] = num_of_all - num_of_owned
+        context["num_of_owned"] = num_of_owned
+        context["num_of_shared"] = num_of_all - num_of_owned
 
-        context['lll'] = context['object_list'].count()
-        context['dll'] = len(context['datasource_list'])
-        context['qll'] = qs.count()
-        context['object_list'] = qs
-        context['datasource_list'] = qs
+        context["lll"] = context["object_list"].count()
+        context["dll"] = len(context["datasource_list"])
+        context["qll"] = qs.count()
+        context["object_list"] = qs
+        context["datasource_list"] = qs
         return context
 
-    def get_table_data(self):
-        return self.get_queryset()
 
-
-class DataSourceDetailView(
-    PermissionRequiredMixin, DetailView
-):
+class DataSourceDetailView(PermissionRequiredMixin, DetailView):
     # model = Book
     model = DataSource
-    pk_url_kwarg = 'id'
-    permission_required = 'datamanagement.read_datasource'
+    pk_url_kwarg = "id"
+    permission_required = "datamanagement.read_datasource"
 
     def get_success_url(self):
-        url = reverse_lazy('datamanagement:datasource-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy(
+            "datamanagement:datasource-detail", kwargs={"id": self.object.id}
+        )
         return url
 
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         # read contents if the file is CSS or EXCEL
-        context['file'] = context['object'].file
+        context["file"] = context["object"].file
 
-        contents, file_type, columns = get_contents_from_file(
-            context['object'].file
-        )
+        contents, file_type, columns = get_contents_from_file(context["object"].file)
 
-        context['contents'] = contents
-        context['file_type'] = file_type
-        context['columns'] = columns
+        context["contents"] = contents
+        context["file_type"] = file_type
+        context["columns"] = columns
 
         return context
 
 
-class DataSourceCreateView(
-    LoginRequiredMixin, DataSourceActionMixin, CreateView
-):
+class DataSourceCreateView(LoginRequiredMixin, DataSourceActionMixin, CreateView):
     model = DataSource
     form_class = DataSourceForm
-    pk_url_kwarg = 'id'
-    template_name = 'datamanagement/datasource_add.html'
+    pk_url_kwarg = "id"
+    template_name = "datamanagement/datasource_add.html"
     # success_url = reverse_lazy('datamanagement:index')
-    success_msg = 'New data source is saved.'
-    permission_required = 'datamanagement.add_datasource'
+    success_msg = "New data source is saved."
+    permission_required = "datamanagement.add_datasource"
 
     def get_initial(self):
         context = super().get_initial()
-        context['owner'] = self.request.user
+        context["owner"] = self.request.user
 
         return context
 
 
-class DataSourceUpdateView(
-    PermissionRequiredMixin, DataSourceActionMixin, UpdateView
-):
+class DataSourceUpdateView(PermissionRequiredMixin, DataSourceActionMixin, UpdateView):
     model = DataSource
     form_class = DataSourceForm
-    pk_url_kwarg = 'id'
-    template_name = 'datamanagement/datasource_update.html'
-    success_msg = 'The data source is updated.'
-    permission_required = 'datamanagement.change_datasource'
+    pk_url_kwarg = "id"
+    template_name = "datamanagement/datasource_update.html"
+    success_msg = "The data source is updated."
+    permission_required = "datamanagement.change_datasource"
 
     # fields = ('name', 'description', 'file', 'accessibility',
     #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
@@ -210,14 +196,13 @@ class DataSourceUpdateView(
 
 class DataSourceDeleteView(PermissionRequiredMixin, DeleteView):
     model = DataSource
-    pk_url_kwarg = 'id'
-    success_url = reverse_lazy('datamanagement:index')
-    permission_required = 'datamanagement.delete_datasource'
+    pk_url_kwarg = "id"
+    success_url = reverse_lazy("datamanagement:index")
+    permission_required = "datamanagement.delete_datasource"
 
     def delete(self, request, *args, **kwargs):
         result = super().delete(request, *args, **kwargs)
-        messages.success(
-            self.request, 'The data source is deleted.')
+        messages.success(self.request, "The data source is deleted.")
         return result
 
 
@@ -226,10 +211,10 @@ def get_data(request, id):
     target = DataSource.objects.get(id=id)
 
     if target is None:
-        return HttpResponseNotFound('The resource is not found.')
+        return HttpResponseNotFound("The resource is not found.")
 
-    if not rules.test_rule('can_read_datasource', request.user, target):
-        return HttpResponseNotAllowed('Access denied.')
+    if not rules.test_rule("can_read_datasource", request.user, target):
+        return HttpResponseNotAllowed("Access denied.")
 
     # logger.info(request.user)
     logger.info(request.user.id)
@@ -238,7 +223,7 @@ def get_data(request, id):
 
     contents, file_type, columns = get_contents_from_file(target.file)
 
-    if (file_type == 'csv'):
+    if file_type == "csv":
         return HttpResponse(contents)
 
-    return HttpResponseServerError('The file type is not supported.')
+    return HttpResponseServerError("The file type is not supported.")

@@ -27,34 +27,33 @@ from .helpers import PretrainedModelTable
 from users.models import User
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 # Create your views here.
 def index(request):
-    return render(request, 'prediction/index.html')
+    return render(request, "prediction/index.html")
+
 
 class PModelActionMixin:
-
     @property
     def success_msg(self):
         return NotImplemented
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = context['form']
-        form.fields['owner'].widget = forms.HiddenInput()
-        context['form'] = form
+        form = context["form"]
+        form.fields["owner"].widget = forms.HiddenInput()
+        context["form"] = form
         return context
 
     def get_success_url(self):
-        url = reverse_lazy('prediction:model-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy("prediction:model-detail", kwargs={"id": self.object.id})
         return url
 
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
 
     def form_valid(self, form):
@@ -75,11 +74,11 @@ class PModelActionMixin:
 class FilteredPModelListView(SingleTableMixin, FilterView):
     model = PretrainedModel
     table_class = PretrainedModelTable
-    template_name = 'prediction/index.html'
+    template_name = "prediction/index.html"
 
     paginate_by = 10
     filterset_class = OwnedResourceModelFilter
-    ordering = ['-id']
+    ordering = ["-id"]
 
     def get_queryset(self):
         # Fetch only accessible data sources
@@ -94,11 +93,11 @@ class FilteredPModelListView(SingleTableMixin, FilterView):
             )
 
         queryset = queryset.filter(
-            Q(owner=u) |
-            Q(accessibility=PretrainedModel.ACCESSIBILITY_PUBLIC) |
-            (
-                Q(accessibility=PretrainedModel.ACCESSIBILITY_INTERNAL) &
-                (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+            Q(owner=u)
+            | Q(accessibility=PretrainedModel.ACCESSIBILITY_PUBLIC)
+            | (
+                Q(accessibility=PretrainedModel.ACCESSIBILITY_INTERNAL)
+                & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
             )
         ).distinct()
 
@@ -113,59 +112,50 @@ class FilteredPModelListView(SingleTableMixin, FilterView):
             num_of_owned = qs.filter(owner=self.request.user).count()
 
         num_of_all = qs.count()
-        context['num_of_owned'] = num_of_owned
-        context['num_of_shared'] = num_of_all - num_of_owned
+        context["num_of_owned"] = num_of_owned
+        context["num_of_shared"] = num_of_all - num_of_owned
 
         return context
 
-    def get_table_data(self):
-        return self.get_queryset()
 
-
-class PretrainedModelDetailView(
-    PermissionRequiredMixin, ModelFormMixin, DetailView
-):
+class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailView):
     model = PretrainedModel
-    pk_url_kwarg = 'id'
-    permission_required = 'prediction.read_model'
+    pk_url_kwarg = "id"
+    permission_required = "prediction.read_model"
     form_class = PredictionForm
 
     inputs = None
     outputs = None
 
     def get_success_url(self):
-        url = reverse_lazy('prediction:model-detail',
-                           kwargs={'id': self.object.id})
+        url = reverse_lazy("prediction:model-detail", kwargs={"id": self.object.id})
         return url
 
     def get_object(self):
         try:
-            my_object = PretrainedModel.objects.get(id=self.kwargs.get('id'))
+            my_object = PretrainedModel.objects.get(id=self.kwargs.get("id"))
             return my_object
         except self.model.DoesNotExist:
             raise Http404("No MyModel matches the given query.")
 
-
     def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super().get_form_kwargs(
-            *args, **kwargs)
+        kwargs = super().get_form_kwargs(*args, **kwargs)
         return kwargs
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         # context['form'] = self.get_form()
 
-        context['file'] = context['object'].file
-        context['metadata'] = context['object'].metadata
+        context["file"] = context["object"].file
+        context["metadata"] = context["object"].metadata
 
-        context['outputs'] = {'name': context['metadata']['outports'][0]['name']}
+        context["outputs"] = {"name": context["metadata"]["outports"][0]["name"]}
 
         if self.inputs:
-            context['inputs'] = self.inputs
+            context["inputs"] = self.inputs
         if self.outputs:
-            context['outputs'] = self.outputs
+            context["outputs"] = self.outputs
 
         return context
 
@@ -178,7 +168,7 @@ class PretrainedModelDetailView(
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        #put logic here
+        # put logic here
         logger.debug(form.fields)
         logger.debug(form.cleaned_data)
 
@@ -188,26 +178,27 @@ class PretrainedModelDetailView(
         self.outputs = out
 
         context = self.get_context_data(form=form)
-        context['inputs'] = form.cleaned_data
-        context['outputs'] = {'name': self.object.metadata['outports'][0]['name'], 'value': out}
+        context["inputs"] = form.cleaned_data
+        context["outputs"] = {
+            "name": self.object.metadata["outports"][0]["name"],
+            "value": out,
+        }
         return self.render_to_response(context)
 
         # return super().form_valid(form)
 
     def form_invalid(self, form):
-        #put logic here
+        # put logic here
         return super().form_invalid(form)
 
 
-class PretrainedModelUpdateView(
-    PermissionRequiredMixin, PModelActionMixin, UpdateView
-):
+class PretrainedModelUpdateView(PermissionRequiredMixin, PModelActionMixin, UpdateView):
     model = PretrainedModel
     form_class = PretrainedModelForm
-    pk_url_kwarg = 'id'
-    template_name = 'prediction/model_update.html'
-    success_msg = 'The pretrained model is updated.'
-    permission_required = 'prediction.change_model'
+    pk_url_kwarg = "id"
+    template_name = "prediction/model_update.html"
+    success_msg = "The pretrained model is updated."
+    permission_required = "prediction.change_model"
 
     # fields = ('name', 'description', 'file', 'accessibility',
     #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
@@ -215,12 +206,11 @@ class PretrainedModelUpdateView(
 
 class PretrainedModelDeleteView(PermissionRequiredMixin, DeleteView):
     model = PretrainedModel
-    pk_url_kwarg = 'id'
-    success_url = reverse_lazy('prediction:index')
-    permission_required = 'prediction.delete_model'
+    pk_url_kwarg = "id"
+    success_url = reverse_lazy("prediction:index")
+    permission_required = "prediction.delete_model"
 
     def delete(self, request, *args, **kwargs):
         result = super().delete(request, *args, **kwargs)
-        messages.success(
-            self.request, 'The pretrained model is deleted.')
+        messages.success(self.request, "The pretrained model is deleted.")
         return result

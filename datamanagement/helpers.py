@@ -5,7 +5,8 @@ import django_tables2 as tables
 from django_tables2.utils import A
 import django_filters
 from crispy_forms.helper import FormHelper
-    # accessibility = tables.Column(accessor="accessibility",
+
+# accessibility = tables.Column(accessor="accessibility",
 from crispy_forms.layout import ButtonHolder, Field, Fieldset, Layout, Submit
 from crequest.middleware import CrequestMiddleware
 from bs4 import BeautifulSoup
@@ -20,66 +21,67 @@ from markdown import markdown
 import os
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 class DataSourceFilterHelper(FormHelper):
-    form_method = 'GET'
+    form_method = "GET"
     layout = Layout(
-        Fieldset(
-            Field('name', autocomplete='off')
-        ),
+        Fieldset(Field("name", autocomplete="off")),
         ButtonHolder(
-            Submit('submit', 'Apply Filter'),
-        )
+            Submit("submit", "Apply Filter"),
+        ),
     )
 
 
 class DataSourceTable(tables.Table):
 
-    name = tables.LinkColumn(
-        'datamanagement:datasource-detail',
-        args=[A('id')])
+    name = tables.LinkColumn("datamanagement:datasource-detail", args=[A("id")])
 
-    owned = tables.Column(accessor=tables.A('owner'), verbose_name='Owned')
+    owned = tables.Column(accessor=tables.A("owner"), verbose_name="Owned")
 
     # def render_name(self, value, record):
     #     url = record.get_absolute_url()
     #     return mark_safe('<a href="%s">%s</a>' % (url, record))
 
-
     def render_description(self, value):
 
-        html = markdown(value)
-        text = ''.join(BeautifulSoup(html, 'html.parser').findAll(text=True))
+        # only takes the first line
+        lines = value.splitlines()
+        html = markdown(lines[0])
+        text = "".join(BeautifulSoup(html, "html.parser").findAll(text=True))
 
         if len(text) > 50:
-            return text[:50] + ' ...'
+            return text[:50] + " ..."
 
         return text
-
 
     def render_owned(self, value):
         current_request = CrequestMiddleware.get_request()
         user = current_request.user
 
         if user == value:
-            return 'yes'
+            return "yes"
 
-        return 'no'
-
+        return "no"
 
     class Meta:
         model = DataSource
-        template_name='django_tables2/bootstrap.html'
+        template_name = "django_tables2/bootstrap.html"
         # fields = ('name', 'owner', 'accessibility', 'modified',)
-        fields = ('name', 'owned', 'accessibility', 'modified', 'description', )
+        fields = (
+            "name",
+            "owned",
+            "accessibility",
+            "modified",
+            "description",
+        )
         empty_text = "There are no data source matching the search criteria..."
 
 
 class DataSourceFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains')
-
+    name = django_filters.CharFilter(lookup_expr="icontains")
 
     # def __init__(self, data=None, *args, **kwargs):
     #     logger.info('tttt')
@@ -99,6 +101,7 @@ class DataSourceFilter(django_filters.FilterSet):
 
     class Meta:
         model = DataSource
-        fields = ['name',]
-        order_by = ['pk']
-
+        fields = [
+            "name",
+        ]
+        order_by = ["pk"]
