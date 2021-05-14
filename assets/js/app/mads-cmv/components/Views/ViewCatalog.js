@@ -35,7 +35,18 @@ const config = [
       // options: { extent: { width: 800, height: 400 } },
     },
   },
-
+  {
+    type: 'periodic-table',
+    name: 'Periodic Table',
+    category: 'Visualization',
+    component: PeriodicTableView,
+    settings: {
+      columns: [],
+      // selectionColor: 'orange',
+      // nonselectionColor: `#${Greys9[3].toString(16)}`,
+      // options: { extent: { width: 800, height: 400 } },
+    },
+  },
   // data processing
 
   // analysis
@@ -79,6 +90,19 @@ const config = [
         dimension: 'features',
         measures: ['importance'],
       },
+    },
+  },
+  {
+    type: 'pie',
+    name: 'Pie',
+    category: 'Analysis',
+    component: PieView,
+    settings: {
+      bins: 5,
+      // mappings: {
+      //   n: 'hist',
+      //   bins: 'binEdges',
+      // },
     },
   },
 
