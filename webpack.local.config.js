@@ -21,7 +21,6 @@ baseConfig[1].entry = [
   `webpack-dev-server/client?${serverAddr}:${serverPort}`,
   'webpack/hot/only-dev-server',
   'whatwg-fetch',
-  '@babel/polyfill',
   './assets/js/index',
 ];
 

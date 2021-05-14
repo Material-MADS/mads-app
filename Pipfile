@@ -12,13 +12,13 @@ django-naomi = "*"
 isort = "*"
 model-mommy = "*"
 pre-commit = "*"
-prospector = {extras = ["with-vulture"]}
 safety = "*"
 rope = "*"
 coreapi-cli = "*"
-black = "==20.8b1"
+black = "==21.5b0"
 autoflake = "*"
 mypy = "*"
+pylint = "*"
 
 [packages]
 django = "*"
@@ -62,7 +62,7 @@ six = "*"
 django-webpack-loader = {ref = "Fix_with_latest_bundle_tracker_version", git = "https://github.com/gbalaratnaswamy/django-webpack-loader"}
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [scripts]
 start = "python manage.py runserver"

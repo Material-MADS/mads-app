@@ -4,358 +4,334 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <!-- Standard Meta -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <head>
+    <!-- Standard Meta -->
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="{% static PROJECT_FAVICON_PATH %}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static PROJECT_FAVICON_PATH %}"/>
 
-  <!-- Site Properties -->
-  <title>Home - {{PROJECT_NAME_ABBR}}</title>
+    <!-- Site Properties -->
+    <title>Home -
+      {{PROJECT_NAME_ABBR}}</title>
 
-  <!-- Webpack rendered CSS -->
-  {% render_bundle 'main' 'css' 'COMMON' %}
+    <!-- Webpack rendered CSS -->
+    {% render_bundle "main" "css" "COMMON" %}
 
-  <!-- django-js-reverse -->
-  <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+    <!-- Webpack rendered Javascript -->
+    {% render_bundle "main" "js" "COMMON" %}
 
-  <!-- Webpack rendered Javascript -->
-  {% render_bundle 'main' 'js' 'COMMON' %}
+    <!-- django-js-reverse -->
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
-
-  <style type="text/css">
-    .hidden.menu {
-      display: none;
-    }
-
-    .masthead.segment {
-      min-height: 700px;
-      padding: 1em 0em;
-    }
-
-    .masthead .logo.item img {
-      margin-right: 1em;
-    }
-
-    .masthead .ui.menu .ui.button {
-      margin-left: 0.5em;
-    }
-
-    .masthead h1.ui.header {
-      margin-top: 3em;
-      margin-bottom: 0em;
-      font-size: 4em;
-      font-weight: normal;
-    }
-
-    .masthead h2 {
-      font-size: 1.7em;
-      font-weight: normal;
-    }
-
-    .container h4 {
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-
-    .ui.vertical.stripe {
-      padding: 8em 0em;
-    }
-
-    .ui.vertical.stripe h3 {
-      font-size: 2em;
-    }
-
-    .ui.vertical.stripe .button+h3,
-    .ui.vertical.stripe p+h3 {
-      margin-top: 3em;
-    }
-
-    .ui.vertical.stripe .floated.image {
-      clear: both;
-    }
-
-    .ui.vertical.stripe p {
-      font-size: 1.33em;
-    }
-
-    .ui.vertical.stripe .horizontal.divider {
-      margin: 3em 0em;
-    }
-
-    .quote.stripe.segment {
-      padding: 0em;
-    }
-
-    .quote.stripe.segment .grid .column {
-      padding-top: 5em;
-      padding-bottom: 5em;
-    }
-
-    .footer.segment {
-      padding: 5em 0em;
-    }
-
-    .secondary.pointing.menu .toc.item {
-      display: none;
-    }
-
-    .logo {
-      max-width: 15em;
-    }
-
-    img.ui.image.banner {
-      padding: 0.5em;
-      background-color: white;
-      font-size: .92857143rem;
-      height: 4.5em;
-    }
-
-    ;
-
-    @media only screen and (max-width: 700px) {
-      .ui.fixed.menu {
-        display: none !important;
-      }
-
-      .secondary.pointing.menu .item,
-      .secondary.pointing.menu .menu {
+    <style type="text/css">
+      .hidden.menu {
         display: none;
       }
 
-      .secondary.pointing.menu .toc.item {
-        display: block;
+      .masthead.segment {
+        min-height: 700px;
+        padding: 1em 0;
       }
 
-      .masthead.segment {
-        min-height: 350px;
+      .masthead .logo.item img {
+        margin-right: 1em;
+      }
+
+      .masthead .ui.menu .ui.button {
+        margin-left: 0.5em;
       }
 
       .masthead h1.ui.header {
-        font-size: 2em;
-        margin-top: 1.5em;
+        margin-top: 3em;
+        margin-bottom: 0;
+        font-size: 4em;
+        font-weight: normal;
       }
 
       .masthead h2 {
-        margin-top: 0.5em;
-        font-size: 1.5em;
+        font-size: 1.7em;
+        font-weight: normal;
       }
-    }
 
-  </style>
+      .container h4 {
+        font-size: 1.2em;
+        font-weight: bold;
+      }
 
+      .ui.vertical.stripe {
+        padding: 8em 0;
+      }
 
-  <!-- <script src="../dist/components/visibility.js"></script>
-  <script src="../dist/components/sidebar.js"></script>
-  <script src="../dist/components/transition.js"></script> -->
+      .ui.vertical.stripe h3 {
+        font-size: 2em;
+      }
 
-  {% if GOOGLE_ANALYTICS_TRACKING_ID %}
-  {% include 'ga.html' %}
-  {% endif %}
+      .ui.vertical.stripe .button+h3,
+      .ui.vertical.stripe p+h3 {
+        margin-top: 3em;
+      }
 
-</head>
+      .ui.vertical.stripe .floated.image {
+        clear: both;
+      }
 
-<body>
+      .ui.vertical.stripe p {
+        font-size: 1.33em;
+      }
 
-  <!-- Following Menu -->
-  <div class="ui large top fixed hidden menu">
-    <div class="ui container">
+      .ui.vertical.stripe .horizontal.divider {
+        margin: 3em 0;
+      }
+
+      .quote.stripe.segment {
+        padding: 0;
+      }
+
+      .quote.stripe.segment .grid .column {
+        padding-top: 5em;
+        padding-bottom: 5em;
+      }
+
+      .footer.segment {
+        padding: 5em 0;
+      }
+
+      .secondary.pointing.menu .toc.item {
+        display: none;
+      }
+
+      .logo {
+        max-width: 15em;
+      }
+
+      img.ui.image.banner {
+        padding: 0.5em;
+        background-color: white;
+        font-size: 0.92857143rem;
+        height: 4.5em;
+      }
+
+      @media only screen and (max-width: 700px) {
+        .ui.fixed.menu {
+          display: none !important;
+        }
+
+        .secondary.pointing.menu .item,
+        .secondary.pointing.menu .menu {
+          display: none;
+        }
+
+        .secondary.pointing.menu .toc.item {
+          display: block;
+        }
+
+        .masthead.segment {
+          min-height: 350px;
+        }
+
+        .masthead h1.ui.header {
+          font-size: 2em;
+          margin-top: 1.5em;
+        }
+
+        .masthead h2 {
+          margin-top: 0.5em;
+          font-size: 1.5em;
+        }
+      }
+    </style>
+
+    <!-- <script src="../dist/components/visibility.js"></script> <script src="../dist/components/sidebar.js"></script> <script src="../dist/components/transition.js"></script> -->
+
+    {% if GOOGLE_ANALYTICS_TRACKING_ID %}
+      {% include "ga.html" %}
+    {% endif %}
+  </head>
+
+  <body>
+    <!-- Following Menu -->
+    <div class="ui large top fixed hidden menu">
+      <div class="ui container">
+        <a class="active item" href="{% url 'home' %}">Home</a>
+        <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
+        <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
+        <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
+        <a class="item" href="{% url 'docs:index' %}">Docs</a>
+        <div class="right menu">
+          {% if user.is_authenticated %}
+            <div class="item">{{ user.get_username }}</div>
+            <div class="item">
+              <a class="ui primary button" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
+            </div>
+          {% else %}
+            <div class="item">
+              <a class="ui button" href="{% url 'login'%}">Log in</a>
+            </div>
+            <div class="item">
+              {% if APP_DISABLE_SIGNUP is False %}
+                <a class="ui primary button" href="{% url 'signup'%}">Sign up</a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="ui vertical inverted sidebar menu">
       <a class="active item" href="{% url 'home' %}">Home</a>
       <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
       <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
       <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
       <a class="item" href="{% url 'docs:index' %}">Docs</a>
-      <div class="right menu">
-        {% if user.is_authenticated %}
-        <div class="item">
-          {{ user.get_username }}
-        </div>
-        <div class="item">
-          <a class="ui primary button" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
-        </div>
-        {% else %}
-        <div class="item">
-          <a class="ui button" href="{% url 'login'%}">Log in</a>
-        </div>
-        <div class="item">
-          {% if APP_DISABLE_SIGNUP is False %}
-          <a class="ui primary button" href="{% url 'signup'%}">Sign up</a>
-          {% endif %}
-        </div>
+
+      {% if user.is_authenticated %}
+        <div class="item">{{ user.get_username }}</div>
+        <a class="item" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
+      {% else %}
+        <a class="item" href="{% url 'login'%}">Log in</a>
+        {% if APP_DISABLE_SIGNUP is False %}
+          <a class="item" href="{% url 'signup'%}">Sign up</a>
         {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Sidebar Menu -->
-  <div class="ui vertical inverted sidebar menu">
-    <a class="active item" href="{% url 'home' %}">Home</a>
-    <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
-    <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
-    <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-    <a class="item" href="{% url 'docs:index' %}">Docs</a>
-
-    {% if user.is_authenticated %}
-    <div class="item">{{ user.get_username }}</div>
-    <a class="item" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
-    {% else %}
-    <a class="item" href="{% url 'login'%}">Log in</a>
-    {% if APP_DISABLE_SIGNUP is False %}
-    <a class="item" href="{% url 'signup'%}">Sign up</a>
-    {% endif %}
-    {% endif %}
-  </div>
-
-
-  <!-- Page Contents -->
-  <div class="pusher">
-    <div class="ui inverted vertical masthead center aligned segment">
-
-      <div class="ui container">
-        <div class="ui large secondary inverted pointing menu">
-          <a class="toc item">
-            <i class="sidebar icon"></i>
-          </a>
-          <a class="active item" href="{% url 'home' %}">Home</a>
-          <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
-          <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
-          <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-          <a class="item" href="{% url 'docs:index' %}">Docs</a>
-          <div class="right item">
-            {% if user.is_authenticated %}
-            <div class="ui inverted">{{ user.get_username }}</div>
-            <a class="ui inverted button" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
-            {% else %}
-            <a class="ui inverted button" href="{% url 'login'%}">Log in</a>
-            {% if APP_DISABLE_SIGNUP is False %}
-            <a class="ui inverted button" href="{% url 'signup'%}">Sign up</a>
-            {% endif %}
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <div class="twelve wide column">
-        <h1 class="ui inverted header centered">
-          <!-- <img class="ui image" src="{% static 'images/icons/mads.png' %}"> -->
-          <div class="ui container">
-            <img src="{% static PROJECT_MAIN_LOGO_PATH %}" class="ui centered large image">
-          </div>
-        </h1>
-        <h2 class="ui inverted center aligned icon header">
-          {{PROJECT_NAME}}</h2>
-
-        <a class="ui huge primary button" href="{% url 'datamanagement:index' %}">Get Started
-          <i class="right arrow icon"></i>
-        </a>
-      </div>
-
+      {% endif %}
     </div>
 
-    <div class="ui vertical stripe segment">
-      <div class="ui text container">
-        <h1 class="ui header">An Integrated Web-based Visual Platform for Materials Informatics</h1>
-        <p>The platform helps material scientists design new materials with:
-          <ul>
-            <li>Sharing of material data and analysis tools,</li>
-            <li>Support for trial-and-error process of data analysis with user-friendly interactive visual interfaces.
-            </li>
-          </ul>
-      </div>
-
-
-      <div class="ui padded text container segment">
-        <h4>Publication: </h4>
-        <div>Jun Fujima, Yuzuru Tanaka, Itsuki Miyazato, Lauren Takahashi, Keisuke Takahashi<br>
-          &#8216;Catalyst Acquisition by Data Science (CADS): a web-based catalyst informatics platform for discovering
-          catalysts&#8217;<br>
-          React. Chem. Eng. (2020) 5 (5), 903-911.<br>
-          <a href="https://doi.org/10.1039/D0RE00098A">https://doi.org/10.1039/D0RE00098A</a>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="ui vertical stripe quote segment">
-      <div class="ui equal width stackable internally celled grid">
-        <div class="center aligned row">
-
-          <div class="column">
-            <h3>Data Management</h3>
-            <p>Upload data source for data analysis</p>
-          </div>
-
-          <div class="column">
-            <h3>Analysis</h3>
-            <p>
-              <!-- <img src="assets/images/avatar/nan.jpg" class="ui avatar image"> -->
-              Analyze and visualize data sources in the exploratory visual analytics environment
-            </p>
-          </div>
-
-          <div class="column">
-            <h3>Prediction</h3>
-            <p>
-              <!-- <img src="assets/images/avatar/nan.jpg" class="ui avatar image"> -->
-              Predict materials properties with stored pre-trained models
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-
-    <div class="ui inverted vertical footer segment">
-      <div class="ui container">
-        <div class="ui stackable inverted divided equal height stackable grid">
-          <div class="three wide column">
-            <h4 class="ui inverted header">About</h4>
-            <div class="ui inverted link list">
-              <a href="mailto:material.mads@gmail.com" class="item">Contact Us</a>
-              <a href="{% url 'terms' %}" class="item">Terms of Services</a>
+    <!-- Page Contents -->
+    <div class="pusher">
+      <div class="ui inverted vertical masthead center aligned segment">
+        <div class="ui container">
+          <div class="ui large secondary inverted pointing menu">
+            <a class="toc item">
+              <i class="sidebar icon"></i>
+            </a>
+            <a class="active item" href="{% url 'home' %}">Home</a>
+            <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
+            <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
+            <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
+            <a class="item" href="{% url 'docs:index' %}">Docs</a>
+            <div class="right item">
+              {% if user.is_authenticated %}
+                <div class="ui inverted">{{ user.get_username }}</div>
+                <a class="ui inverted button" href="{% url 'logout'%}?next={{request.path}}">Log out</a>
+              {% else %}
+                <a class="ui inverted button" href="{% url 'login'%}">Log in</a>
+                {% if APP_DISABLE_SIGNUP is False %}
+                  <a class="ui inverted button" href="{% url 'signup'%}">Sign up</a>
+                {% endif %}
+              {% endif %}
             </div>
           </div>
-          <div class="three wide column">
-            <!-- <h4 class="ui inverted header">Resources</h4>
-            <div class="ui inverted link list">
-              <a href="#" class="item">GitHub Repo</a>
-              <a href="#" class="item">User Forums</a>
-              <a href="#" class="item">Twitter</a>
-            </div> -->
-          </div>
-          <div class="ten wide column">
-
-
-          </div>
-
         </div>
 
-        <div class="ui inverted divided equal height stackable grid">
+        <div class="twelve wide column">
+          <h1 class="ui inverted header centered">
+            <!-- <img class="ui image" src="{% static 'images/icons/mads.png' %}"> -->
+            <div class="ui container">
+              <img src="{% static PROJECT_MAIN_LOGO_PATH %}" class="ui centered large image"/>
+            </div>
+          </h1>
+          <h2 class="ui inverted center aligned icon header">
+            {{PROJECT_NAME}}
+          </h2>
 
-        </div>
-
-        <div class="ui inverted divided equal height stackable grid">
-          <div class="left floated five wide column">&copy; 2018 MADS/CADS development team</div>
-
-          <div class="right floated five wide column">
-            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License"
-                style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a>
-            <div>This work is licensed under a <a rel="license"
-                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0
-                International License</a>.</div>
-          </div>
-
-
+          <a class="ui huge primary button" href="{% url 'datamanagement:index' %}">Get Started
+            <i class="right arrow icon"></i>
+          </a>
         </div>
       </div>
 
-    </div>
-  </div>
+      <div class="ui vertical stripe segment">
+        <div class="ui text container">
+          <h1 class="ui header">
+            An Integrated Web-based Visual Platform for Materials Informatics
+          </h1>
+          <p>
+            The platform helps material scientists design new materials with:
+          </p>
+          <ul>
+            <li>Sharing of material data and analysis tools,</li>
+            <li>
+              Support for trial-and-error process of data analysis with user-friendly interactive visual interfaces.
+            </li>
+          </ul>
+        </div>
 
-</body>
+        <div class="ui padded text container segment">
+          <h4>Publication:</h4>
+          <div>
+            Jun Fujima, Yuzuru Tanaka, Itsuki Miyazato, Lauren Takahashi, Keisuke Takahashi<br/>
+            &#8216;Catalyst Acquisition by Data Science (CADS): a web-based catalyst informatics platform for discovering catalysts&#8217;<br/>
+            React. Chem. Eng. (2020) 5 (5), 903-911.<br/>
+            <a href="https://doi.org/10.1039/D0RE00098A">https://doi.org/10.1039/D0RE00098A</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui vertical stripe quote segment">
+        <div class="ui equal width stackable internally celled grid">
+          <div class="center aligned row">
+            <div class="column">
+              <h3>Data Management</h3>
+              <p>Upload data source for data analysis</p>
+            </div>
+
+            <div class="column">
+              <h3>Analysis</h3>
+              <p>
+                <!-- <img src="assets/images/avatar/nan.jpg" class="ui avatar image"> -->
+                Analyze and visualize data sources in the exploratory visual analytics environment
+              </p>
+            </div>
+
+            <div class="column">
+              <h3>Prediction</h3>
+              <p>
+                <!-- <img src="assets/images/avatar/nan.jpg" class="ui avatar image"> -->
+                Predict materials properties with stored pre-trained models
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui inverted vertical footer segment">
+        <div class="ui container">
+          <div class="ui stackable inverted divided equal height stackable grid">
+            <div class="three wide column">
+              <h4 class="ui inverted header">About</h4>
+              <div class="ui inverted link list">
+                <a href="mailto:material.mads@gmail.com" class="item">Contact Us</a>
+                <a href="{% url 'terms' %}" class="item">Terms of Services</a>
+              </div>
+            </div>
+            <div class="three wide column">
+              <!-- <h4 class="ui inverted header">Resources</h4> <div class="ui inverted link list"> <a href="#" class="item">GitHub Repo</a> <a href="#" class="item">User Forums</a> <a href="#" class="item">Twitter</a> </div> -->
+            </div>
+            <div class="ten wide column">
+            </div>
+          </div>
+
+          <div class="ui inverted divided equal height stackable grid"></div>
+
+          <div class="ui inverted divided equal height stackable grid">
+            <div class="left floated five wide column">
+              &copy; 2018 MADS/CADS development team
+            </div>
+
+            <div class="right floated five wide column">
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width: 0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"/></a>
+              <div>
+                This work is licensed under a
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 
 </html>

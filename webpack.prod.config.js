@@ -9,11 +9,7 @@ const baseConfig = require('./webpack.base.config');
 baseConfig[0].mode = 'production';
 baseConfig[1].mode = 'production';
 
-baseConfig[1].entry = [
-  'whatwg-fetch',
-  '@babel/polyfill',
-  './assets/js/index.js',
-];
+baseConfig[1].entry = ['whatwg-fetch', './assets/js/index.js'];
 
 baseConfig[0].output.publicPath = '/static/bundles/';
 baseConfig[1].output = {

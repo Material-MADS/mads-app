@@ -27,8 +27,8 @@ function createEmptyChart(options) {
     tools,
     x_range: params.x_range || undefined,
     y_range: params.y_range || undefined,
-    plot_width: params.extent.width || 400,
-    plot_height: params.extent.height || 400,
+    width: params.extent.width || 400,
+    height: params.extent.height || 400,
   });
 
   if (params.xaxis_orientation) {

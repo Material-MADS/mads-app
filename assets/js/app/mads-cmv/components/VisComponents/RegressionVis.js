@@ -28,8 +28,8 @@ function createEmptyChart(options) {
     tools,
     // x_range: [0, 100],
     // y_range: [0, 100],
-    plot_width: params.extent.width || 400,
-    plot_height: params.extent.height || 400,
+    width: params.extent.width || 400,
+    height: params.extent.height || 400,
     // toolbar_location: 'right',
     // toolbar_sticky: false,
   });
@@ -47,9 +47,8 @@ class RegressionVis extends Component {
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(
-      this
-    );
+    this.handleSelectedIndicesChange =
+      this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
     // this.updatePlot = this.updatePlot.bind(this);

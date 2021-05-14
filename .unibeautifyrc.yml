@@ -1,0 +1,19 @@
+HTML:
+  align_assignments : true
+  beautifiers : ["JS-Beautify", "Pretty Diff"]
+  brace_style : "collapse"
+  break_chained_methods : true
+  end_with_comma : true
+  end_with_newline : true
+  force_indentation : false
+  indent_comments : true
+  indent_inner_html : true
+  indent_scripts : "normal"
+  indent_size : 2
+  indent_style : "space"
+  max_preserve_newlines : 4
+  multiline_ternary : "always-multiline"
+  newline_before_tags : []
+  preserve_newlines : true
+  quotes : "double"
+  unformatted: ["a", "sub", "sup", "b", "i", "u"]
