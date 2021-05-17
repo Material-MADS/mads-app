@@ -18,7 +18,7 @@ const Category10_10 = Category10.Category10_10;
 import elements from './data/elements';
 
 const periods = ["I", "II", "III", "IV", "V", "VI", "VII"];
-const groups = _.range(1, 19).map(x => x.toString()); 
+const groups = _.range(1, 19).map(x => x.toString());
 
 let df = new DataFrame(elements);
 df = df.set('period', (df.get('period').to_json({ orient: 'records' })).map((i) => periods[i - 1]));
@@ -76,13 +76,13 @@ function createEmptyChart(options) {
     selectionColor: params.selectionColor || defaultOptions.nonselectionColor,
     nonselectionColor:
       params.nonselectionColor || defaultOptions.nonselectionColor,
-    plot_width: params.extent.width || defaultOptions.extent.width,
-    plot_height: params.extent.height || defaultOptions.extent.height,
+    width: params.extent.width || defaultOptions.extent.width,
+    height: params.extent.height || defaultOptions.extent.height,
     x_range: params.x_range || defaultOptions.x_range,
     y_range: params.y_range || defaultOptions.y_range,
     ptColors: [] || defaultOptions.ptColors,
   });
-  
+
   //Perhaps not that useful tool
   fig.toolbar.active_scroll = fig.select_one(Bokeh.WheelZoomTool);
 
@@ -112,16 +112,16 @@ export default function PeriodicTable({ data, options }) {
       fill_alpha: 0.6,
       legend: { field: 'metal' },
       color: {
-        field: "metal", 
+        field: "metal",
         transform: new Bokeh.CategoricalColorMapper({
-          palette: Object.values(cmap), 
+          palette: Object.values(cmap),
           factors:  Object.keys(cmap)
         }),
       },
     });
 
     fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [r] }));
-     
+
     const text_props = {source: data, text_align: "left", text_baseline: "middle"};
     const x = { field: 'group', transform: new Bokeh.Dodge({ value: -0.4, range: fig.x_range, }) };
 
@@ -137,18 +137,18 @@ export default function PeriodicTable({ data, options }) {
       x: x,
       y: {
          field: "period",
-         transform: new Bokeh.Dodge({ value: 0.3, 'range': fig.y_range })        
+         transform: new Bokeh.Dodge({ value: 0.3, 'range': fig.y_range })
       },
-      text: { field: 'atomic number' },      
+      text: { field: 'atomic number' },
       text_font_size: '11px',
       ...text_props,
     });
 
     fig.text({
-      x: x, 
+      x: x,
       y: {
         field: 'period',
-        transform: new Bokeh.Dodge({      
+        transform: new Bokeh.Dodge({
           value: -0.35,
           range: fig.y_range,
         }),
@@ -159,10 +159,10 @@ export default function PeriodicTable({ data, options }) {
     });
 
     fig.text({
-      x: x, 
+      x: x,
       y: {
         field: 'period',
-        transform: new Bokeh.Dodge({        
+        transform: new Bokeh.Dodge({
           value: -0.2,
           range: fig.y_range,
         }),
@@ -173,14 +173,14 @@ export default function PeriodicTable({ data, options }) {
     });
 
     fig.text({
-      x: ["3", "3"], 
+      x: ["3", "3"],
       y: ["VI", "VII"],
-      text: ["LA", "AC"],      
-      text_align: "center",       
+      text: ["LA", "AC"],
+      text_align: "center",
       text_baseline: "middle",
     });
 
-    fig.outline_line_color = null;    
+    fig.outline_line_color = null;
     fig.xgrid[0].grid_line_color = null;
     fig.ygrid[0].grid_line_color = null;
     fig.xaxis[0].axis_line_color = null;
@@ -194,7 +194,7 @@ export default function PeriodicTable({ data, options }) {
 
     views = await Bokeh.Plotting.show(fig, rootNode.current);
     return cds;
-  };  
+  };
 
   const clearChart = () => {
     if (Array.isArray(views)) {

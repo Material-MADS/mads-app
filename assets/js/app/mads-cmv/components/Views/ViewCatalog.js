@@ -6,6 +6,8 @@ import RFFeatureView from './RFFeature';
 import ClusteringView from './Clustering';
 import RegressionView from './Regression';
 import ClassificationView from './Classification';
+import PeriodicTableView from './PeriodicTable';
+import PieView from './Pie';
 
 const config = [
   // visualizations

@@ -33,8 +33,8 @@ function createEmptyChart(options) {
     selectionColor: params.selectionColor || defaultOptions.nonselectionColor,
     nonselectionColor:
       params.nonselectionColor || defaultOptions.nonselectionColor,
-    plot_width: params.extent.width || defaultOptions.extent.width,
-    plot_height: params.extent.height || defaultOptions.extent.height,
+    width: params.extent.width || defaultOptions.extent.width,
+    height: params.extent.height || defaultOptions.extent.height,
     x_range: params.x_range || defaultOptions.x_range,
     pieColors: [] || defaultOptions.pieColors,
   });
@@ -58,7 +58,7 @@ export default function PieChart({ data, options }) {
       const angles = data.values.map((v) => {
         return (v / sum) * 2 * Math.PI;
       });
-      
+
       let colors = [];
       if(angles.length <= 20){
         colors = Category20c_20.slice(0, angles.length);
@@ -67,7 +67,7 @@ export default function PieChart({ data, options }) {
         const step = Math.floor(256/angles.length);
         for(let i = 0; i < angles.length; i++) {
           colors.push(Plasma256[i*step]);
-        };                
+        };
       }
       else{ colors = Plasma256; }
 
@@ -80,7 +80,7 @@ export default function PieChart({ data, options }) {
       });
 
       fig.add_tools(new Bokeh.HoverTool({ tooltips: '@dimensions: @values' }));
-  
+
       fig.wedge({
         x: 0,
         y: 1,
@@ -94,15 +94,15 @@ export default function PieChart({ data, options }) {
         legend: "dimensions",
         source: sData,
       });
-  
+
       fig.xaxis[0].axis_label = null;
       fig.yaxis[0].axis_label = null;
       fig.xaxis[0].visible = false;
       fig.yaxis[0].visible = false;
       fig.xgrid[0].grid_line_color = null;
-      fig.ygrid[0].grid_line_color = null;  
+      fig.ygrid[0].grid_line_color = null;
     }
-    
+
     views = await Bokeh.Plotting.show(fig, rootNode.current);
     return cds;
   };

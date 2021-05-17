@@ -29,6 +29,7 @@ const PeriodicTableForm = (props) => {
 
   return (
     <Form onSubmit={handleSubmit}>
+      // testar
       {/* <Form.Field>
         <label>Target columns</label>
         <Field
