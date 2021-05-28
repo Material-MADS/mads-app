@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
 import { Category10 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { Greys9 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
@@ -18,46 +19,66 @@ const defaultOptions = {
   nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: undefined, height: 400 },
   x_range: [-1.0, 1.0],
+  y_range: [-1.0, 1.0],
   pieColors: [],
 };
 
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  const tools =
-    "pan,crosshair,tap,wheel_zoom,reset,save";
+  const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
 
   const fig = Bokeh.Plotting.figure({
     title: params.title || defaultOptions.title,
     tools,
     toolbar_location: "right",
     selectionColor: params.selectionColor || defaultOptions.nonselectionColor,
-    nonselectionColor:
-      params.nonselectionColor || defaultOptions.nonselectionColor,
+    nonselectionColor: params.nonselectionColor || defaultOptions.nonselectionColor,
     width: params.extent.width || defaultOptions.extent.width,
     height: params.extent.height || defaultOptions.extent.height,
     x_range: params.x_range || defaultOptions.x_range,
+    y_range: params.y_range || defaultOptions.y_range,
     pieColors: [] || defaultOptions.pieColors,
   });
+
+  //fig.image_url("https://images.unsplash.com/photo-1567892320421-1c657571ea4a?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YmlraW5pJTIwZ2lybHxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80", -1, 1, 2, 2);
 
   return fig;
 }
 
-export default function PieChart({ data, options }) {
+function usePrevious(value) {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
+export default function PieChart({
+  data,
+  mappings,
+  options,
+  colorTags,
+  selectedIndices,
+  onSelectedIndicesChange,
+}) {
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
   let cds = null;
+  let selectedIndicesInternal = [];
 
   const createChart = async () => {
-    //const { dimension, values } = mappings;
-
     const fig = createEmptyChart(options);
+    setMainFigure(fig);
+
+    const { dimension, values } = mappings;
 
     if(data.dimensions){
       const sum = Bokeh.LinAlg.sum(data.values);
       const angles = data.values.map((v) => {
         return (v / sum) * 2 * Math.PI;
       });
+      const percentage = data.values.map((v) => { return ((v / sum) * 100).toFixed(1); });
 
       let colors = [];
       if(angles.length <= 20){
@@ -71,19 +92,49 @@ export default function PieChart({ data, options }) {
       }
       else{ colors = Plasma256; }
 
+      const { indices } = data;
+      if (indices) {
+        for (let i = 0; i < indices.length; i++) {
+          colorTags.forEach((colorTag) => {
+            if (deepEqual(indices[i], colorTag.itemIndices)) {
+              colors[i] = colorTag.color;
+            }
+          });
+        }
+      }
+
       const sData = new Bokeh.ColumnDataSource({
         data: {
           ...data,
           angles,
           colors,
+          percentage,
         },
       });
+      cds = sData;
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@dimensions: @values' }));
+      // setup callback
+      if (cds) {
+        //console.log('set event handler');
+        cds.connect(cds.selected.change, () => {
+          // this.handleSelectedIndicesChange();
+          const indices = sData.selected.indices;
+          if (!deepEqual(selectedIndicesInternal, indices)) {
+            //console.log('selected', indices);
+            // console.log('selected', selectedIndicesInternal);
+            selectedIndicesInternal = [...indices];
+            if (onSelectedIndicesChange) {
+              onSelectedIndicesChange(indices);
+            }
+          }
+        });
+      }
+
+      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@dimensions: @values (@percentage %)' }));
 
       fig.wedge({
         x: 0,
-        y: 1,
+        y: 0,
         radius: 0.4,
         start_angle: {
           expr: new Bokeh.CumSum({ field: "angles", include_zero: true }),
@@ -101,6 +152,17 @@ export default function PieChart({ data, options }) {
       fig.yaxis[0].visible = false;
       fig.xgrid[0].grid_line_color = null;
       fig.ygrid[0].grid_line_color = null;
+
+
+      // legend1 = bokeh.models.Legend(
+      //   items=[("%.2f*sin(x)" % ((1 + i/20)), [ glyphs[i] ]) for i in range(23)]
+      // )
+      // legend2 = bokeh.models.Legend(
+      //   items=[("%.2f*sin(x)" % ((1 + i/20)), [ glyphs[i] ]) for i in range(23,41)]
+      // )
+
+      // plot.add_layout(legend1, 'right')
+      // plot.add_layout(legend2, 'right')
     }
 
     views = await Bokeh.Plotting.show(fig, rootNode.current);
@@ -128,7 +190,18 @@ export default function PieChart({ data, options }) {
       // console.info('unmount');
       clearChart();
     };
-  });
+  }, [data, mappings, options, colorTags]);
+
+  const prevCds = usePrevious(cds);
+  useEffect(() => {
+    console.log('selection changed ...', selectedIndices);
+    console.log(prevCds);
+    if (selectedIndices.length === 0) {
+      if (prevCds) {
+        prevCds.selected.indices = [];
+      }
+    }
+  }, [selectedIndices]);
 
   return (
     <div id="container">
@@ -138,30 +211,34 @@ export default function PieChart({ data, options }) {
 }
 
 PieChart.propTypes = {
-  data: PropTypes.shape({}),
-  // mappings: PropTypes.shape({
-  //   dimension: PropTypes.string,
-  //   measures: PropTypes.arrayOf(PropTypes.string),
-  // }),
+  data: PropTypes.shape({
+    values: PropTypes.arrayOf(PropTypes.number),
+    dimensions: PropTypes.arrayOf(PropTypes.string),
+    indices: PropTypes.arrayOf(PropTypes.array),
+  }),
+  mappings: PropTypes.shape({}),
   options: PropTypes.shape({
     title: PropTypes.string,
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
     pieColors: PropTypes.arrayOf(PropTypes.string),
     x_range: PropTypes.arrayOf(PropTypes.number),
+    y_range: PropTypes.arrayOf(PropTypes.number),
     extent: PropTypes.shape({
       width: PropTypes.number,
       height: PropTypes.number.isRequired,
     }),
   }),
-  //colorTags: PropTypes.arrayOf(PropTypes.object),
-  //selectedIndices: PropTypes.arrayOf(PropTypes.number),
-  // colorTags: PropTypes.arrayOf(PropTypes.object),
-  //onSelectedIndicesChange: PropTypes.func,
+  colorTags: PropTypes.arrayOf(PropTypes.object),
+  selectedIndices: PropTypes.arrayOf(PropTypes.number),
+  onSelectedIndicesChange: PropTypes.func,
 };
 
 PieChart.defaultProps = {
   data: {},
-  // mappings: {},
+  mappings: {},
   options: defaultOptions,
+  colorTags: [],
+  selectedIndices: [],
+  onSelectedIndicesChange: undefined,
 };
