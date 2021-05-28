@@ -51,8 +51,7 @@ class PieView extends withCommandInterface(PieChart, PieForm, settings) {
 
     newValues = convertExtentValues(newValues);
 
-    // actions.sendRequestViewUpdate(view, newValues, data);
-    updateView(id, newValues);
+    actions.sendRequestViewUpdate(view, newValues, data);
   };
 
   mapData = (dataset) => {
@@ -64,30 +63,8 @@ class PieView extends withCommandInterface(PieChart, PieForm, settings) {
       data = dataset[id];
     }
 
-    if(this.props.view.settings.targetColumns){
-      const tc = this.props.view.settings.targetColumns[0];
-      const b = this.props.view.settings.bins;
-      const dataVals = dataset.main.data.map(elem => elem[tc]);
-      dataVals.sort((a, b) => a - b);
-      const step = (dataVals[dataVals.length-1] - dataVals[0]) / b;
-      data =  { dimensions: _.range(b).map((i) => (i*step).toFixed(2) + " - " + (step*(i+1)).toFixed(2) ), values: Array(b).fill(0) };
-      dataVals.forEach(item => {
-          for(let i=0; i < b; i++){
-              if(item > (step*i) && item < (step*(i+1))){
-                  data.values[i]++;
-                  break;
-              }
-          }
-      });
-    }
-
     return data;
   };
 }
-
-const mapStateToProps = state => ({
-  dataset: state.dataset,
-  selection: state.selection,
-});
 
 export default PieView;

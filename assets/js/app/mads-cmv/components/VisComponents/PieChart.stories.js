@@ -40,7 +40,7 @@ const sgc = {};
 sampledata.forEach(item => {
   let sg = item.Spacegroup;
   if(!sgc[sg]){ sgc[sg] = 1; }
-  else { sgc[sg]++; }  
+  else { sgc[sg]++; }
 });
 const sgData =  { dimensions: [], values: [] };
 for (let key in sgc) {
@@ -57,7 +57,7 @@ const sgc2 = {};
 biggersampledata.data.forEach(item => {
   let sg = item.Spacegroup;
   if(!sgc2[sg]){ sgc2[sg] = 1; }
-  else { sgc2[sg]++; }  
+  else { sgc2[sg]++; }
 });
 const bsgData =  { dimensions: [], values: [] };
 for (let key in sgc2) {
@@ -85,7 +85,7 @@ stories
   .add('...empty', () => <PieChart />)
   .add('...with small data', () => (
     <PieChart
-      data={data}      
+      data={data}
       // mappings={{
       //   x: 'Formation Energy (eV)',
       //   y: 'Band Gap (eV)',
@@ -106,29 +106,6 @@ stories
   ))
   .add('...with numerical chem data', () => (
     <PieChart
-       data = {cData}    
+       data = {cData}
     />
   ));
-  /* .add('with knobs', () => {
-    // const defaultExtent = { width: 400, height: 400 };
-    // const groupId = 'GROUP-ID1';
-    // const extent = object('extent', defaultExtent);
-    // const width = number('width', 400);
-    // const height = number('height', 400);
-
-    // const selections = array('selectedIndices', [0]).map(Number);
-
-    return (
-      <PieChart
-        data = {bData.data}
-    //     mappings={{
-    //       x: 'Formation Energy (eV)',
-    //       y: 'Band Gap (eV)',
-    //     }}
-    //     // extent={{ width, height }}
-    //     selectedIndices={selections}
-    //     // onSelectedIndicesChange={action('selected_change')}
-      />
-    );
-  })
-);*/

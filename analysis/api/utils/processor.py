@@ -3,6 +3,7 @@ from .feature_importance import get_feature_importance
 from .clustering import get_clusters
 from .regression import get_regression
 from .classification import get_classification
+from .pie import get_pie
 
 import logging
 
@@ -15,6 +16,7 @@ processor_map = {
     'clustering': get_clusters,
     'regression': get_regression,
     'classification': get_classification,
+    'pie': get_pie,
 }
 
 

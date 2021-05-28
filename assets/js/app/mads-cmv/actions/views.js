@@ -32,7 +32,7 @@ export const updateView = (id, settings) => {
 };
 
 export const requestViewUpdateRemote = (id, view) => {
-  // console.log('testtsetsetset', id, settings);
+  //console.log('testtsetsetset', id, settings);
   return {
     type: VIEW_UPDATE_REMOTE_REQUEST,
     id,
