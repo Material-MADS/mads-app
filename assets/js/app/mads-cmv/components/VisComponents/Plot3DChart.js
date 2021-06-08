@@ -6,6 +6,8 @@ import * as Bokeh from "@bokeh/bokehjs";
 import { Category10 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { Greys9 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
+import * as Plotly from 'plotly.js-dist';
+
 import { Category20c_20 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { Plasma256 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
@@ -13,6 +15,9 @@ const Category10_10 = Category10.Category10_10;
 
 // Dev and Debug declarations
 window.Bokeh = Bokeh;
+
+console.log(Plotly);
+window.Plotly = Plotly;
 
 const defaultOptions = {
   title: "Plot 3D Chart",
@@ -70,97 +75,83 @@ export default function Plot3DChart({
     const fig = createEmptyChart(options);
     setMainFigure(fig);
 
-
-
-
-
-
-    //TODO: const { dimension, values } = mappings;
-
-    //TODO:
-    /*if(data.dimensions){
-      const sum = Bokeh.LinAlg.sum(data.values);
-      const angles = data.values.map((v) => {
-        return (v / sum) * 2 * Math.PI;
-      });
-      const percentage = data.values.map((v) => { return ((v / sum) * 100).toFixed(1); });
-
-      let colors = [];
-      if(angles.length <= 20){
-        colors = Category20c_20.slice(0, angles.length);
-      }
-      else if(angles.length > 20 && angles.length < 256){
-        const step = Math.floor(256/angles.length);
-        for(let i = 0; i < angles.length; i++) {
-          colors.push(Plasma256[i*step]);
-        };
-      }
-      else{ colors = Plasma256; }
-
-      const { indices } = data;
-      if (indices) {
-        for (let i = 0; i < indices.length; i++) {
-          colorTags.forEach((colorTag) => {
-            if (deepEqual(indices[i], colorTag.itemIndices)) {
-              colors[i] = colorTag.color;
-            }
-          });
-        }
+    Plotly.d3.csv('https://raw.githubusercontent.com/plotly/datasets/master/alpha_shape.csv', function(err, rows){
+      function unpack(rows, key) {
+          return rows.map(function(row) { return row[key]; });
       }
 
-      const sData = new Bokeh.ColumnDataSource({
-        data: {
-          ...data,
-          angles,
-          colors,
-          percentage,
-        },
-      });
-      cds = sData;
-
-      // setup callback
-      if (cds) {
-        //console.log('set event handler');
-        cds.connect(cds.selected.change, () => {
-          // this.handleSelectedIndicesChange();
-          const indices = sData.selected.indices;
-          if (!deepEqual(selectedIndicesInternal, indices)) {
-            //console.log('selected', indices);
-            // console.log('selected', selectedIndicesInternal);
-            selectedIndicesInternal = [...indices];
-            if (onSelectedIndicesChange) {
-              onSelectedIndicesChange(indices);
-            }
+      var data = [{
+          x: unpack(rows, 'x'),
+          y: unpack(rows, 'y'),
+          z: unpack(rows, 'z'),
+          mode: 'markers',
+          type: 'scatter3d',
+          marker: {
+            color: 'rgb(23, 190, 207)',
+            size: 2
           }
-        });
-      }
+      },{
+          alphahull: 7,
+          opacity: 0.1,
+          type: 'mesh3d',
+          x: unpack(rows, 'x'),
+          y: unpack(rows, 'y'),
+          z: unpack(rows, 'z')
+      }];
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@dimensions: @values (@percentage %)' }));
+      var layout = {
+          autosize: true,
+          height: 480,
+          scene: {
+              aspectratio: {
+                  x: 1,
+                  y: 1,
+                  z: 1
+              },
+              camera: {
+                  center: {
+                      x: 0,
+                      y: 0,
+                      z: 0
+                  },
+                  eye: {
+                      x: 1.25,
+                      y: 1.25,
+                      z: 1.25
+                  },
+                  up: {
+                      x: 0,
+                      y: 0,
+                      z: 1
+                  }
+              },
+              xaxis: {
+                  type: 'linear',
+                  zeroline: false
+              },
+              yaxis: {
+                  type: 'linear',
+                  zeroline: false
+              },
+              zaxis: {
+                  type: 'linear',
+                  zeroline: false
+              }
+          },
+          title: '3d point clustering',
+          width: 477
+      };
 
-      fig.wedge({
-        x: 0,
-        y: 1,
-        radius: 0.4,
-        start_angle: {
-          expr: new Bokeh.CumSum({ field: "angles", include_zero: true }),
-        },
-        end_angle: { expr: new Bokeh.CumSum({ field: "angles" }) },
-        line_color: "white",
-        fill_color: { field: "colors" },
-        legend: "dimensions",
-        source: sData,
-      });
+      Plotly.newPlot(rootNode.current, data, layout);
+    });
 
-      fig.xaxis[0].axis_label = null;
-      fig.yaxis[0].axis_label = null;
-      fig.xaxis[0].visible = false;
-      fig.yaxis[0].visible = false;
-      fig.xgrid[0].grid_line_color = null;
-      fig.ygrid[0].grid_line_color = null;
-    } */
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
+    // Plotly.newPlot( rootNode.current, [{
+    //   x: [1, 2, 3, 4, 5],
+    //   y: [1, 2, 4, 8, 16] }], {
+    //   margin: { t: 0 } } );
+
+
   };
 
   const clearChart = () => {
