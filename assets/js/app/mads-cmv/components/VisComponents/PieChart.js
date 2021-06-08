@@ -40,8 +40,6 @@ function createEmptyChart(options) {
     pieColors: [] || defaultOptions.pieColors,
   });
 
-  //fig.image_url("https://images.unsplash.com/photo-1567892320421-1c657571ea4a?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YmlraW5pJTIwZ2lybHxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80", -1, 1, 2, 2);
-
   return fig;
 }
 
@@ -152,17 +150,6 @@ export default function PieChart({
       fig.yaxis[0].visible = false;
       fig.xgrid[0].grid_line_color = null;
       fig.ygrid[0].grid_line_color = null;
-
-
-      // legend1 = bokeh.models.Legend(
-      //   items=[("%.2f*sin(x)" % ((1 + i/20)), [ glyphs[i] ]) for i in range(23)]
-      // )
-      // legend2 = bokeh.models.Legend(
-      //   items=[("%.2f*sin(x)" % ((1 + i/20)), [ glyphs[i] ]) for i in range(23,41)]
-      // )
-
-      // plot.add_layout(legend1, 'right')
-      // plot.add_layout(legend2, 'right')
     }
 
     views = await Bokeh.Plotting.show(fig, rootNode.current);
