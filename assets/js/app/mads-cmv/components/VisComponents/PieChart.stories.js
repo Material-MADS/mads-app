@@ -86,12 +86,6 @@ stories
   .add('...with small data', () => (
     <PieChart
       data={data}
-      // mappings={{
-      //   x: 'Formation Energy (eV)',
-      //   y: 'Band Gap (eV)',
-      // }}
-      // onSelectedIndicesChange={action('selected_change')}
-      // options={{ extent: { width: 100, height: 400 } }}
     />
   ))
   .add('...with file data', () => (
