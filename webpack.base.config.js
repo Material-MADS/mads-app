@@ -57,7 +57,8 @@ module.exports = [
     },
     plugins: [
       new BundleTracker({
-        filename: './common-webpack-stats.json',
+        path: __dirname,
+        filename: './assets/bundles/common-webpack-stats.json',
       }),
       new webpack.ProvidePlugin({
         Tether: 'tether',

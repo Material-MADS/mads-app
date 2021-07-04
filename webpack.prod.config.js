@@ -72,7 +72,8 @@ baseConfig[1].plugins = [
     // allChunks: true,
   }),
   new BundleTracker({
-    filename: './webpack-stats.json',
+    path: __dirname,
+    filename: './assets/bundles/webpack-stats.json',
   }),
   new webpack.LoaderOptionsPlugin({
     options: {

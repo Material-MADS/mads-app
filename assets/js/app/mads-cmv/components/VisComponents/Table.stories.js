@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { withKnobs, array } from '@storybook/addon-knobs';
 
 import Table from './Table';
 import ColorTag from '../../models/ColorTag';
@@ -10,7 +9,6 @@ import data from './testdata/data-ex';
 import bData from './testdata/response-ex';
 
 const stories = storiesOf('Table', module);
-stories.addDecorator(withKnobs);
 
 stories
   .add('empty table', () => <Table />)
@@ -49,22 +47,22 @@ stories
       data={bData.data}
       columns={['Formation Energy (eV)', 'Band Gap (eV)', 'Volume']}
     />
-  ))
-  .add('with knobs', () => {
-    // const defaultExtent = { width: 400, height: 400 };
-    // const groupId = 'GROUP-ID1';
-    // const extent = object('extent', defaultExtent);
-    // const width = number('width', 400);
-    // const height = number('height', 400);
+  ));
+// .add('with knobs', () => {
+//   // const defaultExtent = { width: 400, height: 400 };
+//   // const groupId = 'GROUP-ID1';
+//   // const extent = object('extent', defaultExtent);
+//   // const width = number('width', 400);
+//   // const height = number('height', 400);
 
-    const selections = array('selectedIndices', [0]).map(Number);
+//   const selections = array('selectedIndices', [0]).map(Number);
 
-    return (
-      <Table
-        data={bData.data}
-        // extent={{ width, height }}
-        selectedIndices={selections}
-        // onSelectedIndicesChange={action('selected_change')}
-      />
-    );
-  });
+//   return (
+//     <Table
+//       data={bData.data}
+//       // extent={{ width, height }}
+//       selectedIndices={selections}
+//       // onSelectedIndicesChange={action('selected_change')}
+//     />
+//   );
+// });
