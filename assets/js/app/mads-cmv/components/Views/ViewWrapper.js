@@ -45,8 +45,6 @@ function withCommandInterface(
         if (k === 'main') {
           return;
         }
-
-        console.log(k);
       });
 
       // window.DepGraph = DepGraph;
@@ -117,7 +115,7 @@ function withCommandInterface(
         actions,
       } = this.props;
 
-      console.log(this.props);
+      //console.log(this.props);
 
       const { main } = dataset;
 
@@ -144,7 +142,6 @@ function withCommandInterface(
 
         const s = new Set(filteredIndices);
         filteredIndices = Array.from(s);
-        // console.log(filteredIndices);
       }
 
       return (
@@ -194,7 +191,6 @@ function withCommandInterface(
                 Cancel
               </Button>
               <Button positive content="Submit" onClick={this.onSubmitClick} />
-              {/* <Button positive content="Submit" onClick={this.onSubmitClick} /> */}
             </Modal.Actions>
           </Modal>
         </div>

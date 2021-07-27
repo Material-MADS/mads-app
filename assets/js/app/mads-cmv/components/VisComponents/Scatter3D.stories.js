@@ -10,28 +10,37 @@ import Scatter3D from './Scatter3D';
 //=========================================
 const originalTestData = {
   data: [
-    { x: 7,   y: 3,   z: 9, },
-    { x: 3,   y: 5,   z: 7, },
-    { x: 5,   y: 1,   z: 5, },
-    { x: 8,   y: 1,   z: 4, },
-    { x: 1,   y: 8,   z: 3, },
-    { x: 5,   y: 9,   z: 0, },
-    { x: 7,   y: 0,   z: 1, },
-    { x: 9,   y: 2,   z: 2, },
-    { x: 0,   y: 5,   z: 6, },
-    { x: 2,   y: 6,   z: 4, },
+    { x: 7,   y: 3,   z: 9,   gr: 4, },
+    { x: 3,   y: 5,   z: 7,   gr: 2,  },
+    { x: 5,   y: 1,   z: 5,   gr: 4,  },
+    { x: 8,   y: 1,   z: 4,   gr: 3,  },
+    { x: 1,   y: 8,   z: 3,   gr: 1,  },
+    { x: 5,   y: 9,   z: 0,   gr: 1,  },
+    { x: 7,   y: 0,   z: 1,   gr: 3,  },
+    { x: 9,   y: 2,   z: 2,   gr: 3,  },
+    { x: 0,   y: 5,   z: 6,   gr: 2,  },
+    { x: 2,   y: 6,   z: 4,   gr: 4,  },
   ]
 };
 
-const x = [], y = [], z = [];
+originalTestData.data.sort(function(a, b) {
+  return a.gr - b.gr;
+});
+
+const x = [], y = [], z = [], gr = [];
 originalTestData.data.forEach(item => {
   x.push(item.x);
   y.push(item.y);
   z.push(item.z);
+  gr.push(item.gr);
 });
-const data =  { x, y, z };
+const data =  { x, y, z, gr };
+const opts = {
+  colorMap: "Category10",
+};
 //=========================================
 // Simple Test Data - SETUP END
+
 
 // Small File Sample Data - SETUP BEGIN
 //=========================================
@@ -41,8 +50,7 @@ iris_data.data.forEach(item => {
   ix.push(item['petal length']);
   iy.push(item['petal width']);
   iz.push(item['sepal length']);
-  mSize.push(item['sepal width']*2);
-  item['class']=="Iris-setosa"?mCol.push('red'):item['class']=="Iris-versicolor"?mCol.push('green'):mCol.push('blue');
+  mSize.push(item['petal length']*2);
   mClass.push(item['class']);
 });
 const iData = { x: ix, y: iy, z: iz, gr: mClass };
@@ -51,17 +59,22 @@ const iris_options = {
   title: "Iris Dataset",
   marker: {
     size: mSize,
-    color: mCol,
     opacity: 0.8,
   },
+  extent: { width: 700, height: 500 },
+  camera: {
+    eye: {x: 1.4812613804078045, y: 1.985359929383866, z: 1.453572100630214},
+    up: {x: 0, y: 0, z: 1},
+  },
+  colorMap: "Category10",
 };
 //=========================================
 // Small File Sample Data - SETUP END
 
+
 // Numeric Chem File Data - SETUP BEGIN
 //=========================================
 import numericchemdata from './testdata/chem';
-console.log(numericchemdata);
 const cx = [], cy = [], cz = [], cSize = [], cCol = [], cGroup = [];
 numericchemdata.data.forEach(item => {
   cx.push(item['Temperature']);
@@ -82,6 +95,7 @@ const cData_options = {
 //=========================================
 // Numeric Chem File Data - SETUP END
 
+
 const stories = storiesOf('Scatter3D', module);
 stories.addDecorator(withKnobs);
 
@@ -90,6 +104,7 @@ stories
   .add('...with small data', () => (
     <Scatter3D
       data = { data }
+      options = { opts }
     />
   ))
   .add('...with file data', () => (

@@ -62,9 +62,9 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
   return api.views
     .sendRequestViewUpdate(view, data)
     .then((res) => {
-      console.log(res.data);
+      //console.log(res.data);
       dispatch(receiveViewUpdateRemote(res.data));
-      console.log(res.data);
+      //console.log(res.data);
       // dispatch(updateMainDataset(json));
       dispatch(datasetActions.addDatasetView(view.id, res.data));
     })

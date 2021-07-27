@@ -8,6 +8,7 @@ import RegressionView from './Regression';
 import ClassificationView from './Classification';
 import PeriodicTableView from './PeriodicTable';
 import PieView from './Pie';
+import Scatter3DView from './Scatter3D';
 
 const config = [
   // visualizations
@@ -101,12 +102,41 @@ const config = [
     component: PieView,
     settings: {
       bins: 5,
-      // mappings: {
-      //   n: 'hist',
-      //   bins: 'binEdges',
-      // },
+      options: {
+        colorMap: 'Category20c',
+        extent: {
+          width: 0,
+          height: 0,
+        },
+
+      }
     },
   },
+  {
+    type: 'scatter3D',
+    name: 'Scatter3D',
+    category: 'Analysis',
+    component: Scatter3DView,
+    settings: {
+      method: "Manual",
+      options: {
+        axisTitles: [],
+        marker: {
+          size: 2,
+          color: 'red',
+          opacity: 0.8,
+        },
+        colorMap: 'Category20c',
+        extent: { width: 450, height: 450 },
+        camera: {
+          eye: {x: 1.25, y: 1.25, z: 1.25},
+          up: {x: 0, y: 0, z: 1},
+          center: {x: 0, y: 0, z: 0},
+        },
+      }
+    },
+  },
+
 
   // machine learning
   {

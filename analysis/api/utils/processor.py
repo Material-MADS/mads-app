@@ -4,9 +4,9 @@ from .clustering import get_clusters
 from .regression import get_regression
 from .classification import get_classification
 from .pie import get_pie
+from .scatter3D import get_scatter3D
 
 import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,8 @@ processor_map = {
     'regression': get_regression,
     'classification': get_classification,
     'pie': get_pie,
+    'scatter3D': get_scatter3D,
 }
-
 
 def process_view(data):
     logger.info(data['view']['type'])

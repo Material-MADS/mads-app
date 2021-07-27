@@ -23,13 +23,13 @@ const originalTestData = {
   Spain: 29,
 };
 
-const dimensions = [];
-const values = [];
+const countries = [];
+const scores = [];
 for (let key in originalTestData) {
-  dimensions.push(key);
-  values.push(originalTestData[key]);
+  countries.push(key);
+  scores.push(originalTestData[key]);
 }
-const data =  { dimensions, values }
+const data =  { countries, scores }
 //=========================================
 // Simple Test Data - SETUP END
 
@@ -85,21 +85,26 @@ stories
   .add('...empty', () => <PieChart />)
   .add('...with small data', () => (
     <PieChart
-      data={data}
+      data = {data}
+      mappings={{ dimensions: 'countries', values: 'scores' }}
+      options = {{title: "Scores per Country"}}
     />
   ))
   .add('...with file data', () => (
     <PieChart
        data = {sgData}
+       options = {{title: "The composition of all categories in the column of SpaceGroup in small sample Material Data"}}
     />
   ))
   .add('...with bigger file data', () => (
     <PieChart
        data = {bsgData}
+       options = {{title: "The composition of all categories in the column of SpaceGroup in larger sample Material Data"}}
     />
   ))
   .add('...with numerical chem data', () => (
     <PieChart
        data = {cData}
+       options = {{title: "The composition of 10 categories in the column of CH4-Conversion% in sample Material Data"}}
     />
   ));

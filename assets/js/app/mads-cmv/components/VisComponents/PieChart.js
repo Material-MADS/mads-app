@@ -2,25 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
-import { Category10 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Greys9 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
-import { Category20c_20 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Plasma256 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
-const Category10_10 = Category10.Category10_10;
+import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 // Dev and Debug declarations
-window.Bokeh = Bokeh;
+// window.Bokeh = Bokeh;
 
 const defaultOptions = {
   title: "Pie Chart",
-  selectionColor: "orange",
-  nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: undefined, height: 400 },
   x_range: [-1.0, 1.0],
   y_range: [-1.0, 1.0],
-  pieColors: [],
+  colorMap: 'Category20c',
 };
 
 function createEmptyChart(options) {
@@ -28,17 +20,18 @@ function createEmptyChart(options) {
   const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
 
   const fig = Bokeh.Plotting.figure({
-    title: params.title || defaultOptions.title,
     tools,
     toolbar_location: "right",
-    selectionColor: params.selectionColor || defaultOptions.nonselectionColor,
-    nonselectionColor: params.nonselectionColor || defaultOptions.nonselectionColor,
     width: params.extent.width || defaultOptions.extent.width,
     height: params.extent.height || defaultOptions.extent.height,
     x_range: params.x_range || defaultOptions.x_range,
     y_range: params.y_range || defaultOptions.y_range,
-    pieColors: [] || defaultOptions.pieColors,
   });
+
+  fig.title.text = params.title || defaultOptions.title; //title object must be set separately or it will become a string (bokeh bug)
+  //fig.title.text_color = "red";
+  //fig.title.text_font_size = "40px";
+  //fig.title.text_font = "Times New Roman";
 
   return fig;
 }
@@ -64,33 +57,66 @@ export default function PieChart({
   const [mainFigure, setMainFigure] = useState(null);
   let cds = null;
   let selectedIndicesInternal = [];
+  let internalData = data;
+  let internalOptions = options;
+
+  useEffect(() => {
+    if(internalData.resetRequest){
+      internalOptions.title = undefined;
+      delete internalData.resetRequest;
+    }
+  }, [internalData])
 
   const createChart = async () => {
-    const fig = createEmptyChart(options);
+    const fig = createEmptyChart(internalOptions);
     setMainFigure(fig);
 
-    const { dimension, values } = mappings;
+    internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
+    const { dimensions, values } = mappings;
 
-    if(data.dimensions){
-      const sum = Bokeh.LinAlg.sum(data.values);
-      const angles = data.values.map((v) => {
+    if(internalData[values] && internalData[values].length > 256){
+      fig.title.text_color = "red";
+      fig.title.text = "Your target column includes way too many categories (" + internalData[values].length + "), No Pie Chart drawn!";
+      internalData = {};
+    }
+
+    if(internalData[dimensions]){
+      const sum = Bokeh.LinAlg.sum(internalData[values]);
+      const angles = internalData[values].map((v) => {
         return (v / sum) * 2 * Math.PI;
       });
-      const percentage = data.values.map((v) => { return ((v / sum) * 100).toFixed(1); });
+
+      const percentage = internalData[values].map((v) => { return ((v / sum) * 100).toFixed(1); });
 
       let colors = [];
+      var cm = (allPal[(internalOptions.colorMap + angles.length)] != undefined) ? allPal[(internalOptions.colorMap + angles.length)] : allPal[(internalOptions.colorMap + '_' + angles.length)];
       if(angles.length <= 20){
-        colors = Category20c_20.slice(0, angles.length);
+        if(cm != undefined){
+          colors = cm.slice(0, angles.length);
+        }
+        else{
+          colors = allPal[(defaultOptions.colorMap + '_' + angles.length)];
+          internalOptions.colorMap = defaultOptions.colorMap;
+        }
       }
-      else if(angles.length > 20 && angles.length < 256){
-        const step = Math.floor(256/angles.length);
-        for(let i = 0; i < angles.length; i++) {
-          colors.push(Plasma256[i*step]);
-        };
+      else{
+        if(allPal[(internalOptions.colorMap + '256')] != undefined){
+          cm = allPal[(internalOptions.colorMap + '256')];
+        }
+        else{
+          cm = allPal.Magma256;
+          internalOptions.colorMap = 'Magma';
+        }
+        if(angles.length > 20 && angles.length < 256){
+          const step = Math.floor(256/angles.length);
+          for(let i = 0; i < angles.length; i++) {
+            colors.push(cm[i*step]);
+          };
+        }
+        else{ colors = cm; }
       }
-      else{ colors = Plasma256; }
 
-      const { indices } = data;
+      const { indices } = internalData;
       if (indices) {
         for (let i = 0; i < indices.length; i++) {
           colorTags.forEach((colorTag) => {
@@ -103,7 +129,9 @@ export default function PieChart({
 
       const sData = new Bokeh.ColumnDataSource({
         data: {
-          ...data,
+          ...{ dimensions, values, ...internalData },
+          dimensions: internalData[dimensions],
+          values: internalData[values],
           angles,
           colors,
           percentage,
@@ -113,13 +141,9 @@ export default function PieChart({
 
       // setup callback
       if (cds) {
-        //console.log('set event handler');
         cds.connect(cds.selected.change, () => {
-          // this.handleSelectedIndicesChange();
           const indices = sData.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
-            //console.log('selected', indices);
-            // console.log('selected', selectedIndicesInternal);
             selectedIndicesInternal = [...indices];
             if (onSelectedIndicesChange) {
               onSelectedIndicesChange(indices);
@@ -128,7 +152,7 @@ export default function PieChart({
         });
       }
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@dimensions: @values (@percentage %)' }));
+      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@' + dimensions + ': @' + values + ' (@percentage %)' }));
 
       fig.wedge({
         x: 0,
@@ -140,7 +164,7 @@ export default function PieChart({
         end_angle: { expr: new Bokeh.CumSum({ field: "angles" }) },
         line_color: "white",
         fill_color: { field: "colors" },
-        legend: "dimensions",
+        legend: dimensions,
         source: sData,
       });
 
@@ -171,18 +195,14 @@ export default function PieChart({
   };
 
   useEffect(() => {
-    // console.info('mount');
     createChart();
     return () => {
-      // console.info('unmount');
       clearChart();
     };
   }, [data, mappings, options, colorTags]);
 
   const prevCds = usePrevious(cds);
   useEffect(() => {
-    console.log('selection changed ...', selectedIndices);
-    console.log(prevCds);
     if (selectedIndices.length === 0) {
       if (prevCds) {
         prevCds.selected.indices = [];
@@ -206,9 +226,7 @@ PieChart.propTypes = {
   mappings: PropTypes.shape({}),
   options: PropTypes.shape({
     title: PropTypes.string,
-    selectionColor: PropTypes.string,
-    nonselectionColor: PropTypes.string,
-    pieColors: PropTypes.arrayOf(PropTypes.string),
+    colorMap: PropTypes.string,
     x_range: PropTypes.arrayOf(PropTypes.number),
     y_range: PropTypes.arrayOf(PropTypes.number),
     extent: PropTypes.shape({
@@ -223,7 +241,10 @@ PieChart.propTypes = {
 
 PieChart.defaultProps = {
   data: {},
-  mappings: {},
+  mappings: {
+    dimensions: 'dimensions',
+    values: 'values',
+  },
   options: defaultOptions,
   colorTags: [],
   selectedIndices: [],

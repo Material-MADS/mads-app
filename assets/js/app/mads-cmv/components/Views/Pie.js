@@ -8,11 +8,7 @@ import _ from 'lodash';
 
 import convertExtentValues from './FormUtils';
 
-const settings = {
-  options: { title: 'Pie' },
-};
-
-class PieView extends withCommandInterface(PieChart, PieForm, settings) {
+class PieView extends withCommandInterface(PieChart, PieForm) {
 
   handleSelectionChange = (indices) => {
     const { dataset, updateSelection } = this.props;
@@ -40,27 +36,32 @@ class PieView extends withCommandInterface(PieChart, PieForm, settings) {
       newValues.filter = filteredFilters;
     }
 
-    if (!newValues.targetColumns[0] || !newValues.bins) {
+    if (newValues.targetColumn == undefined || newValues.bins == undefined) {
       return;
     }
 
     // extract data
     const df = new DataFrame(dataset.main.data);
-    const s = df.get(newValues.targetColumns[0]);
+    const s = df.get(newValues.targetColumn);
     const data = s.values.toArray();
 
     newValues = convertExtentValues(newValues);
+    newValues['options']['title'] = 'The composition of ' + ((newValues.bins == 0 || typeof data[0] == 'string') ? 'all' : newValues.bins) + ' categories in the column of "' + newValues.targetColumn + '"';
 
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
   mapData = (dataset) => {
-
     const { id } = this.props;
     let data = {};
 
     if (dataset[id]) {
-      data = dataset[id];
+      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn)) {
+        data = dataset[id];
+      }
+      else{
+        data["resetRequest"] = true;
+      }
     }
 
     return data;

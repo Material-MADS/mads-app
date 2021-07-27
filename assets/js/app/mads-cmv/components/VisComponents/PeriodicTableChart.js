@@ -2,15 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import * as Bokeh from "@bokeh/bokehjs";
 import _, { transform } from 'lodash';
-import { Category10 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Greys9 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
-import { Category20c_20 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Plasma256 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
+import $ from "jquery";
 import { Series, DataFrame } from 'pandas-js';
-
-const Category10_10 = Category10.Category10_10;
 
 
 // Import Periodic Table Data and Prepare Periodic Table
@@ -57,39 +50,30 @@ const tooltip = [
 
 const defaultOptions = {
   title: "Periodic Table (omitting LA and AC Series)",
-  selectionColor: "orange",
-  nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: 1000, height: 450 },
   x_range: groups,
   y_range: periods.reverse(),
-  ptColors: [],
 };
 
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  const tools = "wheel_zoom,tap,box_select,reset,save";
+  const tools = "tap,box_select";
 
   const fig = Bokeh.Plotting.figure({
-    title: params.title || defaultOptions.title,
     tools,
     toolbar_location: null,
-    selectionColor: params.selectionColor || defaultOptions.nonselectionColor,
-    nonselectionColor:
-      params.nonselectionColor || defaultOptions.nonselectionColor,
     width: params.extent.width || defaultOptions.extent.width,
     height: params.extent.height || defaultOptions.extent.height,
     x_range: params.x_range || defaultOptions.x_range,
     y_range: params.y_range || defaultOptions.y_range,
-    ptColors: [] || defaultOptions.ptColors,
   });
 
-  //Perhaps not that useful tool
-  fig.toolbar.active_scroll = fig.select_one(Bokeh.WheelZoomTool);
+  fig.title.text = params.title || defaultOptions.title; //title object must be set separately or it will become a string (bokeh bug)
 
   return fig;
 }
 
-export default function PeriodicTable({ data, options }) {
+export default function PeriodicTable() {
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
@@ -97,11 +81,7 @@ export default function PeriodicTable({ data, options }) {
 
   const createChart = async () => {
     const data = new Bokeh.ColumnDataSource({ data: { ...dataset,}, });
-    const fig = createEmptyChart(options);
-
-    // Debugging ----------------------
-    window.f = fig;
-    // --------------------------------
+    const fig = createEmptyChart({});
 
     const r = fig.rect({
       x: { field: 'group' },
@@ -193,6 +173,8 @@ export default function PeriodicTable({ data, options }) {
     fig.legend.location = "top_center";
 
     views = await Bokeh.Plotting.show(fig, rootNode.current);
+    $(rootNode.current).parent().parent().find(".ui.mini.icon.button").eq(1).hide();
+
     return cds;
   };
 
@@ -211,10 +193,8 @@ export default function PeriodicTable({ data, options }) {
   };
 
   useEffect(() => {
-    // console.info('mount');
     createChart();
     return () => {
-      // console.info('unmount');
       clearChart();
     };
   });
@@ -227,12 +207,8 @@ export default function PeriodicTable({ data, options }) {
 }
 
 PeriodicTable.propTypes = {
-  data: PropTypes.shape({}),
   options: PropTypes.shape({
     title: PropTypes.string,
-    selectionColor: PropTypes.string,
-    nonselectionColor: PropTypes.string,
-    ptColors: PropTypes.arrayOf(PropTypes.string),
     x_range: PropTypes.arrayOf(PropTypes.string),
     y_range: PropTypes.arrayOf(PropTypes.string),
     extent: PropTypes.shape({
@@ -243,6 +219,5 @@ PeriodicTable.propTypes = {
 };
 
 PeriodicTable.defaultProps = {
-  data: {},
   options: defaultOptions,
 };

@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
 import $ from "jquery";
 
 import * as Bokeh from "@bokeh/bokehjs";
-import { Category10 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Greys9 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
+import Plotly from 'plotly.js-dist-min';
 
-import Plotly from 'plotly.js-dist';
-
-import { Category20c_20 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { Plasma256 } from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import { hover } from "reactcss";
-
-const Category10_10 = Category10.Category10_10;
+import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 // Dev and Debug declarations
 window.Bokeh = Bokeh;
@@ -22,15 +14,16 @@ window.Plotly = Plotly;
 
 const defaultOptions = {
   title: "Scatter 3D",
-  selectionColor: "orange",
-  nonselectionColor: `#${Greys9[3].toString(16)}`,
-  extent: { width: 600, height: 600 },
-  x_range: [],
-  y_range: [],
-  z_range: [],
+  extent: { width: 450, height: 450 },
+  camera: {
+    eye: {x: 1.25, y: 1.25, z: 1.25},
+    up: {x: 0, y: 0, z: 1},
+    center: {x: 0, y: 0, z: 0},
+  },
+  axisRange: {x: [], y: [], z: []},
   axisTitles: ['x', 'y', 'z'],
   margin: { l: 10, r: 10, b: 10, t: 30, pad: 2 },
-  modebar: { orientation: 'v'},
+  modebar: { orientation: 'h'},
   displayModeBar: 'hover',
   modeBarButtonsToRemove: [], //[toImage, zoom3d, pan3d, orbitRotation, tableRotation, resetCameraDefault3d, resetCameraLastSave3d, hoverClosest3d]
   displaylogo: true,
@@ -39,33 +32,77 @@ const defaultOptions = {
     color: 'red',
     opacity: 0.8,
   },
+  colorMap: 'Category20c',
 };
+
 
 function getChartData(data, options) {
   const params = Object.assign({}, defaultOptions, options, _.isEmpty(data)?{marker: {size: 1, color: 'transparent', opacity: 0}}:{});
   data = _.isEmpty(data)?{x: [0.1, 0.2], y: [0.1, 0.2], z: [0.1, 0.2]}:data;
+  let uniques = [... new Set(data.gr)];
+  var cm = (allPal[(params.colorMap + uniques.length)] != undefined) ? allPal[(params.colorMap + uniques.length)] : allPal[(params.colorMap + '_' + uniques.length)];
 
-  var cData = [
-    {
-      type: 'scatter3d',
-      mode: 'markers',
-      transforms: [{ type: "groupby", groups: data.gr }],
-      x: data.x,
-      y: data.y,
-      z: data.z,
-      marker: {
-        size: params.marker.size,
-        color: params.marker.color,
-        opacity: params.marker.opacity,
-      },
+  let colors = [];
+  if(uniques.length <= 20){
+    if(cm != undefined){
+      colors = cm.slice(0, uniques.length);
+    }
+    else{
+      colors = allPal[(defaultOptions.colorMap + '_' + uniques.length)];
+      params.colorMap = defaultOptions.colorMap;
+    }
+  }
+  else if(uniques.length > 20 && uniques.length <= 256){
+    if(allPal[(params.colorMap + '256')] != undefined){
+      cm = allPal[(params.colorMap + '256')];
+    }
+    else{
+      cm = allPal.Magma256;
+      internalOptions.colorMap = 'Magma';
+    }
+    if(uniques.length > 20 && uniques.length < 256){
+      const step = Math.floor(256/angles.length);
+      for(let i = 0; i < uniques.length; i++) {
+        colors.push(cm[i*step]);
+      };
+    }
+    else{ colors = cm; }
+  }
+  else{
+    colors = undefined;
+  }
+
+  let styles = undefined;
+  if(colors !== undefined){
+    styles = uniques.map((grCatName, index) => { return {target: grCatName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
+  }
+
+  var cData = [{
+    type: 'scatter3d',
+    mode: 'markers',
+    transforms: [{
+      type: "groupby",
+      groups: data.gr,
+      styles: styles,
+    }],
+    x: data.x,
+    y: data.y,
+    z: data.z,
+    marker: {
+      size: params.marker.size,
+      color: params.marker.color,
+      opacity: params.marker.opacity,
     },
-  ];
+  },];
 
   return cData;
 }
 
+
 function getChartLayout(data, options) {
   const params = Object.assign({}, defaultOptions, options);
+
+  console.warn("getChartLayout options:", options);
 
   var cLayout = {
     autosize: true,
@@ -78,17 +115,22 @@ function getChartLayout(data, options) {
       xaxis: {
         title: params.axisTitles[0],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.x_range,
+        range: params.axisRange.x,
       },
       yaxis: {
         title: params.axisTitles[1],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.y_range,
+        range: params.axisRange.y,
       },
       zaxis: {
         title: params.axisTitles[2],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.z_range,
+        range: params.axisRange.z,
+      },
+      camera: {
+        eye: params.camera.eye,
+        up: params.camera.up,
+        center: params.camera.center,
       },
     },
     modebar: {
@@ -105,6 +147,7 @@ function getChartLayout(data, options) {
 
   return cLayout;
 }
+
 
 function getChartConfig(options) {
   const params = Object.assign({}, defaultOptions, options);
@@ -131,61 +174,44 @@ export default function Scatter3D({
   mappings,
   options,
   colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
 }) {
   const rootNode = useRef(null);
-  // let views = null;
-  // const [mainFigure, setMainFigure] = useState(null);
-  // let cds = null;
-  // let selectedIndicesInternal = [];
+  let internalData = data;
+  let internalOptions = options;
+
+  useEffect(() => {
+    if(internalData.resetRequest){
+      internalOptions.title = undefined;
+      delete internalData.resetRequest;
+    }
+  }, [internalData])
 
   const createChart = async () => {
-    var sData = getChartData(data, options);
-    var layout = getChartLayout(data, options);
-    var config = getChartConfig(options);
+    internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
+    let sData = getChartData(internalData, internalOptions);
+    let layout = getChartLayout(internalData, internalOptions);
+    let config = getChartConfig(internalOptions);
 
-    $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="http://thanjavurmedicalcollege1970batch.com/images/loader.gif" width="300" />');
+console.warn("internalOptions:", internalOptions);
+
+    $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="https://miro.medium.com/max/700/1*CsJ05WEGfunYMLGfsT2sXA.gif" width="300" />');
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
-          $( "#Scatter3DLoadingGif" ).remove();
-        });
+        $( "#Scatter3DLoadingGif" ).remove();
+      });
+
+      (rootNode.current).on('plotly_relayout', function(internalData){ internalOptions["camera"] = (rootNode.current).layout.scene.camera});
     });
   };
 
-  const clearChart = () => {
-    // if (Array.isArray(views)) {
-    //   console.warn("array!!!", views);
-    // } else {
-    //   const v = views;
-    //   if (v) {
-    //     v.remove();
-    //   }
-    // }
-
-    // setMainFigure(null);
-    // views = null;
-  };
+  const clearChart = () => { };
 
   useEffect(() => {
-    // console.info('mount');
     createChart();
     return () => {
-      // console.info('unmount');
       clearChart();
     };
   }, [data, mappings, options, colorTags]);
-
-  // const prevCds = usePrevious(cds);
-  // useEffect(() => {
-  //   console.log('selection changed ...', selectedIndices);
-  //   console.log(prevCds);
-  //   if (selectedIndices.length === 0) {
-  //     if (prevCds) {
-  //       prevCds.selected.indices = [];
-  //     }
-  //   }
-  // }, [selectedIndices]);
 
   return (
     <div id="container">
@@ -195,27 +221,29 @@ export default function Scatter3D({
 }
 
 Scatter3D.propTypes = {
-  data: PropTypes.shape({
-    // TODO: values: PropTypes.arrayOf(PropTypes.number),
-    // dimensions: PropTypes.arrayOf(PropTypes.string),
-    // indices: PropTypes.arrayOf(PropTypes.array),
+  data: PropTypes.shape({ }),
+  mappings: PropTypes.shape({
+    x: PropTypes.string,
+    y: PropTypes.string,
+    z: PropTypes.string,
+    color: PropTypes.string,
   }),
-  mappings: PropTypes.shape({}),
   options: PropTypes.shape({
     title: PropTypes.string,
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
     chartColors: PropTypes.arrayOf(PropTypes.string),
-    x_range: PropTypes.arrayOf(PropTypes.number),
-    y_range: PropTypes.arrayOf(PropTypes.number),
+    axisRange: PropTypes.shape({
+      x: PropTypes.array,
+      y: PropTypes.array,
+      z: PropTypes.array,
+    }),
     extent: PropTypes.shape({
       width: PropTypes.number,
       height: PropTypes.number.isRequired,
     }),
   }),
   colorTags: PropTypes.arrayOf(PropTypes.object),
-  selectedIndices: PropTypes.arrayOf(PropTypes.number),
-  onSelectedIndicesChange: PropTypes.func,
 };
 
 Scatter3D.defaultProps = {
@@ -223,6 +251,4 @@ Scatter3D.defaultProps = {
   mappings: {},
   options: defaultOptions,
   colorTags: [],
-  selectedIndices: [],
-  onSelectedIndicesChange: undefined,
 };

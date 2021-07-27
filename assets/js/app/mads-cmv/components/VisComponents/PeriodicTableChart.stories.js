@@ -1,8 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
 import { withKnobs, array } from '@storybook/addon-knobs';
-import _ from 'lodash';
 
 import PeriodicTable from './PeriodicTableChart';
 
