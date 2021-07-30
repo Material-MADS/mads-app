@@ -20,7 +20,6 @@ const defaultOptions = {
     up: {x: 0, y: 0, z: 1},
     center: {x: 0, y: 0, z: 0},
   },
-  axisRange: {x: [], y: [], z: []},
   axisTitles: ['x', 'y', 'z'],
   margin: { l: 10, r: 10, b: 10, t: 30, pad: 2 },
   modebar: { orientation: 'h'},
@@ -102,7 +101,17 @@ function getChartData(data, options) {
 function getChartLayout(data, options) {
   const params = Object.assign({}, defaultOptions, options);
 
-  console.warn("getChartLayout options:", options);
+  var cadsDataSource = $("#mads-cmv > div > div.ui.borderless.menu > div:nth-child(1) > div > div.divider.text");
+  var currentDataSourceName = (cadsDataSource.length > 0) ? cadsDataSource.text() : "";
+  if(currentDataSourceName != "" && params.axisTitles[0] && params.axisTitles[1] && params.axisTitles[2]){
+    if(data.evr && params.axisTitles[0] == "PC 1"){
+      (data.evr).forEach((item, index) => params.axisTitles[index]+=(" (" + ((item*100).toFixed(2)) + "%)"));
+      params.title = "3D PCA plot from " + data.noOfFeat + " features <br>of the " + currentDataSourceName + " dataset";
+    }
+    else{
+      params.title = "<span style='color:blue;'>" + params.axisTitles[0] + "<span style='color:red;'> vs. </span>" + params.axisTitles[1] + "<span style='color:red;'> vs. </span>" + params.axisTitles[2] + "<br><span style='color:purple; font-weight: bold;'>(by " + currentDataSourceName + ")</span></span>";
+    }
+  }
 
   var cLayout = {
     autosize: true,
@@ -115,17 +124,14 @@ function getChartLayout(data, options) {
       xaxis: {
         title: params.axisTitles[0],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.axisRange.x,
       },
       yaxis: {
         title: params.axisTitles[1],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.axisRange.y,
       },
       zaxis: {
         title: params.axisTitles[2],
         nticks: _.isEmpty(data)?10:undefined,
-        range: params.axisRange.z,
       },
       camera: {
         eye: params.camera.eye,
@@ -192,8 +198,6 @@ export default function Scatter3D({
     let layout = getChartLayout(internalData, internalOptions);
     let config = getChartConfig(internalOptions);
 
-console.warn("internalOptions:", internalOptions);
-
     $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="https://miro.medium.com/max/700/1*CsJ05WEGfunYMLGfsT2sXA.gif" width="300" />');
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
@@ -233,11 +237,6 @@ Scatter3D.propTypes = {
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
     chartColors: PropTypes.arrayOf(PropTypes.string),
-    axisRange: PropTypes.shape({
-      x: PropTypes.array,
-      y: PropTypes.array,
-      z: PropTypes.array,
-    }),
     extent: PropTypes.shape({
       width: PropTypes.number,
       height: PropTypes.number.isRequired,

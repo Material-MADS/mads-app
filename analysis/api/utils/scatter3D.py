@@ -51,5 +51,6 @@ def get_scatter3D(data):
         data['data']['y'] = pca_y
         data['data']['z'] = pca_z
         data['data']['evr'] = evr
+        data['data']['noOfFeat'] = len(feature_columns)
 
     return data['data']
