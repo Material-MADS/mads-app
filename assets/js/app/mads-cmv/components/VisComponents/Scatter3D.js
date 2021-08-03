@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
 import _ from 'lodash';
 import $ from "jquery";
@@ -11,6 +12,7 @@ import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 // Dev and Debug declarations
 window.Bokeh = Bokeh;
 window.Plotly = Plotly;
+
 
 const defaultOptions = {
   title: "Scatter 3D",
@@ -33,7 +35,6 @@ const defaultOptions = {
   },
   colorMap: 'Category20c',
 };
-
 
 function getChartData(data, options) {
   const params = Object.assign({}, defaultOptions, options, _.isEmpty(data)?{marker: {size: 1, color: 'transparent', opacity: 0}}:{});
@@ -98,14 +99,13 @@ function getChartData(data, options) {
 }
 
 
-function getChartLayout(data, options) {
+function getChartLayout(data, options, currentDataSourceName) {
   const params = Object.assign({}, defaultOptions, options);
 
-  var cadsDataSource = $("#mads-cmv > div > div.ui.borderless.menu > div:nth-child(1) > div > div.divider.text");
-  var currentDataSourceName = (cadsDataSource.length > 0) ? cadsDataSource.text() : "";
-  if(currentDataSourceName != "" && params.axisTitles[0] && params.axisTitles[1] && params.axisTitles[2]){
-    if(data.evr && params.axisTitles[0] == "PC 1"){
-      (data.evr).forEach((item, index) => params.axisTitles[index]+=(" (" + ((item*100).toFixed(2)) + "%)"));
+  var axisTitleAddon = ["", "", ""];
+  if(currentDataSourceName != "" && data.x){
+    if(data.evr && params.axisTitles[0].substr(0,4) == "PC 1"){
+      (data.evr).forEach((item, index) => axisTitleAddon[index]=(" (" + ((item*100).toFixed(2)) + "%)"));
       params.title = "3D PCA plot from " + data.noOfFeat + " features <br>of the " + currentDataSourceName + " dataset";
     }
     else{
@@ -122,15 +122,15 @@ function getChartLayout(data, options) {
     },
     scene: {
       xaxis: {
-        title: params.axisTitles[0],
+        title: params.axisTitles[0] + axisTitleAddon[0],
         nticks: _.isEmpty(data)?10:undefined,
       },
       yaxis: {
-        title: params.axisTitles[1],
+        title: params.axisTitles[1] + axisTitleAddon[1],
         nticks: _.isEmpty(data)?10:undefined,
       },
       zaxis: {
-        title: params.axisTitles[2],
+        title: params.axisTitles[2] + axisTitleAddon[2],
         nticks: _.isEmpty(data)?10:undefined,
       },
       camera: {
@@ -185,9 +185,13 @@ export default function Scatter3D({
   let internalData = data;
   let internalOptions = options;
 
+  const availableDataSources = useSelector((state) => state.dataSources);
+  const currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
+
   useEffect(() => {
     if(internalData.resetRequest){
-      internalOptions.title = undefined;
+      internalOptions.title = "Scatter 3D";
+      internalOptions.axisTitles = ['x', 'y', 'z'];
       delete internalData.resetRequest;
     }
   }, [internalData])
@@ -195,7 +199,7 @@ export default function Scatter3D({
   const createChart = async () => {
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(internalData, internalOptions);
-    let layout = getChartLayout(internalData, internalOptions);
+    let layout = getChartLayout(internalData, internalOptions, currentDataSourceName);
     let config = getChartConfig(internalOptions);
 
     $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="https://miro.medium.com/max/700/1*CsJ05WEGfunYMLGfsT2sXA.gif" width="300" />');

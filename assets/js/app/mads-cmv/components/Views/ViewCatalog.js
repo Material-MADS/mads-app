@@ -120,7 +120,7 @@ const config = [
     settings: {
       method: "Manual",
       options: {
-        axisTitles: [],
+        axisTitles: ['x', 'y', 'z'],
         marker: {
           size: 2,
           color: 'red',
