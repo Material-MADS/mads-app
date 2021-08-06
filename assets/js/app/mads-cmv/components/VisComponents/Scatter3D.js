@@ -122,15 +122,15 @@ function getChartLayout(data, options, currentDataSourceName) {
     },
     scene: {
       xaxis: {
-        title: params.axisTitles[0] + axisTitleAddon[0],
+        title: (params.axisTitles[0] || defaultOptions.axisTitles[0]) + axisTitleAddon[0],
         nticks: _.isEmpty(data)?10:undefined,
       },
       yaxis: {
-        title: params.axisTitles[1] + axisTitleAddon[1],
+        title: (params.axisTitles[1] || defaultOptions.axisTitles[1]) + axisTitleAddon[1],
         nticks: _.isEmpty(data)?10:undefined,
       },
       zaxis: {
-        title: params.axisTitles[2] + axisTitleAddon[2],
+        title: (params.axisTitles[2] || defaultOptions.axisTitles[2]) + axisTitleAddon[2],
         nticks: _.isEmpty(data)?10:undefined,
       },
       camera: {
@@ -185,8 +185,11 @@ export default function Scatter3D({
   let internalData = data;
   let internalOptions = options;
 
-  const availableDataSources = useSelector((state) => state.dataSources);
-  const currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
+  let currentDataSourceName = "";
+  try {
+    const availableDataSources = useSelector((state) => state.dataSources);
+    currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
+  } catch (error) { /*Just ignore and move on*/ }
 
   useEffect(() => {
     if(internalData.resetRequest){
