@@ -1,34 +1,25 @@
 'use strict';
 
 module.exports = {
-  roots: [
-    'assets/js',
-  ],
+  roots: ['assets/js'],
   transform: {
     '^.+\\.jsx$': 'babel-jest',
     '^.+\\.js$': 'babel-jest',
   },
   moduleNameMapper: {
-    '^.+\\.(css|scss)$': 'identity-obj-proxy',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      '<rootDir>/__mocks__/fileMock.js',
+    '\\.(css|less)$': '<rootDir>/__mocks__/styleMock.js',
+    '^babel-runtime(.*)$': '@babel/runtime/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/*',
+    '/node_modules/(?!@bokeh/bokehjs/)/',
     'staticfiles',
   ],
-  modulePaths: [
-    'assets',
-    'assets/js',
-    'assets/js/app',
-  ],
-  snapshotSerializers: [
-    'enzyme-to-json/serializer',
-  ],
-  setupFiles: [
-    './jest-setup.js',
-  ],
-  collectCoverageFrom: [
-    'assets/js/**/*.{js,jsx}',
-  ],
+  modulePaths: ['assets', 'assets/js', 'assets/js/app'],
+  snapshotSerializers: ['enzyme-to-json/serializer'],
+  setupFiles: ['./jest-setup.js'],
+  collectCoverageFrom: ['assets/js/**/*.{js,jsx}'],
   coveragePathIgnorePatterns: [
     'assets/js/store.js',
     'assets/js/index.js',
@@ -37,13 +28,12 @@ module.exports = {
     'assets/js/pages/*',
     'assets/js/tests/*',
   ],
+  testEnvironment: 'jsdom',
   testPathIgnorePatterns: [
     'staticfiles/',
     // '<root>/staticfiles/',
   ],
-  unmockedModulePathPatterns: [
-    'staticfiles/',
-  ],
+  unmockedModulePathPatterns: ['staticfiles/'],
 
   coverageThreshold: {
     global: {
