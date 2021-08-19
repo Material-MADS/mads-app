@@ -183,6 +183,33 @@ const RegressionForm = (props) => {
           />
         </Form.Field>
 
+        <hr></hr>
+
+        <h3>Cross validation:</h3>
+        {/* <Form.Field>
+          <label>Cross validation:</label>
+          <Field
+            name="clossValidationEnabled"
+            component={SemCheckbox}
+            toggle
+            onChange={(e, data) => {
+              console.log(data);
+              setColorDisabled(!data);
+            }}
+          />
+        </Form.Field> */}
+
+        <Form.Field>
+          <label>Number of folds</label>
+          <Field
+            name="folds"
+            component="input"
+            type="number"
+            placeholder="folds"
+            parse={(value) => Number(value)}
+          />
+        </Form.Field>
+
         <hr />
         <Form.Group widths="equal">
           <label>Extent:</label>
@@ -203,16 +230,6 @@ const RegressionForm = (props) => {
           />
         </Form.Group>
 
-        {/* <Form.Field>
-          <label>Number of bins</label>
-          <Field
-            name="bins"
-            component="input"
-            type="number"
-            placeholder="bins"
-            parse={value => Number(value)}
-          />
-        </Form.Field> */}
         <Button
           color="blue"
           disabled={invalid || !isLoggedIn}
