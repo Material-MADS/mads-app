@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { withKnobs, array } from '@storybook/addon-knobs';
 import _ from 'lodash';
 
 import PieChart from './PieChart';
@@ -79,7 +78,6 @@ numericchemdata.data.forEach(item => {
 // Numeric Chem File Data - SETUP END
 
 const stories = storiesOf('PieChart', module);
-stories.addDecorator(withKnobs);
 
 stories
   .add('...empty', () => <PieChart />)

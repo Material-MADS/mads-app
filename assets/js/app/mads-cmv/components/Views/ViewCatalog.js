@@ -9,6 +9,7 @@ import ClassificationView from './Classification';
 import PeriodicTableView from './PeriodicTable';
 import PieView from './Pie';
 import Scatter3DView from './Scatter3D';
+import Molecule3DView from './Molecule3D';
 
 const config = [
   // visualizations
@@ -50,6 +51,24 @@ const config = [
       // options: { extent: { width: 800, height: 400 } },
     },
   },
+  {
+    type: 'molecule3D',
+    name: 'Molecule3D',
+    category: 'Visualization',
+    component: Molecule3DView,
+    settings: {
+      options: {
+        extent: {
+          width: 500,
+          height: 400,
+        },
+        bkgCol: "#ffffff",
+        txtCol: "#000000",
+      },
+    },
+  },
+
+
   // data processing
 
   // analysis

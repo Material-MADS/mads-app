@@ -4,18 +4,19 @@
 
 {% block title %}Analysis - {{PROJECT_NAME_ABBR}}{% endblock %}
 
+{% comment %} {% load static %}
+<link rel=”stylesheet” href="{% static 'vendors/chem-doodle/ChemDoodleWeb.css' %}" />
+<script src="{% static 'vendors/chem-doodle/ChemDoodleWeb.js' %}"></script> {% endcomment %}
+
 {% block local_style %}
 <style>
+  .workspace {
+    {% comment %} background-color: lightblue; {% endcomment %}
+  }
 
-.workspace {
-  {% comment %} background-color: lightblue; {% endcomment %}
-}
-
-#mads-cmv {
-  padding: 10px;
-
-}
-
+  #mads-cmv {
+    padding: 10px;
+  }
 </style>
 {% endblock %}
 
@@ -32,6 +33,5 @@
 <script>
   window.workspaceId = '{{object.id}}';
 </script>
-
 
 {% endblock %}

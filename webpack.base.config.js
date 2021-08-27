@@ -120,6 +120,7 @@ module.exports = [
       extensions: ['.js', '.jsx'],
       alias: {
         'babel-runtime': '@babel/runtime',
+        '@vendors': path.resolve(__dirname, 'assets/vendors/'),
       },
     },
   },

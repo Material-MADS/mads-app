@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import { withKnobs, array } from '@storybook/addon-knobs';
 import _ from 'lodash';
 
 import Scatter3D from './Scatter3D';
@@ -97,7 +96,6 @@ const cData_options = {
 
 
 const stories = storiesOf('Scatter3D', module);
-stories.addDecorator(withKnobs);
 
 stories
   .add('...empty', () => <Scatter3D />)
