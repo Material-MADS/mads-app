@@ -16,6 +16,7 @@ import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 // Dev and Debug declarations
 window.Bokeh = Bokeh;
 
+
 const molDrawTypes = [
   "Ball and Stick",
   "Stick",
@@ -213,10 +214,13 @@ export default function Molecule3D({
         molecule = ChemDoodle.readMOL(internalData.data, 1);
       } catch (error) {
         internalData.name = "MOL DATA ERROR";
+        internalOptions.bkgCol = defaultOptions.bkgCol;
+        internalOptions.txtCol = defaultOptions.txtCol;
+        internalData.formula = "";
+        internalData.url = "";
+        overlayDiv.find("[name='cd-overlayTxt3']").text('This is not a proper molecule.');
         console.error("Something is wrong in the MOL string and cannot be read properly");
-        //console.error(error)
       }
-
 
       // Setup overlay info text based on data
       if(internalData.name){overlayDiv.find("[name='cd-overlayTxt1']").text(internalData.name); }
