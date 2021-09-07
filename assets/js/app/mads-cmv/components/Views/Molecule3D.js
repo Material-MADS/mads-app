@@ -28,6 +28,7 @@ class Molecule3DView extends withCommandInterface(Molecule3D, Molecule3DForm) {
       name: newValues.molName,
       formula: newValues.molForm,
       url: newValues.molUrl,
+      smiles: newValues.molSmiles,
       data: newValues.molStr,
     };
     newValues["data"] = data;

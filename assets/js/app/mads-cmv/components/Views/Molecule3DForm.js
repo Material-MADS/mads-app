@@ -49,13 +49,21 @@ const Molecule3DForm = (props) => {
           props.change('molUrl', ("http://www.chemspider.com/Chemical-Structure." + csIdStr + ".html"));
 
           // Call ChemSpider REST API for common name
-          const url = "https://api.rsc.org/compounds/v1/records/" + csIdStr + "/details?fields=CommonName";
+          const url = "https://api.rsc.org/compounds/v1/records/batch";
           const options = {
-            method: "GET",
+            method: "POST",
             headers: {
               "apikey": "xSkGq4YGgRp5Bx2pPfbRhwgCq9rSz9pM",
-              "Accept": "application/json"
+              "Accept": "application/json",
+              "Content-Type": "application/json"
             },
+            body: JSON.stringify({
+              "recordIds": [csIdStr],
+              "fields": [
+                "CommonName",
+                "SMILES"
+              ]
+            }),
           };
 
           fetch(url, options).then(
@@ -72,16 +80,20 @@ const Molecule3DForm = (props) => {
               });
             })
             .then(data => {
-              props.change('molName', (JSON.parse(data)).commonName);
+              // console.warn(data);
+              props.change('molName', (JSON.parse(data)).records[0].commonName);
+              props.change('molSmiles', encodeURIComponent((JSON.parse(data)).records[0].smiles));
             })
             .catch(err => {
               console.error(err);
               props.change('molName', "");
+              props.change('molSmiles', "");
             });
         }
         else{
           props.change('molUrl', "");
           props.change('molName', "");
+          props.change('molSmiles', "");
         }
       }
     };
@@ -163,6 +175,11 @@ const Molecule3DForm = (props) => {
           placeholder="https://www.molinstincts.com/sdf-mol-file/water-sdf-CT1000292221.html"
         />
       </Form.Field>
+
+      <input
+        type="hidden"
+        name="molSmiles"
+      />
 
       <hr />
       <Form.Group widths="equal">

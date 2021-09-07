@@ -10,6 +10,7 @@ import * as Bokeh from "@bokeh/bokehjs";
 import '@vendors/chem-doodle/ChemDoodleWeb.css';
 import ChemDoodle from "@vendors/chem-doodle/ChemDoodleWeb";
 import iconImg from './images/webLinkIcon.png';
+import scanIconImg from './images/scanLogo.png';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
@@ -83,6 +84,7 @@ export default function Molecule3D({
     var containerDiv = $(rootNode.current).append("<div class='cd-container'></div>");
     var overlayDiv = containerDiv.append(`
       <div class='cd-overlay' style='width: ` + (parseInt(internalOptions.extent.width)-20) + `px;'>
+        <a name='cd-overlayLink0' href='#' target='_blank' style="float: left;"><img name='cd-overlayImg0' src='` + scanIconImg + `' width='30px' style='display: none;' /></a>
         <span name='cd-overlayTxt1'>` + internalOptions.title + `</span>
         </br>
         <span name='cd-overlayTxt2' style='font-size: 14px;'></span>
@@ -224,6 +226,10 @@ export default function Molecule3D({
 
       // Setup overlay info text based on data
       if(internalData.name){overlayDiv.find("[name='cd-overlayTxt1']").text(internalData.name); }
+      if(internalData.smiles){
+        const scanLink = "http://133.87.242.94:3000/map-search?q=" + internalData.smiles + "&search-target=smiles&sort=id&order=asc&page=1";
+        overlayDiv.find("[name='cd-overlayLink0']").attr("href", scanLink); overlayDiv.find("[name='cd-overlayImg0']").show();
+      }
       if(internalData.formula){ overlayDiv.find("[name='cd-overlayTxt2']").html(internalData.formula.replace(/(\d+)/g, '<sub>$1</sub>')); }
       if(internalData.url){ overlayDiv.find("[name='cd-overlayLink1']").attr("href", internalData.url); overlayDiv.find("[name='cd-overlayImg1']").show(); }
       if(molecule && molecule.atoms){
@@ -272,6 +278,8 @@ export default function Molecule3D({
       }
 
       molViewer3d.styles.text_font_size = 24;
+
+
 
       // UNMANAGED CHEMDOODLE CONFIGS
       // -------------------------------------------------------------
@@ -386,6 +394,7 @@ Molecule3D.propTypes = {
     name: PropTypes.string,
     formula: PropTypes.string,
     url: PropTypes.string,
+    smiles: PropTypes.string,
     data: PropTypes.string,
   }),
   // mappings: PropTypes.shape({
