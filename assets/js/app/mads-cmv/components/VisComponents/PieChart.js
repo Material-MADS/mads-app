@@ -4,8 +4,6 @@ import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
-// Dev and Debug declarations
-// window.Bokeh = Bokeh;
 
 const defaultOptions = {
   title: "Pie Chart",

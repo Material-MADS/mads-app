@@ -16,7 +16,7 @@ import 'imports-loader?imports=default|jquery|$!datatables.net';
 
 import './app/css/default.css';
 
-$(document).ready(() => {
+$(() => {
   // fix menu when passed
   $('.masthead').visibility({
     once: false,

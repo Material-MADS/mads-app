@@ -10,6 +10,9 @@ import PeriodicTableView from './PeriodicTable';
 import PieView from './Pie';
 import Scatter3DView from './Scatter3D';
 import Molecule3DView from './Molecule3D';
+import HeatMapView from './HeatMap';
+import ImageViewView from './ImageView';
+
 
 const config = [
   // visualizations
@@ -64,6 +67,27 @@ const config = [
         },
         bkgCol: "#ffffff",
         txtCol: "#000000",
+      },
+    },
+  },
+  {
+    type: 'imageView',
+    name: 'ImageView',
+    category: 'Visualization',
+    component: ImageViewView,
+    settings: {
+      options: {
+        title: "",
+        caption: "",
+        extent: {
+          width: 300,
+          height: 300,
+        },
+        border: {
+          color: "black",
+          style: "solid",
+          size: 2,
+        }
       },
     },
   },
@@ -127,7 +151,6 @@ const config = [
           width: 0,
           height: 0,
         },
-
       }
     },
   },
@@ -151,6 +174,22 @@ const config = [
           eye: {x: 1.25, y: 1.25, z: 1.25},
           up: {x: 0, y: 0, z: 1},
           center: {x: 0, y: 0, z: 0},
+        },
+      }
+    },
+  },
+  {
+    type: 'heatmap',
+    name: 'HeatMap',
+    category: 'Analysis',
+    component: HeatMapView,
+    settings: {
+      // bins: 5,
+      options: {
+        colorMap: 'Category10',
+        extent: {
+          width: undefined,
+          height: 0,
         },
       }
     },

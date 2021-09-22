@@ -10,7 +10,7 @@ import $ from 'jquery';
 import 'semantic-ui-css';
 import 'imports-loader?imports=default|jquery|$!datatables.net';
 
-$(document).ready(() => {
+$(() => {
   // fix menu when passed
   $('.masthead').visibility({
     once: false,

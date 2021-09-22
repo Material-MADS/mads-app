@@ -53,7 +53,7 @@ const store = createStore(
   /* preloadedState, */ composeEnhancers(applyMiddleware(...middleware))
 );
 
-$(document).ready(() => {
+$(() => {
   const target = document.getElementById('mads-cmv');
   if (target) {
     render(
