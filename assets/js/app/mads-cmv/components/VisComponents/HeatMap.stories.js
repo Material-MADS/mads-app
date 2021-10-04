@@ -1,7 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import _ from 'lodash';
 
 import HeatMap from './HeatMap';
 
@@ -57,30 +56,35 @@ const osOptions = {
 // Small File Sample Data - SETUP BEGIN
 //=========================================
 import sampleFileData from './testdata/unemployment';
-let sfData = { xData: [], yData: [], heatVal: [] };
-let sfXRange = [], yRange = [];
-sampleFileData.forEach((row, index) => {
-  delete row.Annual;
-  sfXRange.push(row.Year + '');
-  for (let col in row) {
-    if(col != 'Year'){
-      sfData.xData.push(row.Year + '');
-      sfData.yData.push(col + '');
-      sfData.heatVal.push(row[col]);
-      if(index == 0){ yRange.push(col); }
+export function getHeatMapDataPack(){
+  let data = { xData: [], yData: [], heatVal: [] };
+  let sfXRange = [], yRange = [];
+  sampleFileData.forEach((row, index) => {
+    delete row.Annual;
+    sfXRange.push(row.Year + '');
+    for (let col in row) {
+      if(col != 'Year'){
+        data.xData.push(row.Year + '');
+        data.yData.push(col + '');
+        data.heatVal.push(row[col]);
+        if(index == 0){ yRange.push(col); }
+      }
     }
-  }
-});
+  });
 
-const sfOptions = {
-  x_range: sfXRange,
-  y_range: yRange.reverse(),
-  toolTipTitles: ['Date', 'Rate'],
-  heatValUnit: '%%',
-  colors: ["#75968f", "#a5bab7", "#c9d9d3", "#e2e2e2", "#dfccce", "#ddb7b1", "#cc7878", "#933b41", "#550b1d"],
-  extent: { width: 900, height: 400 },
-  title: `US Unemployment (${sfXRange[0]} - ${sfXRange[sfXRange.length-1]})`
-};
+  const options = {
+    x_range: sfXRange,
+    y_range: yRange.reverse(),
+    toolTipTitles: ['Date', 'Rate'],
+    heatValUnit: '%%',
+    colors: ["#75968f", "#a5bab7", "#c9d9d3", "#e2e2e2", "#dfccce", "#ddb7b1", "#cc7878", "#933b41", "#550b1d"],
+    extent: { width: 900, height: 400 },
+    title: `US Unemployment (${sfXRange[0]} - ${sfXRange[sfXRange.length-1]})`
+  };
+
+  return { data, options };
+}
+const SFSDPack = getHeatMapDataPack(sampleFileData);
 //=========================================
 // Small File Sample Data - SETUP END
 
@@ -121,8 +125,8 @@ stories
   ))
   .add('...with file data', () => (
     <HeatMap
-      data = { sfData }
-      options = { sfOptions }
+      data = { SFSDPack.data }
+      options = { SFSDPack.options }
     />
   ))
   .add('...with chem data', () => (

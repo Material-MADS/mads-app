@@ -71,13 +71,23 @@ const data2 = {
   ],
 };
 
-const histData01 = {
-  n: [1, 10, 63, 190, 262, 272, 149, 43, 7, 3],
-  bins: [
-    11.9497944, 19.68161764, 27.41344088, 35.14526412, 42.87708736, 50.6089106,
-    58.34073384, 66.07255707, 73.80438031, 81.53620355, 89.26802679,
-  ],
-};
+
+export function getQuadBarDataPack(){
+  const data = {
+    n: [1, 10, 63, 190, 262, 272, 149, 43, 7, 3],
+    bins: [
+      11.9497944, 19.68161764, 27.41344088, 35.14526412, 42.87708736, 50.6089106,
+      58.34073384, 66.07255707, 73.80438031, 81.53620355, 89.26802679,
+    ],
+  };
+
+  const mappings = { n: 'n', bins: 'bins' };
+
+  return {data, mappings};
+}
+const QBDPack = getQuadBarDataPack();
+
+
 
 const stories = storiesOf('QuadBarChart', module);
 
@@ -85,10 +95,8 @@ stories
   .add('empty bar chart', () => <QuadBarChart />)
   .add('with simple data', () => (
     <QuadBarChart
-      data={histData01}
-      mappings={{ n: 'n', bins: 'bins' }}
-      // options={{ legendLocation: 'top_left' }}
-      // onSelectedIndicesChange={action('selected_change')}
+      data = { QBDPack.data }
+      mappings = { QBDPack.mappings }
     />
   ))
   .add('with simple data color tags', () => (

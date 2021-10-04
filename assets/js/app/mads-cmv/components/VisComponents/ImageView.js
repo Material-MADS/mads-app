@@ -122,7 +122,7 @@ ImageView.propTypes = {
 };
 
 ImageView.defaultProps = {
-  data: "",
+  data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],

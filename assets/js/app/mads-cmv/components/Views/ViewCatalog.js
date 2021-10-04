@@ -12,15 +12,54 @@ import Scatter3DView from './Scatter3D';
 import Molecule3DView from './Molecule3D';
 import HeatMapView from './HeatMap';
 import ImageViewView from './ImageView';
+import CustomView from './Custom';
 
 
 const config = [
+  // Custom
+  // {
+  //   type: 'custom',
+  //   name: 'Custom',
+  //   category: 'Custom',
+  //   version: 1.0,
+  //   devStage: "Stable Release",
+  //   component: CustomView,
+  //   settings: {
+  //     options: {
+  //       extent: {
+  //         width: 400,
+  //         height: 400,
+  //       },
+  //     },
+  //   },
+  // },
+
+
+
   // visualizations
   {
     type: 'scatter',
     name: 'Scatter',
     category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
     component: ScatterView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+      },
+    },
+  },
+  {
+    type: 'bar',
+    name: 'Bar',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: BarView,
     settings: {
       options: {
         extent: {
@@ -34,6 +73,8 @@ const config = [
     type: 'table',
     name: 'Table',
     category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
     component: TableView,
     settings: {
       columns: [],
@@ -46,6 +87,8 @@ const config = [
     type: 'periodic-table',
     name: 'Periodic Table',
     category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
     component: PeriodicTableView,
     settings: {
       columns: [],
@@ -58,6 +101,8 @@ const config = [
     type: 'molecule3D',
     name: 'Molecule3D',
     category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
     component: Molecule3DView,
     settings: {
       options: {
@@ -74,6 +119,8 @@ const config = [
     type: 'imageView',
     name: 'ImageView',
     category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
     component: ImageViewView,
     settings: {
       options: {
@@ -100,6 +147,8 @@ const config = [
     type: 'histogram',
     name: 'Histogram',
     category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
     component: HistView,
     settings: {
       bins: 10,
@@ -113,6 +162,8 @@ const config = [
     type: 'clustering',
     name: 'Clustering',
     category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
     component: ClusteringView,
     settings: {
       method: 'KMeans',
@@ -128,6 +179,8 @@ const config = [
     type: 'feature-importance',
     name: 'Feature Importance (RF)',
     category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
     component: RFFeatureView,
     settings: {
       featureColumns: [],
@@ -142,9 +195,11 @@ const config = [
     type: 'pie',
     name: 'Pie',
     category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
     component: PieView,
     settings: {
-      bins: 5,
+      bins: 7,
       options: {
         colorMap: 'Category20c',
         extent: {
@@ -158,6 +213,8 @@ const config = [
     type: 'scatter3D',
     name: 'Scatter3D',
     category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
     component: Scatter3DView,
     settings: {
       method: "Manual",
@@ -182,6 +239,8 @@ const config = [
     type: 'heatmap',
     name: 'HeatMap',
     category: 'Analysis',
+    version: 0.9,
+    devStage: "Beta",
     component: HeatMapView,
     settings: {
       // bins: 5,
@@ -201,6 +260,8 @@ const config = [
     type: 'regression',
     name: 'Regression',
     category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
     component: RegressionView,
     settings: {
       method: 'Linear',
@@ -214,6 +275,8 @@ const config = [
     type: 'classification',
     name: 'Classification',
     category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
     component: ClassificationView,
     settings: {
       method: 'RandomForest',

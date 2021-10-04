@@ -7,28 +7,35 @@ import PieChart from './PieChart';
 
 // Simple Test Data - SETUP BEGIN
 //=========================================
-const originalTestData = {
-  'United States': 157,
-  'United Kingdom': 93,
-  Japan: 89,
-  China: 63,
-  Germany: 44,
-  India: 42,
-  Italy: 40,
-  Australia: 35,
-  Brazil: 32,
-  France: 31,
-  Taiwan: 31,
-  Spain: 29,
-};
+export function getPieDataPack(){
+  const originalTestData = {
+    'United States': 157,
+    'United Kingdom': 93,
+    Japan: 89,
+    China: 63,
+    Germany: 44,
+    India: 42,
+    Italy: 40,
+    Australia: 35,
+    Brazil: 32,
+    France: 31,
+    Taiwan: 31,
+    Spain: 29,
+  };
 
-const countries = [];
-const scores = [];
-for (let key in originalTestData) {
-  countries.push(key);
-  scores.push(originalTestData[key]);
+  const countries = [];
+  const scores = [];
+  for (let key in originalTestData) {
+    countries.push(key);
+    scores.push(originalTestData[key]);
+  }
+  const data =  { countries, scores }
+  const mappings = { dimensions: 'countries', values: 'scores' };
+  const options = {title: "Scores per Country"};
+
+  return {data, mappings, options};
 }
-const data =  { countries, scores }
+const STDPack = getPieDataPack();
 //=========================================
 // Simple Test Data - SETUP END
 
@@ -83,9 +90,9 @@ stories
   .add('...empty', () => <PieChart />)
   .add('...with small data', () => (
     <PieChart
-      data = {data}
-      mappings={{ dimensions: 'countries', values: 'scores' }}
-      options = {{title: "Scores per Country"}}
+      data = {STDPack.data}
+      mappings={STDPack.mappings}
+      options = {STDPack.options}
     />
   ))
   .add('...with file data', () => (

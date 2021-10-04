@@ -65,6 +65,7 @@ export default function HeatMap({
   let internalData = data;
   let internalOptions = options;
 
+
   useEffect(() => {
     if(internalData.resetRequest){
       internalOptions = defaultOptions;

@@ -44,29 +44,34 @@ const opts = {
 // Small File Sample Data - SETUP BEGIN
 //=========================================
 import iris_data from './testdata/iris';
-const ix = [], iy = [], iz = [], mSize = [], mCol = [], mClass = [];
-iris_data.data.forEach(item => {
-  ix.push(item['petal length']);
-  iy.push(item['petal width']);
-  iz.push(item['sepal length']);
-  mSize.push(item['petal length']*2);
-  mClass.push(item['class']);
-});
-const iData = { x: ix, y: iy, z: iz, gr: mClass };
-const iris_options = {
-  axisTitles: ['Petal Length (cm)', 'Petal Width (cm)', 'Sepal Length (cm)'],
-  title: "Iris Dataset",
-  marker: {
-    size: mSize,
-    opacity: 0.8,
-  },
-  extent: { width: 700, height: 500 },
-  camera: {
-    eye: {x: 1.4812613804078045, y: 1.985359929383866, z: 1.453572100630214},
-    up: {x: 0, y: 0, z: 1},
-  },
-  colorMap: "Category10",
-};
+export function getScatter3DDataPack(){
+  const ix = [], iy = [], iz = [], mSize = [], mCol = [], mClass = [];
+  iris_data.data.forEach(item => {
+    ix.push(item['petal length']);
+    iy.push(item['petal width']);
+    iz.push(item['sepal length']);
+    mSize.push(item['petal length']*2);
+    mClass.push(item['class']);
+  });
+  const data = { x: ix, y: iy, z: iz, gr: mClass };
+  const options = {
+    axisTitles: ['Petal Length (cm)', 'Petal Width (cm)', 'Sepal Length (cm)'],
+    title: "Iris Dataset",
+    marker: {
+      size: mSize,
+      opacity: 0.8,
+    },
+    extent: { width: 700, height: 500 },
+    camera: {
+      eye: {x: 1.4812613804078045, y: 1.985359929383866, z: 1.453572100630214},
+      up: {x: 0, y: 0, z: 1},
+    },
+    colorMap: "Category10",
+  };
+
+  return {data, options};
+}
+const S3DDPack = getScatter3DDataPack();
 //=========================================
 // Small File Sample Data - SETUP END
 
@@ -107,8 +112,8 @@ stories
   ))
   .add('...with file data', () => (
     <Scatter3D
-       data = { iData }
-       options = { iris_options }
+       data = { S3DDPack.data }
+       options = { S3DDPack.options }
     />
   ))
   .add('...with Large numerical chem data', () => (

@@ -48,21 +48,27 @@ const localFileOptions = {
 
 // Large Online File Data - SETUP BEGIN
 //=========================================
-const onlineFileData = {
-  data: "https://wallpaperbat.com/img/308354-scientific-chemistry-wallpaper-hd-desktop-very-wonderful.jpg",
-}
+export function getImageViewDataPack(){
+  const data = {
+    data: "https://wallpaperbat.com/img/308354-scientific-chemistry-wallpaper-hd-desktop-very-wonderful.jpg",
+  }
 
-const onlineFileOptions = {
-  title: "Chemistry Lab Image",
-  caption: "This one would find in a chemical lab",
-  border: {
-    color: "blue",
-    style: "double",
-    size: 3
-  },
-  pad: 5,
-  extent: { width: 500, },
-};
+  const options = {
+    title: "Chemistry Lab Image",
+    caption: "This one would find in a chemical lab",
+    border: {
+      color: "blue",
+      style: "double",
+      size: 3
+    },
+    pad: 5,
+    extent: { width: 500, },
+  };
+
+  return {data, options};
+}
+const IVDPack = getImageViewDataPack();
+//=========================================
 //=========================================
 // Large Online File Data - SETUP END
 
@@ -85,7 +91,7 @@ stories
   ))
   .add('...with large online file image', () => (
     <ImageView
-      data = { onlineFileData }
-      options = { onlineFileOptions }
+      data = { IVDPack.data }
+      options = { IVDPack.options }
     />
   ));

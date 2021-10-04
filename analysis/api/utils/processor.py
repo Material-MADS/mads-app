@@ -6,6 +6,7 @@ from .classification import get_classification
 from .pie import get_pie
 from .scatter3D import get_scatter3D
 from .heatmap import get_hm
+from .custom import get_custom
 
 import logging
 
@@ -20,6 +21,7 @@ processor_map = {
     'pie': get_pie,
     'scatter3D': get_scatter3D,
     'heatmap': get_hm,
+    'custom': get_custom,
 }
 
 def process_view(data):

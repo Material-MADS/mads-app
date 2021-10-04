@@ -9,6 +9,18 @@ import data from './testdata/data-ex';
 import bData from './testdata/response-ex';
 import data2 from './testdata/chem';
 
+export function getScatterDataPack(){
+  const data = bData.data;
+  const mappings = {
+    x: 'Formation Energy (eV)',
+    y: 'Band Gap (eV)',
+  };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, onSelectedIndicesChange};
+}
+const SDPack = getScatterDataPack();
+
 const stories = storiesOf('Scatter', module);
 
 stories
@@ -25,12 +37,9 @@ stories
   ))
   .add('with bigger data', () => (
     <Scatter
-      data={bData.data}
-      mappings={{
-        x: 'Formation Energy (eV)',
-        y: 'Band Gap (eV)',
-      }}
-      onSelectedIndicesChange={action('selected_change')}
+      data = { SDPack.data }
+      mappings = { SDPack.mappings }
+      onSelectedIndicesChange = { SDPack.onSelectedIndicesChange }
     />
   ))
   .add('with selection', () => (

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Dropdown, Form } from 'semantic-ui-react';
+import DevStage from '../FormFields/DevStage';
 
 import { DepGraph } from 'dependency-graph';
 
@@ -113,6 +114,8 @@ function withCommandInterface(
         isLoggedIn,
         showMessage,
         actions,
+        version,
+        devStage
       } = this.props;
 
       //console.log(this.props);
@@ -152,6 +155,7 @@ function withCommandInterface(
             onClick={() => this.onDeleteClick(id)}
           />
           <Button size="mini" icon="configure" onClick={() => this.show()} />
+          {(devStage == "Beta") && (<DevStage stage={devStage} /> )}
           <WrappedComponent
             data={data || []}
             {...settings}
