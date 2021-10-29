@@ -1,22 +1,26 @@
 import React, { Component, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-// import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
-import _ from 'lodash';
 import gPalette from 'google-palette';
 
 import * as Bokeh from '@bokeh/bokehjs';
-import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 
-const Category10_10 = Category10.Category10_10;
+import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
+
+// import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+// import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+
+// const Category10_10 = Category10.Category10_10;
+
 
 const defaultOptions = {
-  title: 'Bar chart',
+  title: 'Bar Chart',
   selectionColor: 'orange',
-  nonselectionColor: `#${Greys9[3].toString(16)}`,
+  // nonselectionColor: `#${Greys9[3].toString(16)}`,
+  nonselectionColor: '#' + allPal['Greys9'][3].toString(16),
   extent: { width: 400, height: 400 },
+  colorMap: 'Category10',
   barColors: [],
 };
 
@@ -24,11 +28,8 @@ function createEmptyChart(options) {
   const params = { ...defaultOptions, ...options };
   const tools = 'pan,crosshair,tap,reset,save,hover';
 
-  // options.x_range = fruits;
-  // options.y_range = [0, 10];
-
   const fig = Bokeh.Plotting.figure({
-    title: params.title || 'Bar chart',
+    title: params.title,
     tools,
     x_range: params.x_range || undefined,
     y_range: params.y_range || undefined,
@@ -59,15 +60,14 @@ function BokehBarChart({
   selectedIndices,
   onSelectedIndicesChange,
 }) {
-  console.warn('initial sels', selectedIndices);
+
   const rootNode = useRef(null);
   const [mainFigure, setMainFigure] = useState(null);
 
   let cds = null;
   let views = null;
   let selectedIndicesInternal = [];
-
-  const color = `#${Category10_10[0].toString(16)}`;
+  const internalOptions = Object.assign({}, defaultOptions, options);
 
   const createChart = async () => {
     const { dimension, measures } = mappings;
@@ -118,7 +118,6 @@ function BokehBarChart({
         const ppal = new Array(l).fill(pal[i]);
 
         if (options.barColors) {
-          console.log(options.barColors);
           options.barColors.forEach((c, i) => {
             ppal[i] = c;
           });
@@ -127,9 +126,7 @@ function BokehBarChart({
         // vbar(fig, {
         fig.vbar({
           x: { field: dimension, transform: xv },
-          // x: xv.v_compute(fruits),
           top: { field: m },
-          // top: [1, 2, 3, 4, 5, 6],
           width: barWidth,
           source: ds,
           color: ppal,
@@ -143,24 +140,13 @@ function BokehBarChart({
       // TODO: recover tool selection
     }
 
-    // console.trace();
-    // this.views = Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
     views = await Bokeh.Plotting.show(fig, rootNode.current);
     return cds;
   };
 
   const clearChart = () => {
-    // console.info('clear chart');
-    // if (this.views) {
-    //   Object.keys(this.views).forEach((key) => {
-    //     const v = this.views[key];
-    //     // v.model.disconnect_signals();
-    //     v.remove();
-    //     // console.log('remove', key);
-    //   });
-    // }
     if (Array.isArray(views)) {
-      console.warn('array!!!', views);
+      // console.warn('array!!!', views);
     } else {
       const v = views;
       if (v) {
@@ -184,16 +170,9 @@ function BokehBarChart({
   const prevCds = usePrevious(cds);
 
   useEffect(() => {
-    console.log('selection changed ...', selectedIndices);
-    console.log(prevCds);
-
-    console.log(selectedIndices, selectedIndicesInternal);
-
-    // if (selectedIndices.length === 0) {
-    //   if (prevCds) {
-    //     prevCds.selected.indices = [];
-    //   }
-    // }
+    // console.log('selection changed ...', selectedIndices);
+    // console.log(prevCds);
+    // console.log(selectedIndices, selectedIndicesInternal);
   }, [selectedIndices]);
 
   return (

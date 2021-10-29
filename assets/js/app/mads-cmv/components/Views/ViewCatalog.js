@@ -66,6 +66,7 @@ const config = [
           width: 400,
           height: 400,
         },
+        colorMap: 'Category10',
       },
     },
   },
