@@ -9,7 +9,8 @@ const SemanticDropdown = ({
   placeholder,
   meta: { touched, error, warning },
   ...props
-}) => (
+}) =>{
+  return (
   <Form.Field>
     <Dropdown
       fluid
@@ -20,16 +21,17 @@ const SemanticDropdown = ({
       onBlur={() => input.onBlur()}
       value={input.value}
       onChange={(param, data) => input.onChange(data.value)}
-      error={touched && error && true}
+      error={true && error && warning}
       label={label}
       placeholder={placeholder}
     />
+    {warning && <div>{JSON.stringify(error)}</div>}
     <Form.Field>
-      {touched &&
-        ((error && <i style={{ color: '#9f3a38' }}>{error}</i>) ||
-          (warning && <i style={{ color: '#9f3a38' }}>{warning}</i>))}
+      {true &&
+        ((error && <i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i>) ||
+          (warning && <i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i>))}
     </Form.Field>
   </Form.Field>
-);
+)};
 
 export default SemanticDropdown;

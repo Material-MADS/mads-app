@@ -1,11 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react'; // eslint-disable-line import/no-extraneous-dependencies
 import { action } from '@storybook/addon-actions'; // eslint-disable-line import/no-extraneous-dependencies
-import {
-  // eslint-disable-line import/no-extraneous-dependencies
-  withKnobs,
-  array,
-} from '@storybook/addon-knobs';
 
 import Scatter from './Scatter';
 import ColorTag from '../../models/ColorTag';
@@ -14,8 +9,19 @@ import data from './testdata/data-ex';
 import bData from './testdata/response-ex';
 import data2 from './testdata/chem';
 
+export function getScatterDataPack(){
+  const data = bData.data;
+  const mappings = {
+    x: 'Formation Energy (eV)',
+    y: 'Band Gap (eV)',
+  };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, onSelectedIndicesChange};
+}
+const SDPack = getScatterDataPack();
+
 const stories = storiesOf('Scatter', module);
-stories.addDecorator(withKnobs);
 
 stories
   .add('empty scatter plot', () => <Scatter />)
@@ -31,12 +37,9 @@ stories
   ))
   .add('with bigger data', () => (
     <Scatter
-      data={bData.data}
-      mappings={{
-        x: 'Formation Energy (eV)',
-        y: 'Band Gap (eV)',
-      }}
-      onSelectedIndicesChange={action('selected_change')}
+      data = { SDPack.data }
+      mappings = { SDPack.mappings }
+      onSelectedIndicesChange = { SDPack.onSelectedIndicesChange }
     />
   ))
   .add('with selection', () => (
@@ -99,26 +102,26 @@ stories
       }}
       options={{ extent: { width: 400, height: 400 } }}
     />
-  ))
-  .add('with knobs', () => {
-    // const defaultExtent = { width: 400, height: 400 };
-    // const groupId = 'GROUP-ID1';
-    // const extent = object('extent', defaultExtent);
-    // const width = number('width', 400);
-    // const height = number('height', 400);
+  ));
+// .add('with knobs', () => {
+//   // const defaultExtent = { width: 400, height: 400 };
+//   // const groupId = 'GROUP-ID1';
+//   // const extent = object('extent', defaultExtent);
+//   // const width = number('width', 400);
+//   // const height = number('height', 400);
 
-    const selections = array('selectedIndices', [0]).map(Number);
+//   const selections = array('selectedIndices', [0]).map(Number);
 
-    return (
-      <Scatter
-        data={bData.data}
-        mappings={{
-          x: 'Formation Energy (eV)',
-          y: 'Band Gap (eV)',
-        }}
-        // extent={{ width, height }}
-        selectedIndices={selections}
-        // onSelectedIndicesChange={action('selected_change')}
-      />
-    );
-  });
+//   return (
+//     <Scatter
+//       data={bData.data}
+//       mappings={{
+//         x: 'Formation Energy (eV)',
+//         y: 'Band Gap (eV)',
+//       }}
+//       // extent={{ width, height }}
+//       selectedIndices={selections}
+//       // onSelectedIndicesChange={action('selected_change')}
+//     />
+//   );
+// });

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Dropdown, Form } from 'semantic-ui-react';
+import DevStage from '../FormFields/DevStage';
 
 import { DepGraph } from 'dependency-graph';
 
@@ -45,8 +46,6 @@ function withCommandInterface(
         if (k === 'main') {
           return;
         }
-
-        console.log(k);
       });
 
       // window.DepGraph = DepGraph;
@@ -115,9 +114,11 @@ function withCommandInterface(
         isLoggedIn,
         showMessage,
         actions,
+        version,
+        devStage
       } = this.props;
 
-      console.log(this.props);
+      //console.log(this.props);
 
       const { main } = dataset;
 
@@ -144,7 +145,6 @@ function withCommandInterface(
 
         const s = new Set(filteredIndices);
         filteredIndices = Array.from(s);
-        // console.log(filteredIndices);
       }
 
       return (
@@ -155,6 +155,7 @@ function withCommandInterface(
             onClick={() => this.onDeleteClick(id)}
           />
           <Button size="mini" icon="configure" onClick={() => this.show()} />
+          {(devStage == "Beta") && (<DevStage stage={devStage} /> )}
           <WrappedComponent
             data={data || []}
             {...settings}
@@ -194,7 +195,6 @@ function withCommandInterface(
                 Cancel
               </Button>
               <Button positive content="Submit" onClick={this.onSubmitClick} />
-              {/* <Button positive content="Submit" onClick={this.onSubmitClick} /> */}
             </Modal.Actions>
           </Modal>
         </div>

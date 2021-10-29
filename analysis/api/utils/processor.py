@@ -3,9 +3,12 @@ from .feature_importance import get_feature_importance
 from .clustering import get_clusters
 from .regression import get_regression
 from .classification import get_classification
+from .pie import get_pie
+from .scatter3D import get_scatter3D
+from .heatmap import get_hm
+from .custom import get_custom
 
 import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +18,11 @@ processor_map = {
     'clustering': get_clusters,
     'regression': get_regression,
     'classification': get_classification,
+    'pie': get_pie,
+    'scatter3D': get_scatter3D,
+    'heatmap': get_hm,
+    'custom': get_custom,
 }
-
 
 def process_view(data):
     logger.info(data['view']['type'])

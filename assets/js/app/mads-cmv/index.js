@@ -11,10 +11,13 @@ import * as workspaceActions from './actions/workspace';
 import App from './containers/MadsApp';
 import * as reducers from './reducers';
 
+import generalSettings from '../../configSettings'
+
 import $ from 'jquery';
 
+
 const middleware = [thunk];
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && !generalSettings.reduxLoggingDisabled) {
   middleware.push(createLogger());
 }
 
@@ -50,7 +53,7 @@ const store = createStore(
   /* preloadedState, */ composeEnhancers(applyMiddleware(...middleware))
 );
 
-$(document).ready(() => {
+$(() => {
   const target = document.getElementById('mads-cmv');
   if (target) {
     render(

@@ -27,8 +27,8 @@ const SemCheckbox = ({
     />
     <Form.Field>
       {touched &&
-        ((error && <i style={{ color: '#9f3a38' }}>{error}</i>) ||
-          (warning && <i style={{ color: '#9f3a38' }}>{warning}</i>))}
+        ((error && <i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i>) ||
+          (warning && <i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i>))}
     </Form.Field>
   </Form.Field>
 );

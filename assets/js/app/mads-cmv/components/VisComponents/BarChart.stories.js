@@ -1,11 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react'; // eslint-disable-line import/no-extraneous-dependencies
 import { action } from '@storybook/addon-actions'; // eslint-disable-line import/no-extraneous-dependencies
-import {
-  // eslint-disable-line import/no-extraneous-dependencies
-  withKnobs,
-  // array,
-} from '@storybook/addon-knobs';
 
 import BarChart from './BarChart';
 // import ColorTag from '../../models/ColorTag';
@@ -13,12 +8,21 @@ import BarChart from './BarChart';
 // import data from './testdata/data-ex';
 // import bData from './testdata/response-ex';
 
-const data0 = {
-  fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
-  2015: [2, 1, 4, 3, 2, 4],
-  2016: [5, 3, 3, 2, 4, 6],
-  2017: [3, 2, 4, 4, 5, 3],
-};
+export function getBarChartDataPack(){
+  const data = {
+    fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
+    2015: [2, 1, 4, 3, 2, 4],
+    2016: [5, 3, 3, 2, 4, 6],
+    2017: [3, 2, 4, 4, 5, 3],
+  };
+
+  const mappings = { dimension: 'fruits', measures: ['2015', '2016', '2017'] };
+  const options = { legendLocation: 'top_left' };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, options, onSelectedIndicesChange};
+}
+const barChartDataPack = getBarChartDataPack();
 
 const data02 = {
   fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
@@ -54,27 +58,9 @@ const data1 = {
     'Support2-mol',
   ],
   importance: [
-    0.039,
-    0.071275,
-    0.112966,
-    0.093391,
-    0.111855,
-    0.117603,
-    0.088582,
-    0.09848,
-    0.098125,
-    0.023358,
-    0.031957,
-    0.005509,
-    0.007603,
-    0.031605,
-    0.028453,
-    0.001644,
-    0.001437,
-    0.01384,
-    0.020769,
-    0.002134,
-    0.000415,
+    0.039, 0.071275, 0.112966, 0.093391, 0.111855, 0.117603, 0.088582, 0.09848,
+    0.098125, 0.023358, 0.031957, 0.005509, 0.007603, 0.031605, 0.028453,
+    0.001644, 0.001437, 0.01384, 0.020769, 0.002134, 0.000415,
   ],
 };
 
@@ -93,37 +79,26 @@ const data2 = {
     'Support1-mol',
   ],
   importance: [
-    0.047685,
-    0.076804,
-    0.141382,
-    0.103445,
-    0.108693,
-    0.1314,
-    0.091595,
-    0.123338,
-    0.125366,
-    0.021953,
-    0.02834,
+    0.047685, 0.076804, 0.141382, 0.103445, 0.108693, 0.1314, 0.091595,
+    0.123338, 0.125366, 0.021953, 0.02834,
   ],
 };
 
 const stories = storiesOf('BarChart', module);
-stories.addDecorator(withKnobs);
 
 stories
   .add('empty bar chart', () => <BarChart />)
   .add('with simple data specified with x axis', () => (
     <BarChart
-      data={data0}
-      mappings={{ dimension: 'fruits', measures: ['2015', '2016', '2017'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
-      options={{ legendLocation: 'top_left' }}
-      onSelectedIndicesChange={action('selected_change')}
+      data = { barChartDataPack.data }
+      mappings = { barChartDataPack.mappings }
+      options = { barChartDataPack.options }
+      onSelectedIndicesChange = { barChartDataPack.onSelectedIndicesChange }
     />
   ))
   .add('with simple data specified with x axis (2 measures)', () => (
     <BarChart
-      data={data0}
+      data={barChartDataPack.data}
       mappings={{ dimension: 'fruits', measures: ['2015', '2016'] }}
       // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{ legendLocation: 'top_left' }}

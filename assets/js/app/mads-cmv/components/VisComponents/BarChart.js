@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 // import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
-import * as gPalette from 'google-palette';
+import gPalette from 'google-palette';
 
 import * as Bokeh from '@bokeh/bokehjs';
 import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
