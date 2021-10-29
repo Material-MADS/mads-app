@@ -8,12 +8,21 @@ import BarChart from './BarChart';
 // import data from './testdata/data-ex';
 // import bData from './testdata/response-ex';
 
-const data0 = {
-  fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
-  2015: [2, 1, 4, 3, 2, 4],
-  2016: [5, 3, 3, 2, 4, 6],
-  2017: [3, 2, 4, 4, 5, 3],
-};
+export function getBarChartDataPack(){
+  const data = {
+    fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
+    2015: [2, 1, 4, 3, 2, 4],
+    2016: [5, 3, 3, 2, 4, 6],
+    2017: [3, 2, 4, 4, 5, 3],
+  };
+
+  const mappings = { dimension: 'fruits', measures: ['2015', '2016', '2017'] };
+  const options = { legendLocation: 'top_left' };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, options, onSelectedIndicesChange};
+}
+const barChartDataPack = getBarChartDataPack();
 
 const data02 = {
   fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
@@ -81,16 +90,15 @@ stories
   .add('empty bar chart', () => <BarChart />)
   .add('with simple data specified with x axis', () => (
     <BarChart
-      data={data0}
-      mappings={{ dimension: 'fruits', measures: ['2015', '2016', '2017'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
-      options={{ legendLocation: 'top_left' }}
-      onSelectedIndicesChange={action('selected_change')}
+      data = { barChartDataPack.data }
+      mappings = { barChartDataPack.mappings }
+      options = { barChartDataPack.options }
+      onSelectedIndicesChange = { barChartDataPack.onSelectedIndicesChange }
     />
   ))
   .add('with simple data specified with x axis (2 measures)', () => (
     <BarChart
-      data={data0}
+      data={barChartDataPack.data}
       mappings={{ dimension: 'fruits', measures: ['2015', '2016'] }}
       // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{ legendLocation: 'top_left' }}

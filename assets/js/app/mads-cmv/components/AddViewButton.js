@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import config from './Views/ViewCatalog';
 import createView from './Views/factory';
 
+const custViews = config.filter((v) => v.category === 'Custom');
 const vizViews = config.filter((v) => v.category === 'Visualization');
 const anaViews = config.filter((v) => v.category === 'Analysis');
 const mlViews = config.filter((v) => v.category === 'Machine Learning');
@@ -27,11 +28,21 @@ function createNewId(existingViews) {
 
 let key = 0;
 const options = [];
+if (custViews.length > 0) {
+  key += 1;
+  options.push({ children: <i>Custom</i>, disabled: true, key });
+  const list = custViews.map((v) => ({
+    text: v.name + (v.devStage == "Beta" ? " (" + v.devStage + ")" : ""),
+    value: v.type,
+    key: v.type,
+  }));
+  Array.prototype.push.apply(options, list);
+}
 if (vizViews.length > 0) {
   key += 1;
   options.push({ children: <i>Visualization</i>, disabled: true, key });
   const list = vizViews.map((v) => ({
-    text: v.name,
+    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
     value: v.type,
     key: v.type,
   }));
@@ -41,7 +52,7 @@ if (anaViews.length > 0) {
   key += 1;
   options.push({ children: <i>Analysis</i>, disabled: true, key });
   const list = anaViews.map((v) => ({
-    text: v.name,
+    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
     value: v.type,
     key: v.type,
   }));
@@ -51,7 +62,7 @@ if (mlViews.length > 0) {
   key += 1;
   options.push({ children: <i>Machine Learning</i>, disabled: true, key });
   const list = mlViews.map((v) => ({
-    text: v.name,
+    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
     value: v.type,
     key: v.type,
   }));

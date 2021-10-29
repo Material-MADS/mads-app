@@ -32,7 +32,7 @@ export const updateView = (id, settings) => {
 };
 
 export const requestViewUpdateRemote = (id, view) => {
-  // console.log('testtsetsetset', id, settings);
+  //console.log('testtsetsetset', id, settings);
   return {
     type: VIEW_UPDATE_REMOTE_REQUEST,
     id,
@@ -62,9 +62,9 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
   return api.views
     .sendRequestViewUpdate(view, data)
     .then((res) => {
-      console.log(res.data);
+      //console.log(res.data);
       dispatch(receiveViewUpdateRemote(res.data));
-      console.log(res.data);
+      //console.log(res.data);
       // dispatch(updateMainDataset(json));
       dispatch(datasetActions.addDatasetView(view.id, res.data));
     })

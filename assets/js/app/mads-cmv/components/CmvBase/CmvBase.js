@@ -39,23 +39,27 @@ class CmvBase extends React.Component {
 
     const viewContainers = views.map((view) => {
       const componentDef = config.find((c) => view.type === c.type);
-      const View = componentDef.component;
-      // console.log(View);
-      return (
-        <View
-          key={view.id}
-          id={view.id}
-          view={view}
-          dataset={dataset}
-          selection={selection}
-          colorTags={colorTags}
-          removeView={actions.removeViewData}
-          updateView={actions.updateView}
-          updateSelection={actions.updateSelection}
-          actions={actions}
-          isLoggedIn={userInfo.isLoggedIn}
-        />
-      );
+      if(componentDef){
+        const View = componentDef.component;
+        // console.log(View);
+        return (
+          <View
+            key={view.id}
+            id={view.id}
+            view={view}
+            dataset={dataset}
+            selection={selection}
+            colorTags={colorTags}
+            removeView={actions.removeViewData}
+            updateView={actions.updateView}
+            updateSelection={actions.updateSelection}
+            actions={actions}
+            isLoggedIn={userInfo.isLoggedIn}
+            version={componentDef.version}
+            devStage={componentDef.devStage}
+          />
+        );
+      }
     });
 
     return (
