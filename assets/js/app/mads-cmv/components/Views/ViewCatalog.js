@@ -1,6 +1,7 @@
 import ScatterView from './Scatter';
 import BarView from './Bar';
 import TableView from './Table';
+import ParCoordsView from './ParCoordsView';
 import HistView from './Hist';
 import RFFeatureView from './RFFeature';
 import ClusteringView from './Clustering';
@@ -93,11 +94,21 @@ const config = [
     component: PeriodicTableView,
     settings: {
       columns: [],
+    },
+  },
+  {
+    type: 'parcoords',
+    name: 'Parallel Coordinates',
+    category: 'Visualization',
+    component: ParCoordsView,
+    settings: {
+      axes: [],
       // selectionColor: 'orange',
       // nonselectionColor: `#${Greys9[3].toString(16)}`,
       // options: { extent: { width: 800, height: 400 } },
     },
   },
+
   {
     type: 'molecule3D',
     name: 'Molecule3D',
@@ -139,7 +150,6 @@ const config = [
       },
     },
   },
-
 
   // data processing
 
