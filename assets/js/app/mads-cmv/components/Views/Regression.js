@@ -114,6 +114,134 @@ class RegressionView extends withCommandInterface(
     // actions.update
     return data;
   };
+
+  render() {
+    const {
+      dataset,
+      removeView,
+      view,
+      id,
+      selection,
+      colorTags,
+      isLoggedIn,
+      showMessage,
+      actions,
+    } = this.props;
+
+    console.log(this.props);
+
+    const { main } = dataset;
+
+    const { propSheetOpen } = this.state;
+
+    const columnOptions = this.getColumnOptions();
+
+    // console.log(colorTags);
+    // let { data } = main;
+    // // TODO: compose data...
+    const data = this.mapData(dataset);
+    console.log(dataset);
+    const selectionInternal = this.getSelection(selection);
+
+    // compose filtered indices
+    let filteredIndices = [];
+    if (view.settings.filter) {
+      view.settings.filter.forEach((f) => {
+        const cTag = colorTags.find((c) => c.id === f);
+        if (!cTag) {
+          return;
+        }
+        filteredIndices = filteredIndices.concat(cTag.itemIndices);
+      });
+
+      const s = new Set(filteredIndices);
+      filteredIndices = Array.from(s);
+      // console.log(filteredIndices);
+    }
+
+    // extract scores
+    const scores = {};
+    if (dataset[id]) {
+      if (dataset[id].scores) {
+        const ss = dataset[id].scores;
+        console.log(dataset[id].scores);
+        if (ss['test_r2']) {
+          scores.meanR2 = _.mean(ss['test_r2']);
+        }
+        if (ss['test_mae']) {
+          scores.meanMAE = _.mean(ss['test_mae']);
+        }
+      }
+    }
+
+    return (
+      <div className="view-container">
+        <Button
+          size="mini"
+          icon="remove"
+          onClick={() => this.onDeleteClick(id)}
+        />
+        <Button size="mini" icon="configure" onClick={() => this.show()} />
+
+        <div className="view-contents">
+          <RegressionVis
+            data={data || []}
+            {...settings}
+            {...view.settings}
+            properties={view.properties}
+            // mappings={mappings}
+            selectedIndices={selectionInternal}
+            colorTags={colorTags}
+            filteredIndices={filteredIndices}
+            onSelectedIndicesChange={(indices) =>
+              this.handleSelectionChange(indices)
+            }
+            showMessage={actions.showMessage}
+          />
+
+          <div style={{ marginRight: '5px' }}>
+            <Card>
+              <Card.Content>
+                <h3>CV scores:</h3>
+                <ul>
+                  <li>mean r2: {scores.meanR2}</li>
+                  <li>mean MAE: {scores.meanMAE}</li>
+                </ul>
+              </Card.Content>
+            </Card>
+          </div>
+        </div>
+
+        <Modal open={propSheetOpen} onClose={this.close}>
+          <Modal.Header>
+            {view.name} {`[${view.id}]`}
+          </Modal.Header>
+          <Modal.Content>
+            <RegressionForm
+              initialValues={view.settings}
+              enableReinitialize
+              ref={(form) => {
+                this.formReference = form;
+              }}
+              onSubmit={this.handleSubmit}
+              columns={columnOptions}
+              targetId={id}
+              colorTags={colorTags}
+              onModelSave={this.handleModelSave}
+              isLoggedIn={isLoggedIn}
+            />
+          </Modal.Content>
+          <Modal.Actions>
+            <Button negative onClick={() => this.close()}>
+              Cancel
+            </Button>
+            <Button positive content="Submit" onClick={this.onSubmitClick} />
+            {/* <Button positive content="Submit" onClick={this.onSubmitClick} /> */}
+          </Modal.Actions>
+        </Modal>
+      </div>
+    );
+  }
 }
 
 // export default connect(mapStateToProps)(ScatterView);
