@@ -96,6 +96,20 @@ const data04 = {
 };
 //=========================================
 
+
+// 'with large file filled with many values'
+//=========================================
+import chemData from './testdata/chem';
+
+const cfData =  { dimension: [], measures: [] };
+chemData.data.forEach(item => {
+  cfData.dimension.push(item['index']);
+  cfData.measures.push(item['Temperature']);
+});
+
+const cfMappings = { dimension: 'dimension', measures: ['measures'] };
+//=========================================
+
 const stories = storiesOf('BarChart', module);
 
 stories
@@ -163,6 +177,19 @@ stories
         extent: { width: 600, height: 400 },
         xaxis_orientation: 'vertical',
         barColors: ['red', 'green'],
+      }}
+      onSelectedIndicesChange={action('selected_change')}
+    />
+  ))
+  .add('with large file filled with many values', () => (
+    <BarChart
+      data={cfData}
+      mappings={cfMappings}
+      options={{
+        legendLocation: 'top_left',
+        title: 'Big Chem Data',
+        extent: { width: 1600, height: 500 },
+        xaxis_orientation: 'horizontal',
       }}
       onSelectedIndicesChange={action('selected_change')}
     />

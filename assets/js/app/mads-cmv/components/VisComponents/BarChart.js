@@ -8,31 +8,24 @@ import * as Bokeh from '@bokeh/bokehjs';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
-// import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-// import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-
-// const Category10_10 = Category10.Category10_10;
-
-
 const defaultOptions = {
   title: 'Bar Chart',
   selectionColor: 'orange',
-  // nonselectionColor: `#${Greys9[3].toString(16)}`,
   nonselectionColor: '#' + allPal['Greys9'][3].toString(16),
   extent: { width: 400, height: 400 },
   colorMap: 'Category10',
   barColors: [],
 };
 
-function createEmptyChart(options) {
+function createEmptyChart(options, dataIsEmpty) {
   const params = { ...defaultOptions, ...options };
   const tools = 'pan,crosshair,tap,reset,save,hover';
 
   const fig = Bokeh.Plotting.figure({
     title: params.title,
     tools,
-    x_range: params.x_range || undefined,
-    y_range: params.y_range || undefined,
+    x_range: params.x_range || (dataIsEmpty ? ['A', 'B'] : undefined),
+    y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
   });
@@ -61,6 +54,12 @@ function BokehBarChart({
   onSelectedIndicesChange,
 }) {
 
+
+    console.warn(mappings);
+    console.warn(options);
+    console.warn(data)
+
+
   const rootNode = useRef(null);
   const [mainFigure, setMainFigure] = useState(null);
 
@@ -73,11 +72,12 @@ function BokehBarChart({
     const { dimension, measures } = mappings;
 
     // setup ranges
-    if (dimension && measures) {
+    if (dimension && measures && data[dimension]) {
+      data[dimension] = data[dimension].map(String);
       options.x_range = data[dimension];
     }
 
-    const fig = createEmptyChart(options);
+    const fig = createEmptyChart(options, !(dimension && measures && data[dimension]));
 
     if (dimension && measures && data[dimension]) {
       const ds = new Bokeh.ColumnDataSource({ data });

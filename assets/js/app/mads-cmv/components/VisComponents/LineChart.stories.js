@@ -88,7 +88,6 @@ const SCDPack = getLineCurveDataPack();
 
 // Chemical Sample Data - SETUP BEGIN
 //=========================================
-import chemData from './testdata/chem';
 const cData = { xData: [], yData: [] };
 cData.xData = [0, 20, 40, 60, 80, 100];
 cData.yData = [3.3, 7.3, 13.9, 23.8, 37.5, 56.3];
@@ -126,7 +125,7 @@ stories
       options = { SCDPack.options }
     />
   ))
-  .add('...with chem data', () => (
+  .add('...with small chemical data', () => (
     <LineChart
        data = {cData}
        options = { cOptions }

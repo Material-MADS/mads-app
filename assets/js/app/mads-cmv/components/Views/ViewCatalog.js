@@ -58,8 +58,8 @@ const config = [
     type: 'bar',
     name: 'Bar',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: BarView,
     settings: {
       options: {
