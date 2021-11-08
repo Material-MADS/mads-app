@@ -32,7 +32,7 @@ if (custViews.length > 0) {
   key += 1;
   options.push({ children: <i>Custom</i>, disabled: true, key });
   const list = custViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? " (" + v.devStage + ")" : ""),
+    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
     value: v.type,
     key: v.type,
   }));
@@ -42,7 +42,7 @@ if (vizViews.length > 0) {
   key += 1;
   options.push({ children: <i>Visualization</i>, disabled: true, key });
   const list = vizViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
+    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
     value: v.type,
     key: v.type,
   }));
@@ -52,7 +52,7 @@ if (anaViews.length > 0) {
   key += 1;
   options.push({ children: <i>Analysis</i>, disabled: true, key });
   const list = anaViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
+    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
     value: v.type,
     key: v.type,
   }));
@@ -62,7 +62,7 @@ if (mlViews.length > 0) {
   key += 1;
   options.push({ children: <i>Machine Learning</i>, disabled: true, key });
   const list = mlViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? v.devStage : ""),
+    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
     value: v.type,
     key: v.type,
   }));

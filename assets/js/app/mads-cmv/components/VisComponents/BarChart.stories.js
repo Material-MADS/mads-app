@@ -3,11 +3,10 @@ import { storiesOf } from '@storybook/react'; // eslint-disable-line import/no-e
 import { action } from '@storybook/addon-actions'; // eslint-disable-line import/no-extraneous-dependencies
 
 import BarChart from './BarChart';
-// import ColorTag from '../../models/ColorTag';
 
-// import data from './testdata/data-ex';
-// import bData from './testdata/response-ex';
 
+// 'with simple data specified with x axis'
+//=========================================
 export function getBarChartDataPack(){
   const data = {
     fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
@@ -23,7 +22,11 @@ export function getBarChartDataPack(){
   return {data, mappings, options, onSelectedIndicesChange};
 }
 const barChartDataPack = getBarChartDataPack();
+//=========================================
 
+
+// 'with simple data specified with x axis (4 measures)'
+//=========================================
 const data02 = {
   fruits: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'],
   2015: [2, 1, 4, 3, 2, 4],
@@ -32,8 +35,12 @@ const data02 = {
   2018: [2, 1, 4, 3, 2, 4],
   2019: [5, 3, 3, 2, 4, 6],
 };
+//=========================================
 
-const data1 = {
+
+// 'with simple data (features)'
+//=========================================
+const data03 = {
   features: [
     'Preparation',
     'Temperature',
@@ -63,8 +70,12 @@ const data1 = {
     0.001644, 0.001437, 0.01384, 0.020769, 0.002134, 0.000415,
   ],
 };
+//=========================================
 
-const data2 = {
+
+// 'with simple data (features2)' & 'with simple data (features2) with barColor'
+//=========================================
+const data04 = {
   features: [
     'Preparation',
     'Temperature',
@@ -83,6 +94,21 @@ const data2 = {
     0.123338, 0.125366, 0.021953, 0.02834,
   ],
 };
+//=========================================
+
+
+// 'with large file filled with many values'
+//=========================================
+import chemData from './testdata/chem';
+
+const cfData =  { dimension: [], measures: [] };
+chemData.data.forEach(item => {
+  cfData.dimension.push(item['index']);
+  cfData.measures.push(item['Temperature']);
+});
+
+const cfMappings = { dimension: 'dimension', measures: ['measures'] };
+//=========================================
 
 const stories = storiesOf('BarChart', module);
 
@@ -100,7 +126,6 @@ stories
     <BarChart
       data={barChartDataPack.data}
       mappings={{ dimension: 'fruits', measures: ['2015', '2016'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{ legendLocation: 'top_left' }}
       onSelectedIndicesChange={action('selected_change')}
     />
@@ -112,16 +137,14 @@ stories
         dimension: 'fruits',
         measures: ['2015', '2016', '2017', '2018'],
       }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{ legendLocation: 'top_left' }}
       onSelectedIndicesChange={action('selected_change')}
     />
   ))
   .add('with simple data (features)', () => (
     <BarChart
-      data={data1}
+      data={data03}
       mappings={{ dimension: 'features', measures: ['importance'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{
         legendLocation: 'top_left',
         title: 'Feature Importance',
@@ -133,9 +156,8 @@ stories
   ))
   .add('with simple data (features2)', () => (
     <BarChart
-      data={data2}
+      data={data04}
       mappings={{ dimension: 'features', measures: ['importance'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{
         legendLocation: 'top_left',
         title: 'Feature Importance',
@@ -147,98 +169,28 @@ stories
   ))
   .add('with simple data (features2) with barColor', () => (
     <BarChart
-      data={data2}
+      data={data04}
       mappings={{ dimension: 'features', measures: ['importance'] }}
-      // mappings={{ dimension: 'fruits', measures: ['2017'] }}
       options={{
         legendLocation: 'top_left',
         title: 'Feature Importance',
         extent: { width: 600, height: 400 },
         xaxis_orientation: 'vertical',
-        barColors: ['red'],
+        barColors: ['red', 'green'],
+      }}
+      onSelectedIndicesChange={action('selected_change')}
+    />
+  ))
+  .add('with large file filled with many values', () => (
+    <BarChart
+      data={cfData}
+      mappings={cfMappings}
+      options={{
+        legendLocation: 'top_left',
+        title: 'Big Chem Data',
+        extent: { width: 1600, height: 500 },
+        xaxis_orientation: 'horizontal',
       }}
       onSelectedIndicesChange={action('selected_change')}
     />
   ));
-// .add('with bigger data', () => (
-//   <BarChart
-//     data={bData.data}
-//     mappings={{
-//       x: 'Formation Energy (eV)',
-//       y: 'Band Gap (eV)',
-//     }}
-//     onSelectedIndicesChange={action('selected_change')}
-//   />
-// ))
-// .add('with selection', () => (
-//   <BarChart
-//     data={bData.data}
-//     mappings={{
-//       x: 'Formation Energy (eV)',
-//       y: 'Band Gap (eV)',
-//     }}
-//     selectedIndices={[0, 1, 2]}
-//     onSelectedIndicesChange={action('selected_change')}
-//   />
-// ))
-// .add('with extent', () => (
-//   <BarChart
-//     data={bData.data}
-//     mappings={{
-//       x: 'Formation Energy (eV)',
-//       y: 'Band Gap (eV)',
-//     }}
-//     extent={{ width: 800, height: 400 }}
-//     onSelectedIndicesChange={action('selected_change')}
-//   />
-// ))
-// .add('with ColorTags', () => {
-//   const cTag = new ColorTag({
-//     color: 'red',
-//     itemIndices: [49, 16, 45, 47, 20, 11, 4, 13, 12, 14, 38, 27, 23, 51, 33],
-//   });
-//   return (
-//     <BarChart
-//       data={bData.data}
-//       mappings={{
-//         x: 'Formation Energy (eV)',
-//         y: 'Band Gap (eV)',
-//       }}
-//       extent={{ width: 400, height: 400 }}
-//       colorTags={[cTag]}
-//     />
-//   );
-// })
-// .add('with color column', () => (
-//   <BarChart
-//     data={bData.data}
-//     mappings={{
-//       x: 'Formation Energy (eV)',
-//       y: 'Band Gap (eV)',
-//       color: 'Band Gap (eV)',
-//     }}
-//     extent={{ width: 400, height: 400 }}
-//   />
-// ))
-// .add('with knobs', () => {
-//   // const defaultExtent = { width: 400, height: 400 };
-//   // const groupId = 'GROUP-ID1';
-//   // const extent = object('extent', defaultExtent);
-//   // const width = number('width', 400);
-//   // const height = number('height', 400);
-
-//   const selections = array('selectedIndices', [0]).map(Number);
-
-//   return (
-//     <BarChart
-//       data={bData.data}
-//       mappings={{
-//         x: 'Formation Energy (eV)',
-//         y: 'Band Gap (eV)',
-//       }}
-//       // extent={{ width, height }}
-//       selectedIndices={selections}
-//       // onSelectedIndicesChange={action('selected_change')}
-//     />
-//   );
-// });
