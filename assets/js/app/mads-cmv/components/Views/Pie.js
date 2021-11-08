@@ -55,8 +55,6 @@ class PieView extends withCommandInterface(PieChart, PieForm) {
     const { id } = this.props;
     let data = {};
 
-    console.warn(dataset[id]);
-
     if (dataset[id]) {
       if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn)) {
         data = dataset[id];

@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 // Available Visual Components to be used with this customizable one
 //------------------------------------------------------------------
 import BarChart from "./BarChart";
+import LineChart from "./LineChart";
 import ClassificationVis from "./ClassificationVis";
 import HeatMap from "./HeatMap";
 import ImageView from "./ImageView";
@@ -41,6 +42,7 @@ const defaultOptions = {
 //----------------------------------------------------------------------------------
 const availableComponents = {
   BarChart: BarChart,
+  LineChart: LineChart,
   ClassificationVis: ClassificationVis,
   HeatMap: HeatMap,
   ImageView: ImageView,

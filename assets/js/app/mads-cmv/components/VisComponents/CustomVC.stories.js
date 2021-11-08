@@ -17,6 +17,7 @@ import CustomVC from './CustomVC';
 //----------------------------
 import { getPieDataPack } from './PieChart.stories';
 import { getBarChartDataPack } from './BarChart.stories';
+import { getLineCurveDataPack } from './LineChart.stories';
 import { getHeatMapDataPack } from './HeatMap.stories';
 import { getImageViewDataPack } from './ImageView.stories';
 import { getMol3DDataPack } from './Molecule3D.stories';
@@ -36,6 +37,13 @@ pieDataPack.options["VisComp"] = 'PieChart';
 //=========================================
 const barChartDataPack = getBarChartDataPack();
 barChartDataPack.options["VisComp"] = 'BarChart';
+//=========================================
+
+
+// LineChart Example
+//=========================================
+const lineChartDataPack = getLineCurveDataPack();
+lineChartDataPack.options["VisComp"] = 'LineChart';
 //=========================================
 
 
@@ -108,6 +116,12 @@ stories
       mappings = { barChartDataPack.mappings }
       options = { barChartDataPack.options }
       onSelectedIndicesChange = { barChartDataPack.onSelectedIndicesChange }
+    />
+  ))
+  .add('...LineChart Example', () => (
+    <CustomVC
+      data = { lineChartDataPack.data }
+      options = { lineChartDataPack.options }
     />
   ))
   .add('...HeatMap Example', () => (
