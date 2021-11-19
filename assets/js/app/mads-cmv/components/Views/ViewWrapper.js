@@ -118,17 +118,13 @@ function withCommandInterface(
         devStage
       } = this.props;
 
-      //console.log(this.props);
-
       const { main } = dataset;
 
       const { propSheetOpen } = this.state;
 
       const columnOptions = this.getColumnOptions();
 
-      // console.log(colorTags);
-      // let { data } = main;
-      // // TODO: compose data...
+      // TODO: compose data...
       const data = this.mapData(dataset);
       const selectionInternal = this.getSelection(selection);
 
@@ -155,7 +151,7 @@ function withCommandInterface(
             onClick={() => this.onDeleteClick(id)}
           />
           <Button size="mini" icon="configure" onClick={() => this.show()} />
-          {(devStage == "Beta") && (<DevStage stage={devStage} /> )}
+          <DevStage stage={devStage} version={version} />
           <WrappedComponent
             data={data || []}
             {...settings}

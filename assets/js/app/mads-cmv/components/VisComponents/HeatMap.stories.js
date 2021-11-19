@@ -2,7 +2,11 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
+import * as jz from 'jeezy';
+import * as chroma from 'chroma-js';
+
 import HeatMap from './HeatMap';
+
 
 // Simple Test Data - SETUP BEGIN
 //=========================================
@@ -91,6 +95,7 @@ const SFSDPack = getHeatMapDataPack(sampleFileData);
 // Chemical File Sample Data - SETUP BEGIN
 //=========================================
 import chemData from './testdata/chem';
+import { check } from 'prettier';
 const cData = { xData: [], yData: [], heatVal: [] };
 chemData.data.forEach(item => {
   cData.xData.push(item.Temperature + '');
@@ -111,6 +116,66 @@ const cOptions = {
 };
 //=========================================
 // Chemical File Sample Data - SETUP END
+
+// Pairwise Correlation Matrix - SETUP BEGIN
+//=========================================
+var pcData = { xData: [], yData: [], heatVal: [] };
+var cols = chemData.schema.fields.map(f => f.name);
+cols.shift(); // remove index
+var mask = [];
+const colsSorted = cols.sort();
+const colsSortedR = cols.sort().reverse();
+var isVisible = 1;
+for(var i = 0; i < colsSorted.length; i++){
+  for(var k = 0; k < colsSortedR.length; k++){
+    if(isVisible == 1){
+      if(colsSorted[i] == colsSortedR[k]){
+        isVisible = 0;
+      }
+    }
+    mask.push([colsSorted[i]+"-"+colsSortedR[k], isVisible]);
+  }
+  isVisible = 1;
+}
+var corr = jz.arr.correlationMatrix(chemData.data, cols);
+var allX = [], allY = [];
+corr.forEach(item => {
+  var testStr = item.column_x +"-"+item.column_y;
+  var corrVal = 0;
+  for(var i = 0; i < mask.length; i++){
+    if(testStr == mask[i][0]){
+      if(mask[i][1] != 0){
+        corrVal = item.correlation;
+      }
+      break;
+    }
+  }
+  if(corrVal != 0){
+    pcData.xData.push(item.column_x);
+    pcData.yData.push(item.column_y);
+    pcData.heatVal.push(corrVal);
+  }
+  allX.push(item.column_x);
+  allY.push(item.column_y);
+});
+const pcXRange = (allX.filter((v, i, a) => a.indexOf(v) === i)).sort();
+const pcYRange = (allY.filter((v, i, a) => a.indexOf(v) === i)).sort().reverse();
+
+var c = chroma.scale(["#3B4CC0", "white", "#B40426"]).domain([-1, 0, 1]).colors(100);
+
+const pcOptions = {
+  x_range: pcXRange,
+  y_range: pcYRange,
+  toolTipTitles: ['X', 'Y', 'Correlation'],
+  colors: c,
+  colorMapperMinMax: [-1,1],
+  heatValUnit: '',
+  extent: { width: 800, height: 800 },
+  x_axis_location: 'below',
+  title: `Pairwise Correlation Values for the ChemData Data`,
+};
+//=========================================
+// Pairwise Correlation Matrix - SETUP END
 
 const stories = storiesOf('HeatMap', module);
 
@@ -133,5 +198,11 @@ stories
     <HeatMap
        data = {cData}
        options = { cOptions }
+    />
+  ))
+  .add('...Pairwise Correlation Matrix', () => (
+    <HeatMap
+       data = {pcData}
+       options = { pcOptions }
     />
   ));

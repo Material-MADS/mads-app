@@ -180,7 +180,7 @@ export default function PeriodicTable() {
 
   const clearChart = () => {
     if (Array.isArray(views)) {
-      console.warn("array!!!", views);
+      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {

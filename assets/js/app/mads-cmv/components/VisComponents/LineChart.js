@@ -160,7 +160,7 @@ export default function LineChart({
 
   const clearChart = () => {
     if (Array.isArray(views)) {
-      console.warn("array!!!", views);
+      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {

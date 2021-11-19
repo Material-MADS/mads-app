@@ -7,8 +7,6 @@ import SemanticDropdown from '../FormFields/Dropdown';
 import SemCheckbox from '../FormFields/Checkbox';
 import Input from '../FormFields/Input';
 
-// console.warn(MultiSelectDropdown);
-
 const ClusteringForm = (props) => {
   const {
     handleSubmit,

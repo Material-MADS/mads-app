@@ -42,7 +42,6 @@ class HeatMapView extends withCommandInterface(HeatMap, HeatMapForm) {
     const yData = (df.get(newValues.yData).values.toArray()).map(v => (v + ''));
     const heatVal = (df.get(newValues.heatVal).values.toArray()).map(v => (parseFloat(v)));
     const data = { xData, yData, heatVal };
-    // newValues["data"] = data;
 
     let xRange = [];
     if(isNaN(xData[0])){

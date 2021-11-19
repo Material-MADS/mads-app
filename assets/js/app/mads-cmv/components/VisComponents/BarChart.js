@@ -54,12 +54,6 @@ function BokehBarChart({
   onSelectedIndicesChange,
 }) {
 
-
-    console.warn(mappings);
-    console.warn(options);
-    console.warn(data)
-
-
   const rootNode = useRef(null);
   const [mainFigure, setMainFigure] = useState(null);
 

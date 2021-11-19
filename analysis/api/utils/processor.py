@@ -3,6 +3,7 @@ from .feature_importance import get_feature_importance
 from .clustering import get_clusters
 from .regression import get_regression
 from .classification import get_classification
+from .pairwise_correlation import get_pairwise_correlation
 from .pie import get_pie
 from .scatter3D import get_scatter3D
 from .heatmap import get_hm
@@ -19,6 +20,7 @@ processor_map = {
     'clustering': get_clusters,
     'regression': get_regression,
     'classification': get_classification,
+    'pairwise-correlation': get_pairwise_correlation,
     'pie': get_pie,
     'scatter3D': get_scatter3D,
     'heatmap': get_hm,
