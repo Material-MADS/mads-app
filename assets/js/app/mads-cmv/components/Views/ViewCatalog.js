@@ -13,6 +13,7 @@ import Scatter3DView from './Scatter3D';
 import Molecule3DView from './Molecule3D';
 import HeatMapView from './HeatMap';
 import ImageViewView from './ImageView';
+import PairwiseCorrelationView from './PairwiseCorrelation';
 import CustomView from './Custom';
 
 
@@ -22,8 +23,8 @@ const config = [
   //   type: 'custom',
   //   name: 'Custom',
   //   category: 'Custom',
-  //   version: 1.0,
-  //   devStage: "Stable Release",
+  //   version: 0.7,
+  //   devStage: "Beta",
   //   component: CustomView,
   //   settings: {
   //     options: {
@@ -75,7 +76,7 @@ const config = [
     type: 'table',
     name: 'Table',
     category: 'Visualization',
-    version: 1.0,
+    version: 1.2,
     devStage: "Stable Release",
     component: TableView,
     settings: {
@@ -154,6 +155,20 @@ const config = [
   // data processing
 
   // analysis
+  {
+    type: 'pairwise-correlation',
+    name: 'PairwiseCorrelation',
+    category: 'Analysis',
+    version: 0.8,
+    devStage: "Beta",
+    component: PairwiseCorrelationView,
+    settings: {
+      options: {
+        extent: { width: 600, height: 600 },
+        maskEnabled: true,
+      }
+    },
+  },
   {
     type: 'histogram',
     name: 'Histogram',

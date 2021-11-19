@@ -5,7 +5,6 @@ import * as Bokeh from "@bokeh/bokehjs";
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
 
-
 const defaultOptions = {
   title: "Heat Map",
   extent: { width: undefined, height: 400 },
@@ -86,7 +85,8 @@ export default function HeatMap({
         colors = (cmMax[internalOptions.colorMap] != undefined) ? allPal[internalOptions.colorMap+cmMax[internalOptions.colorMap]] : allPal[defaultOptions.colorMap+cmMax[defaultOptions.colorMap]];
       }
 
-      var mapper = new Bokeh.LinearColorMapper({palette: colors, low: Math.min(...(internalData[heatVal])), high: Math.max(...(internalData[heatVal]))});
+      const colMapMinMax = internalOptions.colorMapperMinMax ? internalOptions.colorMapperMinMax : [Math.min(...(internalData[heatVal])), Math.max(...(internalData[heatVal]))];
+      var mapper = new Bokeh.LinearColorMapper({palette: colors, low: colMapMinMax[0], high: colMapMinMax[1]});
 
       const { indices } = internalData;
       if (indices) {
@@ -125,11 +125,6 @@ export default function HeatMap({
       fig.xaxis[0].major_label_orientation = Math.PI / 3;
       fig.yaxis[0].major_label_orientation = Math.PI / 3;
 
-      var nData = []
-      for(var i = 0; i < internalData[xData].length; i++){
-        nData.push({xData: internalData[xData][i], yData: internalData[yData][i], heatVal: internalData[heatVal][i]});
-      }
-
       const bData = new Bokeh.ColumnDataSource({ data: { ...internalData,}, });
       cds = bData;
 
@@ -166,7 +161,7 @@ export default function HeatMap({
         color_mapper: mapper,
         major_label_text_font_size: internalOptions.fontSize || defaultOptions.fontSize,
         ticker: new Bokeh.BasicTicker({desired_num_ticks: colors.length}),
-        formatter: new Bokeh.PrintfTickFormatter({format: "%d"+(internalOptions.heatValUnit || defaultOptions.heatValUnit)}),
+        formatter: new Bokeh.PrintfTickFormatter({format: "%f"+(internalOptions.heatValUnit || defaultOptions.heatValUnit)}),
         label_standoff: 6,
         border_line_color: null
       });
@@ -180,7 +175,7 @@ export default function HeatMap({
 
   const clearChart = () => {
     if (Array.isArray(views)) {
-      console.warn("array!!!", views);
+      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {

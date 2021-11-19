@@ -6,10 +6,11 @@ import PropTypes from 'prop-types';
 import config from './Views/ViewCatalog';
 import createView from './Views/factory';
 
-const custViews = config.filter((v) => v.category === 'Custom');
-const vizViews = config.filter((v) => v.category === 'Visualization');
-const anaViews = config.filter((v) => v.category === 'Analysis');
-const mlViews = config.filter((v) => v.category === 'Machine Learning');
+const uniqueCategories = [...new Set( config.map(v => v.category)) ];
+const allAvaialableViews = Array(uniqueCategories.length);
+for(var i = 0; i < allAvaialableViews.length; i++){
+  allAvaialableViews[i] = config.filter((v) => v.category === uniqueCategories[i]);
+}
 
 const startId = 1;
 
@@ -28,47 +29,18 @@ function createNewId(existingViews) {
 
 let key = 0;
 const options = [];
-if (custViews.length > 0) {
-  key += 1;
-  options.push({ children: <i>Custom</i>, disabled: true, key });
-  const list = custViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
-    value: v.type,
-    key: v.type,
-  }));
-  Array.prototype.push.apply(options, list);
+for(let i = 0; i < uniqueCategories.length; i++){
+  if (allAvaialableViews[i].length > 0) {
+    key += 1;
+    options.push({ children: <i>{uniqueCategories[i]}</i>, disabled: true, key });
+    const list = allAvaialableViews[i].map((v) => ({
+      text: v.name + ((v.devStage != undefined && v.devStage != "" && v.devStage != "Stable Release") ? " (** " + v.devStage + " **)" : "") + ((v.version != undefined && v.version != 1) ? " [v." + v.version + "]" : ""),
+      value: v.type,
+      key: v.type,
+    }));
+    Array.prototype.push.apply(options, list);
+  }
 }
-if (vizViews.length > 0) {
-  key += 1;
-  options.push({ children: <i>Visualization</i>, disabled: true, key });
-  const list = vizViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
-    value: v.type,
-    key: v.type,
-  }));
-  Array.prototype.push.apply(options, list);
-}
-if (anaViews.length > 0) {
-  key += 1;
-  options.push({ children: <i>Analysis</i>, disabled: true, key });
-  const list = anaViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
-    value: v.type,
-    key: v.type,
-  }));
-  Array.prototype.push.apply(options, list);
-}
-if (mlViews.length > 0) {
-  key += 1;
-  options.push({ children: <i>Machine Learning</i>, disabled: true, key });
-  const list = mlViews.map((v) => ({
-    text: v.name + (v.devStage == "Beta" ? " (** " + v.devStage + " **)" : ""),
-    value: v.type,
-    key: v.type,
-  }));
-  Array.prototype.push.apply(options, list);
-}
-
 class AddViewButton extends React.Component {
   state = { open: false, selected: null };
 

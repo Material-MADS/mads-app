@@ -29,7 +29,6 @@ const ImageViewForm = (props) => {
   } = props;
 
   const fileChange = e => {
-    console.warn(fileName);
     var file = e.target.files[0]; // File object
     var reader = new FileReader();
 

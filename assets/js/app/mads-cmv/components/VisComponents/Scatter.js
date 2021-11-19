@@ -147,9 +147,9 @@ class BokehScatter extends Component {
     //     // console.log('remove', key);
     //   });
     // }
-    console.warn(this.views);
+    // console.warn(this.views);
     if (Array.isArray(this.views)) {
-      console.warn('array!!!', this.views);
+      // console.warn('array!!!', this.views);
     } else {
       const v = this.views;
       if (v) {

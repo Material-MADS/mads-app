@@ -80,7 +80,6 @@ const Molecule3DForm = (props) => {
               });
             })
             .then(data => {
-              // console.warn(data);
               props.change('molName', (JSON.parse(data)).records[0].commonName);
               props.change('molSmiles', encodeURIComponent((JSON.parse(data)).records[0].smiles));
             })

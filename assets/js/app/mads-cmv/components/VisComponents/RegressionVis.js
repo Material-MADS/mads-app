@@ -131,7 +131,7 @@ class RegressionVis extends Component {
     //   });
     // }
     if (Array.isArray(this.views)) {
-      console.warn('array!!!', this.views);
+      // console.warn('array!!!', this.views);
     } else {
       const v = this.views;
       if (v) {
