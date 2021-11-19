@@ -11,8 +11,9 @@ const settings = {
   options: { title: 'Pairwise Correlation' },
 };
 
-class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorrelationForm, settings) {
+var fcMemory = [];
 
+class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorrelationForm, settings) {
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
@@ -30,7 +31,12 @@ class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorr
     let data = { xData: [], yData: [], heatVal: [] };
 
     if(newValues.selectAllColumns){
+      console.warn('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+      console.warn(dataset.main.data);
       newValues.featureColumns = (Object.keys(dataset.main.data[0])).filter(col => col != 'index');
+      fcMemory = newValues.featureColumns;
+      console.warn(fcMemory);
+      console.warn('-----------------------------');
     }
 
     var mask = [];
@@ -107,12 +113,15 @@ class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorr
     let data = {};
 
     if (dataset[id]) {
-      const testColumn = this.props.view.settings.featureColumns[0];
+      const testColumn = this.props.view.settings.featureColumns ? this.props.view.settings.featureColumns[0] : fcMemory[0];
       if (dataset.main.schema.fields.some(e => e.name === testColumn)) {
         data = dataset[id];
       }
       else{
          data["resetRequest"] = true;
+         fcMemory = [];
+         this.props.view.settings.featureColumns = [];
+         this.props.view.settings.selectAllColumns = false;
       }
     }
 
