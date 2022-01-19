@@ -1,3 +1,20 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) WSGI config for madsapp project.
+# ------------------------------------------------------------------------------------------------
+# Notes: It exposes the WSGI callable as a module-level variable named `application`.
+# ------------------------------------------------------------------------------------------------
+# References: Django
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.conf import settings
 from django.conf.urls import include, url  # noqa
 from django.contrib import admin
@@ -17,7 +34,10 @@ from users import views
 
 schema_view = get_schema_view(title='MADS APIs')
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 urlpatterns = [
 
     url(r'^admin/', admin.site.urls),
@@ -37,42 +57,46 @@ urlpatterns = [
     # Terms of services
     path('terms/', TemplateView.as_view(template_name='tos.html'), name='terms'),
 ]
+#-------------------------------------------------------------------------------------------------
 
 # from other apps
+#-------------------------------------------------------------------------------------------------
 urlpatterns += [
     url(r'^datamanagement/', include('datamanagement.urls', 'datamanagement')),
     url(r'^analysis/', include(('analysis.urls', 'analysis'),)),
     url(r'^prediction/', include(('prediction.urls', 'prediction'))),
     url(r'^docs-static/', include(('docs.urls', 'docs'))),
-    # url(
-    #     r'^$', 'django.views.static.serve', kwargs={
-    #         'path': 'index.html', 'document_root': settings.STATIC_ROOT}),
-
-
     url(r'^docs/', include_docs_urls(title='MADS APIs')),
-    # url(r'^docs/$', schema_view),
+    # url(r'^docs/', include(('docs.urls', 'docs'))),
 ]
-
+#-------------------------------------------------------------------------------------------------
 
 # Add Django site authentication urls (for login, logout, password management)
+#-------------------------------------------------------------------------------------------------
 urlpatterns += [
     url(r'^accounts/', include('django.contrib.auth.urls')),
 ]
+#-------------------------------------------------------------------------------------------------
 
 # For signup function
+#-------------------------------------------------------------------------------------------------
 if not settings.DISABLE_SIGNUP:
     urlpatterns += [
         url(r'^signup/$', views.signup, name='signup'),
         path('activate/<slug:uidb64>/<token>/',  views.activate, name='activate'),
     ]
+#-------------------------------------------------------------------------------------------------
 
-# # for api authentication
+# for api authentication
+#-------------------------------------------------------------------------------------------------
 urlpatterns += [
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework')),
 ]
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
@@ -82,12 +106,4 @@ if settings.DEBUG:
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
-
-
-# def custom_exception_handler(exc, context):
-
-#     response = exception_handler(exc, context)
-#     # if isinstance(exc, HogeError):
-#         # content = {'detail': '{}'.format(exc.args)}
-#         # return Response(content, status=status.HTTP_400_BAD_REQUEST)
-#     return response
+#-------------------------------------------------------------------------------------------------

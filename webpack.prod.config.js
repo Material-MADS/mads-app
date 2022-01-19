@@ -1,11 +1,30 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: Settings for webpacks static module bundler for this app if in production mode
+// ------------------------------------------------------------------------------------------------
+// Notes: This is the additional settings config used by production deployments
+// ------------------------------------------------------------------------------------------------
+// References: 'webpack.base.config' and some additional external libraries
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 const autoprefixer = require('autoprefixer');
 const webpack = require('webpack');
-const SpritesmithPlugin = require('webpack-spritesmith');
 const BundleTracker = require('webpack-bundle-tracker');
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const baseConfig = require('./webpack.base.config');
 
+//-------------------------------------------------------------------------------------------------
+// Add and change the config according to the need of this deployment mode
+//-------------------------------------------------------------------------------------------------
 baseConfig[0].mode = 'production';
 baseConfig[1].mode = 'production';
 
@@ -52,24 +71,8 @@ baseConfig[1].plugins = [
       NODE_ENV: JSON.stringify('production'),
     },
   }),
-  new SpritesmithPlugin({
-    src: {
-      cwd: path.resolve(__dirname, 'assets/images/'),
-      glob: '*.png',
-    },
-    target: {
-      image: path.resolve(
-        __dirname,
-        'assets/images/spritesmith-generated/sprite.png'
-      ),
-      css: path.resolve(__dirname, 'assets/sass/vendor/spritesmith.scss'),
-    },
-    retina: '@2x',
-  }),
   new MiniCssExtractPlugin({
     filename: '[name]-[contenthash].css',
-    // disable: false,
-    // allChunks: true,
   }),
   new BundleTracker({
     path: __dirname,

@@ -1,12 +1,24 @@
 {% extends "base_workspace.html" %}
 
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: (Django) Frontside template for the 'Analysis' page involving workspace details
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the template files for the 'analysis' interface of the website.
+# ------------------------------------------------------------------------------------------------
+# References: extends 'base_workspace.html' from the main templates folder of the application
+#=================================================================================================
+{% endcomment %}
+
 {% load ex_filters %}
 
 {% block title %}Analysis - {{PROJECT_NAME_ABBR}}{% endblock %}
-
-{% comment %} {% load static %}
-<link rel=”stylesheet” href="{% static 'vendors/chem-doodle/ChemDoodleWeb.css' %}" />
-<script src="{% static 'vendors/chem-doodle/ChemDoodleWeb.js' %}"></script> {% endcomment %}
 
 {% block local_style %}
 <style>

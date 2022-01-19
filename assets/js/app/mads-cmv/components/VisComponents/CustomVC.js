@@ -1,8 +1,23 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'CustomVC' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'CustomVC' is a visualization component that can display more or less any of the other
+//        VizComps available based on a range of available properties.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs
+=================================================================================================*/
+
 // IMPORT SECTION
 //===================================================================================================================
 // Main Dependent libraries (React and related)
 //---------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 // Available Visual Components to be used with this customizable one

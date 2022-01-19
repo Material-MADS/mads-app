@@ -1,15 +1,40 @@
-import withCommandInterface from './ViewWrapper';
-import Scatter3D from '../VisComponents/Scatter3D';
-import Scatter3DForm from './Scatter3DForm';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Scatter3D' Plot View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Scatter3D' is the manager of all current input that controls the final view of the
+//         'Scatter3D' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal Scatter3D & Scatter3DForm libs,
+=================================================================================================*/
 
-import convertExtentValues from './FormUtils';
-
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
 import _ from 'lodash';
 
+import withCommandInterface from './ViewWrapper';
+import convertExtentValues from './FormUtils';
 
-class Scatter3DView extends withCommandInterface(Scatter3D, Scatter3DForm) {
+import Scatter3D from '../VisComponents/Scatter3D';
+import Scatter3DForm from './Scatter3DForm';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class Scatter3DView extends withCommandInterface(Scatter3D, Scatter3DForm) {
+
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
@@ -72,7 +97,7 @@ class Scatter3DView extends withCommandInterface(Scatter3D, Scatter3DForm) {
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
-
+  // Manages data changes in the view
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
@@ -90,5 +115,4 @@ class Scatter3DView extends withCommandInterface(Scatter3D, Scatter3DForm) {
     return data;
   };
 }
-
-export default Scatter3DView;
+//-------------------------------------------------------------------------------------------------

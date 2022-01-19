@@ -1,16 +1,40 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Wrapper Container for all Views that holds the different VisComps
+// ------------------------------------------------------------------------------------------------
+// Notes: 'ViewWrapper' is the View manager / controller that holds each various VisComp View
+//        and gives us the needed interface to remove or edit the VisComp.
+// ------------------------------------------------------------------------------------------------
+// References: react, prop-types and semantic-ui-react libs, Needed FormField components
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Dropdown, Form } from 'semantic-ui-react';
+import { Button, Modal } from 'semantic-ui-react';
+
 import DevStage from '../FormFields/DevStage';
 
-import { DepGraph } from 'dependency-graph';
+//-------------------------------------------------------------------------------------------------
 
-function withCommandInterface(
+
+//-------------------------------------------------------------------------------------------------
+// The ViewWrapper Package
+//-------------------------------------------------------------------------------------------------
+export default function withCommandInterface(
   WrappedComponent,
   SettingForm,
   settings = {},
   properties = {}
 ) {
+  // The ViewWrapper Class
   class ViewWrapper extends React.Component {
     state = {
       propSheetOpen: false,
@@ -48,8 +72,6 @@ function withCommandInterface(
         }
       });
 
-      // window.DepGraph = DepGraph;
-
       return columnOptions;
     };
 
@@ -71,20 +93,17 @@ function withCommandInterface(
 
     handleModelSave = (name, overwrite, id) => {
       // Note: override this if necessary
-      console.log('model saving...');
     };
 
     handleSelectionChange = (indices) => {
       // Note: override this if needed
       const { updateSelection } = this.props;
-      // console.log('selected!!!', indices);
 
-      // console.trace();
       updateSelection(indices);
     };
 
     handleSubmit = (values) => {
-      // Note: override this if necessary
+      // Note: override this if necessary or more exactly... "handleSubmit" needs to be overridden.
       console.error('"handleSubmit" needs to be overridden.');
     };
 
@@ -119,12 +138,8 @@ function withCommandInterface(
       } = this.props;
 
       const { main } = dataset;
-
       const { propSheetOpen } = this.state;
-
       const columnOptions = this.getColumnOptions();
-
-      // TODO: compose data...
       const data = this.mapData(dataset);
       const selectionInternal = this.getSelection(selection);
 
@@ -143,6 +158,7 @@ function withCommandInterface(
         filteredIndices = Array.from(s);
       }
 
+      // Add the ViewWrapper to the DOM
       return (
         <div className="view-container">
           <Button
@@ -157,7 +173,6 @@ function withCommandInterface(
             {...settings}
             {...view.settings}
             properties={view.properties}
-            // mappings={mappings}
             selectedIndices={selectionInternal}
             colorTags={colorTags}
             filteredIndices={filteredIndices}
@@ -204,5 +219,4 @@ function withCommandInterface(
 
   return ViewWrapper;
 }
-
-export default withCommandInterface;
+//-------------------------------------------------------------------------------------------------

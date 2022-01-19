@@ -1,3 +1,22 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'HeatMap' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HeatMap' is a visualization component that displays a classic heat map based on a range
+//        of available properties, and is rendered with the help of the Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, 3rd party jeezy and Chroma libs, HeatMap VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
@@ -7,8 +26,15 @@ import * as chroma from 'chroma-js';
 
 import HeatMap from './HeatMap';
 
+//-------------------------------------------------------------------------------------------------
 
-// Simple Test Data - SETUP BEGIN
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// Simple Test Data
 //=========================================
 const originalTestData = {
   data: [
@@ -55,9 +81,8 @@ const osOptions = {
   fontSize: '10px',
 };
 //=========================================
-// Simple Test Data - SETUP END
 
-// Small File Sample Data - SETUP BEGIN
+// Small File Sample Data
 //=========================================
 import sampleFileData from './testdata/unemployment';
 export function getHeatMapDataPack(){
@@ -90,9 +115,8 @@ export function getHeatMapDataPack(){
 }
 const SFSDPack = getHeatMapDataPack(sampleFileData);
 //=========================================
-// Small File Sample Data - SETUP END
 
-// Chemical File Sample Data - SETUP BEGIN
+// Chemical File Sample Data
 //=========================================
 import chemData from './testdata/chem';
 import { check } from 'prettier';
@@ -115,9 +139,8 @@ const cOptions = {
   title: `C2 Yield for for various reactions with  specific temperature and preparation methods`,
 };
 //=========================================
-// Chemical File Sample Data - SETUP END
 
-// Pairwise Correlation Matrix - SETUP BEGIN
+// Pairwise Correlation Matrix
 //=========================================
 var pcData = { xData: [], yData: [], heatVal: [] };
 var cols = chemData.schema.fields.map(f => f.name);
@@ -175,10 +198,14 @@ const pcOptions = {
   title: `Pairwise Correlation Values for the ChemData Data`,
 };
 //=========================================
-// Pairwise Correlation Matrix - SETUP END
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('HeatMap', module);
-
 stories
   .add('...empty', () => <HeatMap />)
   .add('...with small data', () => (
@@ -206,3 +233,4 @@ stories
        options = { pcOptions }
     />
   ));
+  //-------------------------------------------------------------------------------------------------

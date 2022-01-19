@@ -1,18 +1,47 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Redux Component for the 'ColorTag' feature/module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Color Tag' is the individual custom color component that is assigned to a specific
+//        part of the data.
+// ------------------------------------------------------------------------------------------------
+// References: React, semantic-ui-react, react-color and reactCSS libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Button, Icon, SegmentInline } from 'semantic-ui-react';
 import { ChromePicker } from 'react-color';
 import reactCSS from 'reactcss';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Styling data
+//-------------------------------------------------------------------------------------------------
 const styleGen = (color) => ({
   backgroundColor: color,
 });
 
 const divStyle = {
   display: 'inline',
-  marginRight: '3px',
+  marginRight: '10px',
 };
+//-------------------------------------------------------------------------------------------------
 
-class ColorTag extends React.Component {
+
+//-------------------------------------------------------------------------------------------------
+// The Component Class
+//-------------------------------------------------------------------------------------------------
+export default class ColorTag extends React.Component {
   state = {
     displayColorPicker: false,
     color: this.props.color,
@@ -34,9 +63,7 @@ class ColorTag extends React.Component {
 
   render() {
     const { id, color, removeColorTag } = this.props;
-
     const { color: sColor, displayColorPicker } = this.state;
-    // console.log(sColor);
 
     const styles = reactCSS({
       default: {
@@ -85,5 +112,4 @@ class ColorTag extends React.Component {
     );
   }
 }
-
-export default ColorTag;
+//-------------------------------------------------------------------------------------------------

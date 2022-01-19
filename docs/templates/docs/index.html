@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: (Django) Frontside template for the 'Docs' page involving index start
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the template files for the 'docs' interface of the website.
+# ------------------------------------------------------------------------------------------------
+# References: extends 'base.html' from the main templates folder of the application
+#=================================================================================================
+{% endcomment %}
+
+{% load static %}
+
+{% block title %}
+Docs - {{PROJECT_NAME_ABBR}}
+{% endblock %}
+
+{% block content %}
+
+<h2>Docs</h2>
+
+<hr>
+
+<p>There are no Docs implemented for the local version of this web application.</p>
+
+<hr>
+
+{% endblock %}

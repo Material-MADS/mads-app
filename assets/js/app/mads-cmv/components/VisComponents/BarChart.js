@@ -1,13 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'BarChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'BarChart' is a visualization component that displays a classic bar chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { Component, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import * as deepEqual from 'deep-equal';
-import gPalette from 'google-palette';
-
 import * as Bokeh from '@bokeh/bokehjs';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
+import gPalette from 'google-palette';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: 'Bar Chart',
   selectionColor: 'orange',
@@ -16,7 +40,12 @@ const defaultOptions = {
   colorMap: 'Category10',
   barColors: [],
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options, dataIsEmpty) {
   const params = { ...defaultOptions, ...options };
   const tools = 'pan,crosshair,tap,reset,save,hover';
@@ -36,7 +65,12 @@ function createEmptyChart(options, dataIsEmpty) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -44,8 +78,13 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
 
-function BokehBarChart({
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
+export default function BokehBarChart({
   data,
   mappings,
   options,
@@ -54,14 +93,24 @@ function BokehBarChart({
   onSelectedIndicesChange,
 }) {
 
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   const [mainFigure, setMainFigure] = useState(null);
-
   let cds = null;
   let views = null;
   let selectedIndicesInternal = [];
   const internalOptions = Object.assign({}, defaultOptions, options);
+  let internalData = data;
 
+  // Clear away all data if requested
+  useEffect(() => {
+    if(internalData.resetRequest){
+      internalOptions.title = undefined;
+      delete internalData.resetRequest;
+    }
+  }, [internalData])
+
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     const { dimension, measures } = mappings;
 
@@ -85,13 +134,10 @@ function BokehBarChart({
       // setup callback
       if (cds) {
         cds.connect(cds.selected.change, (...args) => {
-          console.log(args);
           const indices = ds.selected.indices;
-          console.log('selected', indices, selectedIndicesInternal);
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
             if (onSelectedIndicesChange) {
-              console.warn('change to', selectedIndicesInternal);
               onSelectedIndicesChange(indices);
             }
           }
@@ -117,7 +163,6 @@ function BokehBarChart({
           });
         }
 
-        // vbar(fig, {
         fig.vbar({
           x: { field: dimension, transform: xv },
           top: { field: m },
@@ -130,17 +175,15 @@ function BokehBarChart({
         });
         fig.legend.location = options.legendLocation || 'top_right';
       });
-
-      // TODO: recover tool selection
     }
 
     views = await Bokeh.Plotting.show(fig, rootNode.current);
     return cds;
   };
 
+  // Clear away the VizComp
   const clearChart = () => {
     if (Array.isArray(views)) {
-      // console.warn('array!!!', views);
     } else {
       const v = views;
       if (v) {
@@ -152,30 +195,37 @@ function BokehBarChart({
     views = null;
   };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
-    // console.info('mount');
     createChart();
     return () => {
-      // console.info('unmount');
       clearChart();
     };
   }, [data, mappings, options, colorTags]);
 
+  // Catch current data selections properly in the VizComp
   const prevCds = usePrevious(cds);
-
   useEffect(() => {
-    // console.log('selection changed ...', selectedIndices);
-    // console.log(prevCds);
-    // console.log(selectedIndices, selectedIndicesInternal);
+    if (selectedIndices.length === 0) {
+      if (prevCds) {
+        prevCds.selected.indices = [];
+      }
+    }
   }, [selectedIndices]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 BokehBarChart.propTypes = {
   data: PropTypes.shape({}),
   mappings: PropTypes.shape({
@@ -195,18 +245,20 @@ BokehBarChart.propTypes = {
   }),
   colorTags: PropTypes.arrayOf(PropTypes.object),
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
-  // colorTags: PropTypes.arrayOf(PropTypes.object),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 BokehBarChart.defaultProps = {
   data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],
   selectedIndices: [],
-  // colorTags: [],
   onSelectedIndicesChange: undefined,
 };
-
-export default BokehBarChart;
+//-------------------------------------------------------------------------------------------------

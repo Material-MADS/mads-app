@@ -1,3 +1,23 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Redux Component for the 'CmvBase' feature/module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'CmvBase' is the main workspace area of the analysis page that provides us with
+//        possibilities that allows us to add different views (visualization components) in order
+//        to study the selected data.
+// ------------------------------------------------------------------------------------------------
+// References: React, prop-types Libs, ColorTags and AddView Containers,
+//             and ViewCatalog (available vizualisation components)
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -7,6 +27,17 @@ import config from '../Views/ViewCatalog';
 
 import './style.css';
 
+//-------------------------------------------------------------------------------------------------
+
+// *** TODO *** TRYING TO IMPLEMENT MOVABLE VIEWS
+// import { Responsive, WidthProvider } from "react-grid-layout" //*** TODO: movable views
+// import "react-grid-layout/css/styles.css"; //*** TODO: movable views
+// import "react-resizable/css/styles.css"; //*** TODO: movable views
+// const ResponsiveReactGridLayout = WidthProvider(Responsive) //*** TODO: movable views
+
+//-------------------------------------------------------------------------------------------------
+// The Component Class
+//-------------------------------------------------------------------------------------------------
 class CmvBase extends React.Component {
   static propTypes = {
     views: PropTypes.arrayOf(PropTypes.any),
@@ -41,7 +72,7 @@ class CmvBase extends React.Component {
       const componentDef = config.find((c) => view.type === c.type);
       if(componentDef){
         const View = componentDef.component;
-        // console.log(View);
+
         return (
           <View
             key={view.id}
@@ -76,5 +107,6 @@ class CmvBase extends React.Component {
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
 export default CmvBase;

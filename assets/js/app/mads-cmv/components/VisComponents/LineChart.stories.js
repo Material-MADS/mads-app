@@ -1,10 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'LineChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'LineChart' is a visualization component that displays a classic line chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, LineChart VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
 
 import LineChart from './LineChart';
 
-// Simple Test Data - SETUP BEGIN
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// Simple Test Data
 //=========================================
 const originalTestData = {
   data: [
@@ -44,9 +71,8 @@ const osOptions = {
   axisLabels: ['Time', 'Temperature'],
 };
 //=========================================
-// Simple Test Data - SETUP END
 
-// Simple Test Multiple Data - SETUP BEGIN
+// Simple Test Multiple Data
 //=========================================
 let extras = [ [], [], [] ];
 let osmData =  { ...osData };
@@ -59,9 +85,8 @@ extras.forEach(xt => {
 
 const osmOptions = { ...osOptions, ...{title: 'Temperature inside the lab during the week', legendLabel: 'Day', lineDash: ["solid", "dashed", "dotted", "dotdash"]}};
 //=========================================
-// Simple Test Multiple Data - SETUP END
 
-// Sine Curve Data - SETUP BEGIN
+// Sine Curve Data
 //=========================================
 export function getLineCurveDataPack(){
   let xData = [], yData = [];
@@ -84,9 +109,8 @@ export function getLineCurveDataPack(){
 }
 const SCDPack = getLineCurveDataPack();
 //=========================================
-// Sine Curve Data - SETUP END
 
-// Chemical Sample Data - SETUP BEGIN
+// Chemical Sample Data
 //=========================================
 const cData = { xData: [], yData: [] };
 cData.xData = [0, 20, 40, 60, 80, 100];
@@ -99,10 +123,14 @@ const cOptions = {
   axisLabels: ['Temperature (°C)', 'Solubility (g/100 mL H2O)'],
 };
 //=========================================
-// Chemical Sample Data - SETUP END
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('LineChart', module);
-
 stories
   .add('...empty', () => <LineChart />)
   .add('...with small data', () => (
@@ -131,3 +159,4 @@ stories
        options = { cOptions }
     />
   ));
+  //-------------------------------------------------------------------------------------------------

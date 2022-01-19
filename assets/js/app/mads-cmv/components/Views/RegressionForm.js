@@ -1,20 +1,72 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'Pie' View, driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PieForm' opens a customized form for the 'PieChart' visualization component and allows
+//        the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components,
+//             Internal Serverside API access
+=================================================================================================*/
+
+//*** TODO: This is not fully structured the same way as other Views, should probably be adjusted to do that
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useRef } from 'react';
 import { Field, reduxForm } from 'redux-form';
 import { Button, Confirm, Form, Modal } from 'semantic-ui-react';
-import { connect } from 'react-redux';
 
 import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
 import ModelNameForm from './ModelNameForm';
+
 import api from '../../api';
 
-const getDropdownOptions = (list) =>
-  list.map((i) => ({ key: i, text: i, value: i }));
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Form Support Methods that manages various individual form fields that requires some form of
+// attention to its content
+//-------------------------------------------------------------------------------------------------
 let confirmResolve = null;
 
+//=======================
+const getDropdownOptions = (list) =>
+  list.map((i) => ({ key: i, text: i, value: i }));
+//=======================
+
+//=======================
+const validate = (values) => {
+  const errors = {};
+  if (!values.featureColumns) {
+    errors.featureColumns = 'Required';
+  }
+  if (values.featureColumns && values.featureColumns.length === 0) {
+    errors.featureColumns = 'Required';
+  }
+  if (!values.targetColumn) {
+    errors.targetColumn = 'Required';
+  }
+
+  return errors;
+};
+//=======================
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const RegressionForm = (props) => {
+  // parameters and such
   const {
     handleSubmit,
     initialValues,
@@ -33,15 +85,13 @@ const RegressionForm = (props) => {
     props: { style: '' },
   }));
 
+  const methods = ['Linear', 'Lasso', 'SVR', 'RandomForest'];
+
+  // input managers
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  // const [confirmResoluve, setConfirmResolve] = useState(null);
-
   const formElement = useRef(null);
   const saveForm = useRef(null);
-
-  // const [colorDisabled, setColorDisabled] = useState(!initialValues.colorAssignmentEnabled);
-  const methods = ['Linear', 'Lasso', 'SVR', 'RandomForest'];
 
   const showSaveDialog = () => {
     setSaveDialogOpen(true);
@@ -59,7 +109,6 @@ const RegressionForm = (props) => {
   const confirm = () => {
     const promise = new Promise((resolve, reject) => {
       setConfirmOpen(true);
-      // setConfirmResolve(resolve);
       confirmResolve = resolve;
     });
 
@@ -70,8 +119,6 @@ const RegressionForm = (props) => {
     setConfirmOpen(false);
     if (confirmResolve) {
       confirmResolve(true);
-
-      // setConfirmResolve(null);
     }
   };
 
@@ -79,7 +126,6 @@ const RegressionForm = (props) => {
     setConfirmOpen(false);
     if (confirmResolve) {
       confirmResolve(false);
-      // setConfirmResolve(null);
     }
   };
 
@@ -91,9 +137,8 @@ const RegressionForm = (props) => {
 
     const pre = ownedModels.find((w) => w.name === values.name);
     if (pre) {
-      // const response = window.confirm('A workspace with the same name is existing. Do you want to overwrite it?');
+      // 'A workspace with the same name is existing. Do you want to overwrite it?'
       const response = await confirm();
-      console.log(response);
 
       if (response) {
         // overwrite the existing workspace
@@ -107,7 +152,6 @@ const RegressionForm = (props) => {
       return false;
     }
 
-    // console.log(onModelSave);
     if (onModelSave) {
       onModelSave(values.name, false);
     }
@@ -121,21 +165,10 @@ const RegressionForm = (props) => {
     }
   };
 
+  // The form itself, as being displayed in the DOM
   return (
     <>
       <Form onSubmit={handleSubmit} ref={formElement}>
-        {/* <Form.Field>
-          <label>Filter</label>
-          <Field
-            name="filter"
-            component={MultiSelectDropdown}
-            placeholder="ColorTags"
-            search
-            // trigger={<Label color={data.color}/>}
-            options={cTags}
-          />
-        </Form.Field> */}
-
         <Form.Field>
           <label>Method:</label>
           <Field
@@ -154,22 +187,9 @@ const RegressionForm = (props) => {
             component={MultiSelectDropdown}
             placeholder="Columns"
             search
-            // trigger={<Label color={data.color}/>}
             options={columns}
           />
         </Form.Field>
-
-        {/* <Form.Field>
-          <label>Target columns</label>
-          <Field
-            name="targetColumns"
-            component={MultiSelectDropdown}
-            placeholder="Columns"
-            search
-            // trigger={<Label color={data.color}/>}
-            options={columns}
-          />
-        </Form.Field> */}
 
         <Form.Field>
           <label>Target column</label>
@@ -178,7 +198,6 @@ const RegressionForm = (props) => {
             component={SemanticDropdown}
             placeholder="Column"
             search
-            // trigger={<Label color={data.color}/>}
             options={columns}
           />
         </Form.Field>
@@ -186,19 +205,6 @@ const RegressionForm = (props) => {
         <hr></hr>
 
         <h3>Cross validation:</h3>
-        {/* <Form.Field>
-          <label>Cross validation:</label>
-          <Field
-            name="clossValidationEnabled"
-            component={SemCheckbox}
-            toggle
-            onChange={(e, data) => {
-              console.log(data);
-              setColorDisabled(!data);
-            }}
-          />
-        </Form.Field> */}
-
         <Form.Field>
           <label>Number of folds</label>
           <Field
@@ -219,14 +225,12 @@ const RegressionForm = (props) => {
             name="options.extent.width"
             component={Input}
             placeholder="Width"
-            // parse={(value) => Number(value)}
           />
           <Field
             fluid
             name="options.extent.height"
             component={Input}
             placeholder="Height"
-            // parse={(value) => Number(value)}
           />
         </Form.Group>
 
@@ -243,13 +247,8 @@ const RegressionForm = (props) => {
         <Modal.Header>Save Model</Modal.Header>
         <Modal.Content>
           <ModelNameForm
-            // initialValues={workspaceInfo}
-            // enableReinitialize
             ref={saveForm}
             onSubmit={handleSaveFormSubmit}
-            // columns={columnOptions}
-            // targetId={id}
-            // colorTags={colorTags}
           />
         </Modal.Content>
         <Modal.Actions>
@@ -269,50 +268,26 @@ const RegressionForm = (props) => {
     </>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
-const validate = (values) => {
-  const errors = {};
-  if (!values.featureColumns) {
-    errors.featureColumns = 'Required';
-  }
-  if (values.featureColumns && values.featureColumns.length === 0) {
-    errors.featureColumns = 'Required';
-  }
-  if (!values.targetColumn) {
-    errors.targetColumn = 'Required';
-  }
 
-  return errors;
-};
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 
+//=======================
 const RegressionFormWrapped = reduxForm({
   form: 'regression',
   validate,
 })(RegressionForm);
+//=======================
 
+//=======================
 const mapDispatchToProps = (dispatch) => ({
   dispatch,
 });
+//=======================
 
-// const RegressionFormWrappedC = connect((state) => {
-//   // const firstNameValue = selector(state, 'firstName');
-//   // const formState = selector(state, '');
-//   // console.warn(state);
-//   // console.warn(formState);
-//   // return {
-//   //   firstNameValue,
-//   //   lastNameValue,
-//   // }
-//   if (state.form.regression) {
-//     return {
-//       tmpValues: state.form.regression.values,
-//     };
-//   }
-
-//   return {
-//     tmpValues: undefined,
-//   };
-// }, mapDispatchToProps)(RegressionFormWrapped);
+//-------------------------------------------------------------------------------------------------
 
 export default RegressionFormWrapped;
-// export default RegressionFormWrappedC;

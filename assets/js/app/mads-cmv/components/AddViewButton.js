@@ -1,11 +1,36 @@
-import React from 'react';
-import { Button, Dropdown, Header, Modal, Icon } from 'semantic-ui-react';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is a 'Form Field' React Component (used in data editing/displaying forms)
+//              of the Custom 'Add View Button' type
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Form Fields' are component used inside all forms for editing and viewing connected data.
+//        'AddViewButton' is a button that allows us to open a small form that let us create a new
+//        visualization component and load it into the current workspace.
+// ------------------------------------------------------------------------------------------------
+// References: React, prop-types & semantic-ui-react Libs, Views Factory and Catalog
+=================================================================================================*/
 
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React from 'react';
 import PropTypes from 'prop-types';
+import { Button, Dropdown, Header, Modal, Icon } from 'semantic-ui-react';
 
 import config from './Views/ViewCatalog';
 import createView from './Views/factory';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Component properties and Initiation
+//-------------------------------------------------------------------------------------------------
 const uniqueCategories = [...new Set( config.map(v => v.category)) ];
 const allAvaialableViews = Array(uniqueCategories.length);
 for(var i = 0; i < allAvaialableViews.length; i++){
@@ -13,19 +38,6 @@ for(var i = 0; i < allAvaialableViews.length; i++){
 }
 
 const startId = 1;
-
-function createNewId(existingViews) {
-  const ids = existingViews.map((v) => v.id);
-  let currentId = startId;
-
-  let id = currentId.toString();
-  while (ids.includes(id)) {
-    currentId += 1;
-    id = currentId.toString();
-  }
-
-  return id;
-}
 
 let key = 0;
 const options = [];
@@ -41,13 +53,33 @@ for(let i = 0; i < uniqueCategories.length; i++){
     Array.prototype.push.apply(options, list);
   }
 }
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
+// Component Support Methods
+//-------------------------------------------------------------------------------------------------
+function createNewId(existingViews) {
+  const ids = existingViews.map((v) => v.id);
+  let currentId = startId;
+
+  let id = currentId.toString();
+  while (ids.includes(id)) {
+    currentId += 1;
+    id = currentId.toString();
+  }
+
+  return id;
+}
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
+// The Component Class
+//-------------------------------------------------------------------------------------------------
 class AddViewButton extends React.Component {
   state = { open: false, selected: null };
 
   constructor(props) {
     super(props);
-    // this.state = { open: false, selected: null };
-
     this.open = () => this.setState({ open: true });
     this.close = () => this.setState({ open: false });
 
@@ -64,12 +96,10 @@ class AddViewButton extends React.Component {
     // create new id
     const id = createNewId(views);
     const view = createView(selected, id);
-    // console.log(view);
     actions.addView(view);
   }
 
   handleChange(e, data) {
-    // console.log(data);
     this.setState({ selected: data.value });
   }
 
@@ -110,13 +140,17 @@ class AddViewButton extends React.Component {
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// The Component propTypes
+//-------------------------------------------------------------------------------------------------
 AddViewButton.propTypes = {
-  // addView: PropTypes.func.isRequired,
   actions: PropTypes.shape({
-    // createView: PropTypes.func.isRequired,
     addView: PropTypes.func.isRequired,
   }).isRequired,
 };
+//-------------------------------------------------------------------------------------------------
 
 export default AddViewButton;

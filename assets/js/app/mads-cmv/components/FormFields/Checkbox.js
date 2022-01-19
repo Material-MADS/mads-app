@@ -1,7 +1,32 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is a 'Form Field' React Component (used in data editing/displaying forms)
+//              of the 'CheckBox' type
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Form Fields' are component used inside all forms for editing and viewing connected data.
+//        'CheckBox' is of classic type, look and feel.
+// ------------------------------------------------------------------------------------------------
+// References: React, prop-types & semantic-ui-react Libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Form, Checkbox } from 'semantic-ui-react';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The FormField Component
+//-------------------------------------------------------------------------------------------------
 const SemCheckbox = ({
   input,
   type,
@@ -14,13 +39,11 @@ const SemCheckbox = ({
     <Checkbox
       {...input}
       {...props}
-      // defaultChecked={!!input.value || false}
       onBlur={() => input.onBlur()}
       checked={input.value || false}
       onChange={(param, data) => {
         input.onChange(data.checked);
       }}
-      // error={touched && error && true}
       label={label}
       placeholder={placeholder}
       value=""
@@ -32,5 +55,6 @@ const SemCheckbox = ({
     </Form.Field>
   </Form.Field>
 );
+//-------------------------------------------------------------------------------------------------
 
 export default SemCheckbox;

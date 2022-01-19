@@ -1,19 +1,42 @@
-import React, { useState, useEffect, useRef } from "react";
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Scatter3D' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Scatter3D' is a visualization component that displays a classic 3D Scatter Plot in
+//        various ways based on a range of available properties, and is rendered with the help of the
+//        Plotly library.
+// ------------------------------------------------------------------------------------------------
+// References: React, redux & prop-types Libs, 3rd party lodash, jquery and Plotly libs with
+//             Bokeh color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { useEffect, useRef } from "react";
 import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
+
 import _ from 'lodash';
 import $ from "jquery";
-
-import * as Bokeh from "@bokeh/bokehjs";
 import Plotly from 'plotly.js-dist-min';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 // Dev and Debug declarations
-window.Bokeh = Bokeh;
 window.Plotly = Plotly;
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Scatter 3D",
   extent: { width: 450, height: 450 },
@@ -35,7 +58,13 @@ const defaultOptions = {
   },
   colorMap: 'Category20c',
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Get Chart Data
+// Support Method that extracts and prepare the provided data for the VisComp
+//-------------------------------------------------------------------------------------------------
 function getChartData(data, options) {
   const params = Object.assign({}, defaultOptions, options, _.isEmpty(data)?{marker: {size: 1, color: 'transparent', opacity: 0}}:{});
   data = _.isEmpty(data)?{x: [0.1, 0.2], y: [0.1, 0.2], z: [0.1, 0.2]}:data;
@@ -97,8 +126,13 @@ function getChartData(data, options) {
 
   return cData;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Get Chart Layout
+// Support Method that extracts and prepare the provided layout settings for the VisComp
+//-------------------------------------------------------------------------------------------------
 function getChartLayout(data, options, currentDataSourceName) {
   const params = Object.assign({}, defaultOptions, options);
 
@@ -153,8 +187,13 @@ function getChartLayout(data, options, currentDataSourceName) {
 
   return cLayout;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Get Chart Configuration
+// Support Method that extracts and prepare the provided Option Parameters for the VisComp
+//-------------------------------------------------------------------------------------------------
 function getChartConfig(options) {
   const params = Object.assign({}, defaultOptions, options);
 
@@ -167,7 +206,12 @@ function getChartConfig(options) {
 
   return cConfig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value (Not used or fully implemented)
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -175,12 +219,20 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function Scatter3D({
   data,
   mappings,
   options,
   colorTags,
 }) {
+
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   let internalData = data;
   let internalOptions = options;
@@ -191,6 +243,7 @@ export default function Scatter3D({
     currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
   } catch (error) { /*Just ignore and move on*/ }
 
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       internalOptions.title = "Scatter 3D";
@@ -199,6 +252,7 @@ export default function Scatter3D({
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(internalData, internalOptions);
@@ -215,8 +269,10 @@ export default function Scatter3D({
     });
   };
 
+  // Clear away the VizComp
   const clearChart = () => { };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -224,13 +280,19 @@ export default function Scatter3D({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 Scatter3D.propTypes = {
   data: PropTypes.shape({ }),
   mappings: PropTypes.shape({
@@ -251,10 +313,16 @@ Scatter3D.propTypes = {
   }),
   colorTags: PropTypes.arrayOf(PropTypes.object),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 Scatter3D.defaultProps = {
   data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],
 };
+//-------------------------------------------------------------------------------------------------

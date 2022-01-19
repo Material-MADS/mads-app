@@ -1,10 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the
+//              'PeriodicTable' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PeriodicTable' is a visualization component that displays a classic Periodic Table
+//        with the most common elements abd most of their attributes, rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party lodash, Jquery, Bokeh and pandas libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+
 import * as Bokeh from "@bokeh/bokehjs";
 import _, { transform } from 'lodash';
 import $ from "jquery";
 import { Series, DataFrame } from 'pandas-js';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Pre Initiate the Element data
+//-------------------------------------------------------------------------------------------------
 
 // Import Periodic Table Data and Prepare Periodic Table
 //=======================================================
@@ -47,14 +74,23 @@ const tooltip = [
   ['Electronic configuration', '@{electronic configuration}'],
 ];
 //=======================================================
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Periodic Table (omitting LA and AC Series)",
   extent: { width: 1000, height: 450 },
   x_range: groups,
   y_range: periods.reverse(),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
   const tools = "tap,box_select";
@@ -72,13 +108,21 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function PeriodicTable() {
+
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
   let cds = null;
 
+  // Create the VizComp based on the pre initiated data
   const createChart = async () => {
     const data = new Bokeh.ColumnDataSource({ data: { ...dataset,}, });
     const fig = createEmptyChart({});
@@ -178,9 +222,9 @@ export default function PeriodicTable() {
     return cds;
   };
 
+  // Clear away the VizComp
   const clearChart = () => {
     if (Array.isArray(views)) {
-      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {
@@ -192,6 +236,7 @@ export default function PeriodicTable() {
     views = null;
   };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -199,13 +244,19 @@ export default function PeriodicTable() {
     };
   });
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 PeriodicTable.propTypes = {
   options: PropTypes.shape({
     title: PropTypes.string,
@@ -217,7 +268,13 @@ PeriodicTable.propTypes = {
     }),
   }),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 PeriodicTable.defaultProps = {
   options: defaultOptions,
 };
+//-------------------------------------------------------------------------------------------------

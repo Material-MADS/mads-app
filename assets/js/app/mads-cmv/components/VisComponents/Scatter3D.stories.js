@@ -1,11 +1,39 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'Scatter3D' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Scatter3D' is a visualization component that displays a classic 3D Scatter Plot in
+//        various ways based on a range of available properties, and is rendered with the help of the
+//        Plotly library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, 3rd party lodash, Scatter3D VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
+
 import _ from 'lodash';
 
 import Scatter3D from './Scatter3D';
 
-// Simple Test Data - SETUP BEGIN
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// Simple Test Data
 //=========================================
 const originalTestData = {
   data: [
@@ -38,10 +66,8 @@ const opts = {
   colorMap: "Category10",
 };
 //=========================================
-// Simple Test Data - SETUP END
 
-
-// Small File Sample Data - SETUP BEGIN
+// Small File Sample Data
 //=========================================
 import iris_data from './testdata/iris';
 export function getScatter3DDataPack(){
@@ -73,10 +99,8 @@ export function getScatter3DDataPack(){
 }
 const S3DDPack = getScatter3DDataPack();
 //=========================================
-// Small File Sample Data - SETUP END
 
-
-// Numeric Chem File Data - SETUP BEGIN
+// Numeric Chem File Data
 //=========================================
 import numericchemdata from './testdata/chem';
 const cx = [], cy = [], cz = [], cSize = [], cCol = [], cGroup = [];
@@ -97,11 +121,14 @@ const cData_options = {
   },
 };
 //=========================================
-// Numeric Chem File Data - SETUP END
+
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('Scatter3D', module);
-
 stories
   .add('...empty', () => <Scatter3D />)
   .add('...with small data', () => (
@@ -122,3 +149,4 @@ stories
        options = { cData_options }
     />
   ));
+//-------------------------------------------------------------------------------------------------

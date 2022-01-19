@@ -1,3 +1,24 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'Custom' View, driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'CustomForm' opens a customized form for the 'CustomVC' visualization component and allows
+//        the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
+//             jquery & various color palettes, Internal Form Utilities Support functions
+=================================================================================================*/
+
+//*** TODO: This is yet not implemented into the application and is still under construction
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm, Label } from 'redux-form';
 import { Button, Form } from 'semantic-ui-react';
@@ -11,13 +32,24 @@ import Input from '../FormFields/Input';
 // import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 // import { cmMax, colorMapOptions } from './FormUtils';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Form Support Methods and Variables that manages various individual form fields that requires
+// some form of attention to its content
+//-------------------------------------------------------------------------------------------------
+
+//=======================
 // const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
+//=======================
 
+//=======================
 // const setSubmitButtonDisable = (disableState) => {
 //   if (disableState) { $(".ui.positive.button").prop('disabled', true); }
 //   else{ $(".ui.positive.button").prop('disabled', false); }
 // }
+//=======================
 
 // const errors = {};
 // const errorValidate = (value, values, props, fieldName) => {
@@ -60,9 +92,17 @@ import Input from '../FormFields/Input';
 
 //   return error;
 // }
+//=======================
+
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const CustomForm = (props) => {
+
+  // parameters and such
   const {
     handleSubmit,
     // initialValues,
@@ -82,6 +122,7 @@ const CustomForm = (props) => {
   // const methods = ['Manual', 'PCA'];
   // const preprocMethods = ['StandardScaling', 'Normalization'];
 
+  // input managers
   // const [fieldsAreShowing, toggleVisibleFields] = useState(
   //   initialValues.method != methods[1]
   // );
@@ -106,6 +147,7 @@ const CustomForm = (props) => {
   //   setValue(event);
   // };
 
+  // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
 
@@ -344,7 +386,13 @@ const CustomForm = (props) => {
     </Form>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'Custom',
 })(CustomForm);
+//-------------------------------------------------------------------------------------------------

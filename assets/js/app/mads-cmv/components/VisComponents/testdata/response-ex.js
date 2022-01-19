@@ -1,3 +1,22 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is a large example test sample dataset of chemical compounds used for
+//              development testing in the localhost Storybook environment and is not used in the
+//              live online website. ('Data-Ex' is a much smaller subset of this data)
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Response-Ex' data contains physical and chemical data for various chemical compounds.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Chemical Compound's properties
+//-------------------------------------------------------------------------------------------------
 const data = {
   schema: {
     fields: [
@@ -1350,6 +1369,6 @@ const data = {
     },
   ],
 };
-
+//-------------------------------------------------------------------------------------------------
 
 export default data;

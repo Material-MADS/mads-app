@@ -1,10 +1,36 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'PieChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PieChart' is a visualization component that displays a classic pie chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
+
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Pie Chart",
   extent: { width: undefined, height: 400 },
@@ -12,7 +38,12 @@ const defaultOptions = {
   y_range: [-1.0, 1.0],
   colorMap: 'Category20c',
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
   const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
@@ -33,7 +64,12 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -41,7 +77,12 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function PieChart({
   data,
   mappings,
@@ -50,6 +91,7 @@ export default function PieChart({
   selectedIndices,
   onSelectedIndicesChange,
 }) {
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
@@ -58,6 +100,7 @@ export default function PieChart({
   let internalData = data;
   let internalOptions = options;
 
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       internalOptions.title = undefined;
@@ -65,6 +108,7 @@ export default function PieChart({
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     const fig = createEmptyChart(internalOptions);
     setMainFigure(fig);
@@ -178,9 +222,9 @@ export default function PieChart({
     return cds;
   };
 
+  // Clear away the VizComp
   const clearChart = () => {
     if (Array.isArray(views)) {
-      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {
@@ -192,6 +236,7 @@ export default function PieChart({
     views = null;
   };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -199,6 +244,7 @@ export default function PieChart({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Catch current data selections properly in the VizComp
   const prevCds = usePrevious(cds);
   useEffect(() => {
     if (selectedIndices.length === 0) {
@@ -208,13 +254,19 @@ export default function PieChart({
     }
   }, [selectedIndices]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 PieChart.propTypes = {
   data: PropTypes.shape({
     values: PropTypes.arrayOf(PropTypes.number),
@@ -236,7 +288,12 @@ PieChart.propTypes = {
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 PieChart.defaultProps = {
   data: {},
   mappings: {
@@ -248,3 +305,4 @@ PieChart.defaultProps = {
   selectedIndices: [],
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------

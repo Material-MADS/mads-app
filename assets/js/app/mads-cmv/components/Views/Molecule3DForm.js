@@ -1,17 +1,42 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'Molecule3D' View,
+//              driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Molecule3DForm' opens a customized form for the 'Molecule3D' visualization component
+//        and allows the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
+//             lodash libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm, Label, change } from 'redux-form';
 import { Button, Form } from 'semantic-ui-react';
 
-import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
-import SemanticDropdown from '../FormFields/Dropdown';
-import SemCheckbox from '../FormFields/Checkbox';
 import Input from '../FormFields/Input';
 import inputTrad from '../FormFields/inputTraditional';
 import TextArea from '../FormFields/TextArea';
+
 import _ from 'lodash';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const Molecule3DForm = (props) => {
+
+  // parameters and such
   const {
     handleSubmit,
     initialValues,
@@ -23,7 +48,7 @@ const Molecule3DForm = (props) => {
     colorTags,
   } = props;
 
-
+  // input managers
   const fileChange = e => {
     var file = e.target.files[0]; // File object
     var reader = new FileReader();
@@ -100,6 +125,7 @@ const Molecule3DForm = (props) => {
     reader.readAsBinaryString(file);
   };
 
+  // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Group widths="equal">
@@ -144,7 +170,6 @@ const Molecule3DForm = (props) => {
         <input type="file" id="file" style={{ display: "none" }} onChange={fileChange} />
       </Form.Field>
 
-      {/* validate={[ errorValidate ]} onChange={onCMChange}*/}
       <Form.Field>
         <label>Chemical Name:</label>
         <Field
@@ -201,7 +226,13 @@ const Molecule3DForm = (props) => {
     </Form>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'Molecule3D',
 })(Molecule3DForm);
+//-------------------------------------------------------------------------------------------------

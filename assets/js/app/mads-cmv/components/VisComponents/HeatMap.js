@@ -1,10 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'HeatMap' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HeatMap' is a visualization component that displays a classic heat map based on a range
+//        of available properties, and is rendered with the help of the Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color
+//              palettes and also internal support methods from FormUtils
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
+
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Heat Map",
   extent: { width: undefined, height: 400 },
@@ -16,10 +43,14 @@ const defaultOptions = {
   heatValUnit: '',
   fontSize: '7px'
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  // const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
   const tools = "save,pan,box_zoom,reset,wheel_zoom";
 
   const fig = Bokeh.Plotting.figure({
@@ -39,7 +70,12 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -47,7 +83,12 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function HeatMap({
   data,
   mappings,
@@ -56,6 +97,7 @@ export default function HeatMap({
   selectedIndices,
   onSelectedIndicesChange,
 }) {
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
@@ -64,7 +106,7 @@ export default function HeatMap({
   let internalData = data;
   let internalOptions = options;
 
-
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       internalOptions = defaultOptions;
@@ -72,6 +114,7 @@ export default function HeatMap({
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     const fig = createEmptyChart(internalOptions);
     setMainFigure(fig);
@@ -173,9 +216,9 @@ export default function HeatMap({
     return cds;
   };
 
+  // Clear away the VizComp
   const clearChart = () => {
     if (Array.isArray(views)) {
-      // console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {
@@ -187,6 +230,7 @@ export default function HeatMap({
     views = null;
   };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -194,6 +238,7 @@ export default function HeatMap({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Catch current data selections properly in the VizComp
   const prevCds = usePrevious(cds);
   useEffect(() => {
     if (selectedIndices.length === 0) {
@@ -203,13 +248,19 @@ export default function HeatMap({
     }
   }, [selectedIndices]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 HeatMap.propTypes = {
   data: PropTypes.shape({
     xData: PropTypes.arrayOf(PropTypes.string),
@@ -238,7 +289,12 @@ HeatMap.propTypes = {
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 HeatMap.defaultProps = {
   data: {},
   mappings: {
@@ -251,3 +307,4 @@ HeatMap.defaultProps = {
   selectedIndices: [],
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------

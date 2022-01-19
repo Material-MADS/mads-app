@@ -1,29 +1,57 @@
-// import { connect } from 'react-redux';
-import React from 'react';
+
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Regression' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Regression' is the manager of all current input that controls the final view of the
+//         'RegressionVis' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PieChart & PieForm libs,
+=================================================================================================*/
+
+//*** TODO: This is not structured the same way as other Views, should probably be adjusted to do that
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
-import { Button, Modal, Card } from 'semantic-ui-react';
 import _ from 'lodash';
 
-import withCommandInterface from './ViewWrapper';
-import RegressionVis from '../VisComponents/RegressionVis';
-import RegressionForm from './RegressionForm';
-// import { withReducer } from 'recompose';
+import React from 'react';
+import { Button, Modal, Card } from 'semantic-ui-react';
 
+import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
+import RegressionVis from '../VisComponents/RegressionVis';
+import RegressionForm from './RegressionForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
 const settings = {
   options: { title: 'Regression' },
 };
+//-------------------------------------------------------------------------------------------------
 
-class RegressionView extends withCommandInterface(
-  RegressionVis,
-  RegressionForm,
-  settings
-) {
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class RegressionView extends withCommandInterface( RegressionVis, RegressionForm, settings ) {
+
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    // console.log(values)
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -37,7 +65,6 @@ class RegressionView extends withCommandInterface(
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
-    // console.log(columns);
     if (values.featureColumns) {
       const filteredColumns = values.featureColumns.filter((f) =>
         columns.includes(f)
@@ -60,37 +87,28 @@ class RegressionView extends withCommandInterface(
       x: values.targetColumn,
       y: `${values.targetColumn}--predicted`,
     };
-    console.warn(newValues.mappings);
 
     newValues = convertExtentValues(newValues);
-
-    console.log(newValues);
-    // TODO: apply filters
-    // updateView(id, newValues);
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
+  // Manages Save Model Requests
   handleModelSave = (name, overwrite, id) => {
     // Note: override this if necessary
-    console.log('model saving...');
     const { actions } = this.props;
 
     // submit setting form
-    // this.onSubmitClick();
     this.formReference.submit();
-    console.log(this.tmpViewParams);
     actions.saveModel(name, this.tmpViewParams, overwrite, id);
-    // this.close();
   };
 
   composeSubmittingData = (values) => {};
 
+  // Manages data changes in the view
   mapData = (dataset) => {
-    console.log(dataset);
     const { id, view, actions } = this.props;
-
     const data = [];
 
     if (dataset[id]) {
@@ -110,11 +128,11 @@ class RegressionView extends withCommandInterface(
         data.push(item);
       });
     }
-    console.log(data);
-    // actions.update
+
     return data;
   };
 
+  // Draws additional features to the chart
   render() {
     const {
       dataset,
@@ -128,19 +146,10 @@ class RegressionView extends withCommandInterface(
       actions,
     } = this.props;
 
-    console.log(this.props);
-
     const { main } = dataset;
-
     const { propSheetOpen } = this.state;
-
     const columnOptions = this.getColumnOptions();
-
-    // console.log(colorTags);
-    // let { data } = main;
-    // // TODO: compose data...
     const data = this.mapData(dataset);
-    console.log(dataset);
     const selectionInternal = this.getSelection(selection);
 
     // compose filtered indices
@@ -156,7 +165,6 @@ class RegressionView extends withCommandInterface(
 
       const s = new Set(filteredIndices);
       filteredIndices = Array.from(s);
-      // console.log(filteredIndices);
     }
 
     // extract scores
@@ -164,7 +172,6 @@ class RegressionView extends withCommandInterface(
     if (dataset[id]) {
       if (dataset[id].scores) {
         const ss = dataset[id].scores;
-        console.log(dataset[id].scores);
         if (ss['test_r2']) {
           scores.meanR2 = _.mean(ss['test_r2']);
         }
@@ -189,7 +196,6 @@ class RegressionView extends withCommandInterface(
             {...settings}
             {...view.settings}
             properties={view.properties}
-            // mappings={mappings}
             selectedIndices={selectionInternal}
             colorTags={colorTags}
             filteredIndices={filteredIndices}
@@ -236,13 +242,10 @@ class RegressionView extends withCommandInterface(
               Cancel
             </Button>
             <Button positive content="Submit" onClick={this.onSubmitClick} />
-            {/* <Button positive content="Submit" onClick={this.onSubmitClick} /> */}
           </Modal.Actions>
         </Modal>
       </div>
     );
   }
 }
-
-// export default connect(mapStateToProps)(ScatterView);
-export default RegressionView;
+//-------------------------------------------------------------------------------------------------

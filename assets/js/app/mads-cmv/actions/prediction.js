@@ -1,29 +1,56 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: These are the available Actions for the 'Prediction' feature/module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Prediction' let us create predictions based on previous ML runs in our components
+// ------------------------------------------------------------------------------------------------
+// References: api and message
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import api from '../api';
 import * as messageActions from './message';
 
-export const MODEL_TEST = 'MODEL_TEST';
-// export const SET_MESSAGE_OPEN = 'SET_MESSAGE_OPEN';
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Export constants and methods
+//-------------------------------------------------------------------------------------------------
+export const MODEL_TEST = 'MODEL_TEST';
+
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
 const createNewModel = async (model) => {
   const resCreated = await api.prediction.createModel(model);
   const createdModel = resCreated.data;
 
   return createdModel;
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const updateModel = async (id, model) => {
   const resUpdated = await api.prediction.updateModel(id, model);
   const updatedModel = resUpdated.data;
 
   return updatedModel;
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 export const saveModel = (name, viewSettings, overwrite, id) => async (
   dispatch,
   getState
 ) => {
-  console.log('Saving model ...');
-  // const state = getState();
   const model = { name };
   const metadata = {};
   model.metadata = metadata;
@@ -31,7 +58,6 @@ export const saveModel = (name, viewSettings, overwrite, id) => async (
 
   if (overwrite) {
     const updatedModel = await updateModel(id, model);
-    // dispatch(receiveWorkspaceInfo(updatedWorkspace));
     dispatch(
       messageActions.setMessage({
         header: 'Info',
@@ -40,7 +66,6 @@ export const saveModel = (name, viewSettings, overwrite, id) => async (
       })
     );
     dispatch(messageActions.setMessageOpen(true));
-    console.log(updatedModel);
     return;
   }
 
@@ -54,5 +79,5 @@ export const saveModel = (name, viewSettings, overwrite, id) => async (
     })
   );
   dispatch(messageActions.setMessageOpen(true));
-  console.log(createdModel);
 };
+//-------------------------------------------------------------------------------------------------

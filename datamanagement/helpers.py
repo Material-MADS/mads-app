@@ -1,3 +1,22 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided helpers for the 'datamanagement' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'datamanagement' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, crispy forms, bs4, common.helpers, markdown, logging libs
+#             and 'datamanagement'-folder's 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.utils.html import mark_safe
 from django import forms
 
@@ -24,7 +43,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 class DataSourceFilterHelper(FormHelper):
     form_method = "GET"
     layout = Layout(
@@ -33,17 +55,15 @@ class DataSourceFilterHelper(FormHelper):
             Submit("submit", "Apply Filter"),
         ),
     )
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceTable(tables.Table):
 
     name = tables.LinkColumn("datamanagement:datasource-detail", args=[A("id")])
 
     owned = tables.Column(accessor=tables.A("owner"), verbose_name="Owned")
-
-    # def render_name(self, value, record):
-    #     url = record.get_absolute_url()
-    #     return mark_safe('<a href="%s">%s</a>' % (url, record))
 
     def render_description(self, value):
 
@@ -69,7 +89,6 @@ class DataSourceTable(tables.Table):
     class Meta:
         model = DataSource
         template_name = "django_tables2/bootstrap.html"
-        # fields = ('name', 'owner', 'accessibility', 'modified',)
         fields = (
             "name",
             "owned",
@@ -78,26 +97,12 @@ class DataSourceTable(tables.Table):
             "description",
         )
         empty_text = "There are no data source matching the search criteria..."
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr="icontains")
-
-    # def __init__(self, data=None, *args, **kwargs):
-    #     logger.info('tttt')
-    #     # if filterset is bound, use initial values as defaults
-    #     if data is not None:
-    #         # get a mutable copy of the QueryDict
-    #         data = data.copy()
-
-    #         for name, f in self.base_filters.items():
-    #             initial = f.extra.get('initial')
-
-    #             # filter param is either missing or empty, use initial as default
-    #             if not data.get(name) and initial:
-    #                 data[name] = initial
-
-    #     super(DataSourceFilter, self).__init__(data, *args, **kwargs)
 
     class Meta:
         model = DataSource
@@ -105,3 +110,4 @@ class DataSourceFilter(django_filters.FilterSet):
             "name",
         ]
         order_by = ["pk"]
+#-------------------------------------------------------------------------------------------------

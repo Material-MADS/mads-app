@@ -1,3 +1,19 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'CustomVC' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'CustomVC' is a visualization component that can display more or less any of the other
+//        VizComps available based on a range of available properties.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, CustomVC VizComp and all other used VizComps
+=================================================================================================*/
+
 // IMPORT SECTION
 //===================================================================================================================
 
@@ -98,9 +114,13 @@ const scatter3DDataPack = getScatter3DDataPack();
 scatter3DDataPack.options["VisComp"] = 'Scatter3D';
 //=========================================
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('CustomVC', module);
-
 stories
   .add('...empty', () => <CustomVC />)
   .add('...PieChart Example', () => (
@@ -167,3 +187,4 @@ stories
       options = { scatter3DDataPack.options }
     />
   ));
+//-------------------------------------------------------------------------------------------------

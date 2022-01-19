@@ -1,28 +1,53 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Table' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Table' is a visualization component that displays a classic Table, rendered with the
+//        Bokeh library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party pandas, deepEqual, lodash & Bokeh libs
+=================================================================================================*/
+
+//*** TODO: Convert this to the newer react component type using hooks or perhaps...
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
-
 import * as Bokeh from '@bokeh/bokehjs';
 
-const INITIAL_WIDTH = 800;
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Initiation Consts and Vars
+//-------------------------------------------------------------------------------------------------
+const INITIAL_WIDTH = 800;
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Class
+//-------------------------------------------------------------------------------------------------
 class BokehTable extends Component {
+  // Initiation of the VizComp
   constructor(props) {
     super(props);
-    // this.state = {};
     this.cds = null;
-
     this.rootNode = React.createRef();
-
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(
-      this
-    );
-    // this.updatePlot = this.updatePlot.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind( this );
   }
 
   componentDidMount() {
@@ -35,9 +60,7 @@ class BokehTable extends Component {
       return p === v;
     });
 
-    console.log(diff);
     if (diff.colorTags) {
-      console.log('colorTag');
       return true;
     }
 
@@ -48,11 +71,8 @@ class BokehTable extends Component {
       return true;
     }
 
-    // if (diff.selectedIndices && Object.keys(diff).length === 1) {
     if (diff.selectedIndices) {
-      console.log(diff);
       this.cds.selected.indices = [...diff.selectedIndices];
-      // console.log(this.cds.selected.indices)
       return false;
     }
 
@@ -94,7 +114,6 @@ class BokehTable extends Component {
   }
 
   componentWillUnmount() {
-    console.info('unmount');
     this.clearChart();
   }
 
@@ -108,9 +127,9 @@ class BokehTable extends Component {
     }
   }
 
+  // Clear away the VizComp
   clearChart() {
     if (Array.isArray(this.views)) {
-      console.warn('array!!!', this.views);
     } else {
       const v = this.views;
       if (v) {
@@ -122,20 +141,16 @@ class BokehTable extends Component {
     this.views = null;
   }
 
+  // Create the VizComp based on the incomming parameters
   async createChart() {
-    // console.log('create', this.props);
     const {
       data,
       columns,
       colorTags,
       selectedIndices,
       filteredIndices,
-      // selectionColor,
-      // nonselectionColor,
       options,
     } = this.props;
-
-    console.log(filteredIndices);
 
     const df = new DataFrame(data);
 
@@ -146,7 +161,6 @@ class BokehTable extends Component {
     });
     this.cds = new Bokeh.ColumnDataSource({ data: tmpData });
 
-    // const template = '<p style="color:<%=red%>;"><%= value %></p>';
     const tString = JSON.stringify(colorTags);
     const template = `
       <div style="color:<%=
@@ -179,7 +193,6 @@ class BokehTable extends Component {
       });
     } else {
       displayColumns = df.columns.toArray().map((v) => {
-        // const c = new Bokeh.Tables.TableColumn({ field: v, title: v });
         const c = new Bokeh.Tables.TableColumn({
           field: v,
           title: v,
@@ -213,11 +226,8 @@ class BokehTable extends Component {
       const iFilter = new Bokeh.IndexFilter({ indices: filteredIndices });
       const view = new Bokeh.CDSView({ source: this.cds, filters: [iFilter] });
       this.mainFigure.view = view;
-      // console.log(view);
     }
 
-    // console.trace();
-    // this.views = Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
     const views = await Bokeh.Plotting.show(
       this.mainFigure,
       this.rootNode.current
@@ -231,10 +241,7 @@ class BokehTable extends Component {
     this.views = views;
   }
 
-  // updatePlot() {
-
-  // }
-
+  // Add the VizComp to the DOM
   render() {
     return (
       <div id="container">
@@ -243,15 +250,18 @@ class BokehTable extends Component {
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 BokehTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   columns: PropTypes.arrayOf(PropTypes.string),
   colorTags: PropTypes.arrayOf(PropTypes.object),
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   filteredIndices: PropTypes.arrayOf(PropTypes.number),
-  // selectionColor: PropTypes.string,
-  // nonselectionColor: PropTypes.string,
   options: PropTypes.shape({
     extent: PropTypes.shape({
       width: PropTypes.number.isRequired,
@@ -260,17 +270,21 @@ BokehTable.propTypes = {
   }),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 BokehTable.defaultProps = {
   data: [],
   columns: [],
   colorTags: [],
   selectedIndices: [],
   filteredIndices: [],
-  // selectionColor: 'orange',
-  // nonselectionColor: `#${Greys9[3].toString(16)}`,
   options: { extent: { width: 800, height: 400 } },
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------
 
 export default BokehTable;

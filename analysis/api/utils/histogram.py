@@ -1,9 +1,31 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) rest api utils for the 'Analysis' page involving
+#              histogram components
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
+#         allows serverside work for the 'histogram' component.
+# ------------------------------------------------------------------------------------------------
+# References: logging, numpy libs
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 import logging
 import numpy as np
 
-
 logger = logging.getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------------------------
 def get_histogram(data):
     logger.info(data)
 
@@ -13,11 +35,6 @@ def get_histogram(data):
     logger.info(x)
     logger.info(bins)
 
-    # try:
-    #     hist, bin_edges = np.histogram(x, bins=bins)
-    # except TypeError:
-    #     content = {'test': 'dddd'}
-    #     return Response(content, status=status.HTTP_400_BAD_REQUEST)
     hist, bin_edges = np.histogram(x, bins=bins)
 
     result = {}
@@ -26,7 +43,6 @@ def get_histogram(data):
 
     x_array = np.array(x)
     indices = []
-
 
     l = len(bin_edges)
     for i in range(l - 1):
@@ -44,3 +60,4 @@ def get_histogram(data):
     result['indices'] = indices
 
     return result
+#-------------------------------------------------------------------------------------------------
