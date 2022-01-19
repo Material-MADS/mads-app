@@ -1,15 +1,45 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is a set of Utility Support Functions for the Visual Components
+// ------------------------------------------------------------------------------------------------
+// Notes: 'VisCompUtils' is a set of utility support methods provided for the VisComps when needed.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Get Standarized Color
+// Returns a Canvas compatible color from a color string
+//-------------------------------------------------------------------------------------------------
 export function getStandarizedColor(str){
 	var ctx = document.createElement("canvas").getContext("2d");
 	ctx.fillStyle = str;
 	return ctx.fillStyle;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Get RGBA Color String From Any Color
+// Returns a RGBA color based on any color input
+//-------------------------------------------------------------------------------------------------
 export function getRGBAColorStrFromAnyColor(str){
 	var hex = getStandarizedColor(str);
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ",1)";
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Create UUID
+// Returns a Universal Unique ID value
+//-------------------------------------------------------------------------------------------------
 export function create_UUID(){
   var dt = new Date().getTime();
   var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -19,5 +49,4 @@ export function create_UUID(){
   });
   return uuid;
 }
-
-//export const something = {}
+//-------------------------------------------------------------------------------------------------

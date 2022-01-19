@@ -1,3 +1,22 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided views for the 'analysis' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'analysis' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, logging libs and 'datamanagement'-folder's 'forms',
+#             'models', 'helpers' and 'users'-folder's 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django import forms
 from django.contrib import messages
 from django.db.models import Q
@@ -23,12 +42,16 @@ from .models import Workspace
 from .helpers import WorkspaceTable
 from users.models import User
 
+#-------------------------------------------------------------------------------------------------
 
-# Create your views here.
+
+#-------------------------------------------------------------------------------------------------
 def index(request):
     return render(request, "analysis/index.html")
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceActionMixin:
     @property
     def success_msg(self):
@@ -62,8 +85,10 @@ class WorkspaceActionMixin:
 
         messages.info(self.request, self.success_msg)
         return response
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class FilteredWorkspaceListView(SingleTableMixin, FilterView):
     model = Workspace
     table_class = WorkspaceTable
@@ -109,8 +134,10 @@ class FilteredWorkspaceListView(SingleTableMixin, FilterView):
         context["num_of_shared"] = num_of_all - num_of_owned
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceCreateView(PermissionRequiredMixin, WorkspaceActionMixin, CreateView):
     model = Workspace
     form_class = WorkspaceForm
@@ -126,8 +153,10 @@ class WorkspaceCreateView(PermissionRequiredMixin, WorkspaceActionMixin, CreateV
         context["form"] = form
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceDetailView(PermissionRequiredMixin, DetailView):
     # model = Book
     model = Workspace
@@ -145,20 +174,11 @@ class WorkspaceDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # read contents if the file is CSS or EXCEL
-        # context['file'] = context['object'].file
-
-        # contents, file_type, columns = get_contents_from_file(
-        #     context['object'].file
-        # )
-
-        # context['contents'] = contents
-        # context['file_type'] = file_type
-        # context['columns'] = columns
-
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceUpdateView(PermissionRequiredMixin, WorkspaceActionMixin, UpdateView):
     model = Workspace
     form_class = WorkspaceForm
@@ -169,8 +189,10 @@ class WorkspaceUpdateView(PermissionRequiredMixin, WorkspaceActionMixin, UpdateV
 
     # fields = ('name', 'description', 'file', 'accessibility',
     #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Workspace
     pk_url_kwarg = "id"
@@ -181,35 +203,27 @@ class WorkspaceDeleteView(PermissionRequiredMixin, DeleteView):
         result = super().delete(request, *args, **kwargs)
         messages.success(self.request, "The workspace is deleted.")
         return result
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceNewView(PermissionRequiredMixin, WorkspaceActionMixin, TemplateView):
     template_name = "analysis/workspace_default.html"
     permission_required = "analysis.add_workspace"
 
     def get_context_data(self, **kwargs):
-        # context = super().get_context_data(**kwargs)
         context = {}
-        # form = WorkspaceForm(initial={
-        #     'owner': self.request.user
-        # })
-        # form.fields['owner'].widget = forms.HiddenInput()
-        # context['form'] = form
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceNewUnauthorizedView(WorkspaceActionMixin, TemplateView):
     template_name = "analysis/workspace_default.html"
-    # permission_required = 'analysis.add_workspace'
 
     def get_context_data(self, **kwargs):
-        # context = super().get_context_data(**kwargs)
         context = {}
-        # form = WorkspaceForm(initial={
-        #     'owner': self.request.user
-        # })
-        # form.fields['owner'].widget = forms.HiddenInput()
-        # context['form'] = form
 
         return context
+#-------------------------------------------------------------------------------------------------

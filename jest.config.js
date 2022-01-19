@@ -24,7 +24,6 @@ module.exports = {
     'assets/js/store.js',
     'assets/js/index.js',
     'assets/js/jquery-index.js',
-    'assets/js/constants/*',
     'assets/js/pages/*',
     'assets/js/tests/*',
   ],

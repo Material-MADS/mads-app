@@ -1,14 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Custom' Chart View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Custom' is the manager of all current input that controls the final view of the
+//         'CustomVS' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: Internal ViewWrapper & Form Utility Support,
+//             Internal CustomVC & CustomForm libs,
+=================================================================================================*/
+
+//*** TODO: This is yet not implemented into the application and is still under construction
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import withCommandInterface from './ViewWrapper';
+import convertExtentValues from './FormUtils';
+
 import CustomVC from '../VisComponents/CustomVC';
 import CustomForm from './CustomForm';
 
-import convertExtentValues from './FormUtils';
-
-// import { DataFrame } from 'pandas-js';
-// import _ from 'lodash';
+//-------------------------------------------------------------------------------------------------
 
 
-class CustomView extends withCommandInterface(CustomVC, CustomForm) {
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class CustomView extends withCommandInterface(CustomVC, CustomForm) {
 
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
@@ -91,5 +114,4 @@ class CustomView extends withCommandInterface(CustomVC, CustomForm) {
     return data;
   };
 }
-
-export default CustomView;
+//-------------------------------------------------------------------------------------------------

@@ -1,3 +1,22 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) rest api utils for the 'Analysis' page involving
+#              regression components
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
+#         allows serverside work for the 'regression' component.
+# ------------------------------------------------------------------------------------------------
+# References: logging, numpy, pandas and sklearn libs
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 import logging
 import numpy as np
 import pandas as pd
@@ -7,9 +26,11 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import cross_validate, KFold
 
-
 logger = logging.getLogger(__name__)
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 def get_regression(data):
     feature_columns  = data['view']['settings']['featureColumns']
     target_column = data['view']['settings']['targetColumn']
@@ -66,34 +87,5 @@ def get_regression(data):
     print(scores)
     data['scores'] = scores
 
-    # for i in range(len(y)):
-    #     d = {}
-    #     d[target_column] = y[i]
-    #     d[p_name] = y_predict[i]
-    #     data.append(d)
-
-    # logger.info(data[0])
-
-
-    # columns = [target_column, p_name]
-
-    # df_pred = pd.DataFrame(y, y_predict).reset_index()
-    # df_pred = pd.DataFrame(y)
-    # df_pred[target_column + '_predicted'] = y_predict
-
-    # df_pred.columns = columns
-
-    # df_result = df_pred
-
-    # logger.info(df_result)
-
-    # data = []
-    # for index, row in df_result.iterrows():
-    #     d = {target_column: row[index],
-
-
-    # result = {}
-    # result[data] = data
-
-
     return data, reg
+#-------------------------------------------------------------------------------------------------

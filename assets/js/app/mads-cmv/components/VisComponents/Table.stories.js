@@ -1,3 +1,22 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'Table' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Table' is a visualization component that displays a classic Table, rendered with the
+//        Bokeh library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, Table VizComp and ColorTag. External sample data.
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
@@ -8,8 +27,13 @@ import ColorTag from '../../models/ColorTag';
 import data from './testdata/data-ex';
 import bData from './testdata/response-ex';
 
-const stories = storiesOf('Table', module);
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
+const stories = storiesOf('Table', module);
 stories
   .add('empty table', () => <Table />)
   .add('with data', () => (
@@ -48,21 +72,4 @@ stories
       columns={['Formation Energy (eV)', 'Band Gap (eV)', 'Volume']}
     />
   ));
-// .add('with knobs', () => {
-//   // const defaultExtent = { width: 400, height: 400 };
-//   // const groupId = 'GROUP-ID1';
-//   // const extent = object('extent', defaultExtent);
-//   // const width = number('width', 400);
-//   // const height = number('height', 400);
-
-//   const selections = array('selectedIndices', [0]).map(Number);
-
-//   return (
-//     <Table
-//       data={bData.data}
-//       // extent={{ width, height }}
-//       selectedIndices={selections}
-//       // onSelectedIndicesChange={action('selected_change')}
-//     />
-//   );
-// });
+//-------------------------------------------------------------------------------------------------

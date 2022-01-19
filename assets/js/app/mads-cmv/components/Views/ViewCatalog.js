@@ -1,3 +1,23 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Catalog of all available Views and their initial default settings.
+// ------------------------------------------------------------------------------------------------
+// Notes: 'ViewCatalog' provide the Visualisation page with information about each available Views
+//        and visualization component. All Views in the catalog will be displayed in the Add View
+//        Dropdown options.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PieChart & PieForm libs,
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import ScatterView from './Scatter';
 import BarView from './Bar';
 import TableView from './Table';
@@ -16,9 +36,16 @@ import ImageViewView from './ImageView';
 import PairwiseCorrelationView from './PairwiseCorrelation';
 import CustomView from './Custom';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// The Catalog Config
+//-------------------------------------------------------------------------------------------------
 const config = [
-  // Custom
+  // Custom - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  // IT IS NOT YET FINISHED ANF FULLY IMPLEMENTED, THEREFORE IT IS COMMENTED OUT
+  //------------------------------------------
   // {
   //   type: 'custom',
   //   name: 'Custom',
@@ -35,10 +62,13 @@ const config = [
   //     },
   //   },
   // },
+  //------------------------------------------
 
+  // VISUALIZATION CATEGORY
+  //=======================
 
-
-  // visualizations
+  // Scatter - A Customizable Scatter Plot
+  //------------------------------------------
   {
     type: 'scatter',
     name: 'Scatter',
@@ -55,6 +85,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Bar - A Customizable Bar Chart
+  //------------------------------------------
   {
     type: 'bar',
     name: 'Bar',
@@ -72,6 +106,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Table - A Customizable Data Table
+  //------------------------------------------
   {
     type: 'table',
     name: 'Table',
@@ -81,11 +119,12 @@ const config = [
     component: TableView,
     settings: {
       columns: [],
-      // selectionColor: 'orange',
-      // nonselectionColor: `#${Greys9[3].toString(16)}`,
-      // options: { extent: { width: 800, height: 400 } },
     },
   },
+  //------------------------------------------
+
+  // Periodic Table - A Non-Customizable Chemical Elements Periodic Table
+  //------------------------------------------
   {
     type: 'periodic-table',
     name: 'Periodic Table',
@@ -97,6 +136,10 @@ const config = [
       columns: [],
     },
   },
+  //------------------------------------------
+
+  // Parallel Coordinates - A Customizable Parallel Coordinate Component
+  //------------------------------------------
   {
     type: 'parcoords',
     name: 'Parallel Coordinates',
@@ -104,12 +147,12 @@ const config = [
     component: ParCoordsView,
     settings: {
       axes: [],
-      // selectionColor: 'orange',
-      // nonselectionColor: `#${Greys9[3].toString(16)}`,
-      // options: { extent: { width: 800, height: 400 } },
     },
   },
+  //------------------------------------------
 
+  // Molecule 3D - A Customizable 3D Molecule Viewer
+  //------------------------------------------
   {
     type: 'molecule3D',
     name: 'Molecule3D',
@@ -128,6 +171,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Image View - A Customizable Image Viewer
+  //------------------------------------------
   {
     type: 'imageView',
     name: 'ImageView',
@@ -151,10 +198,18 @@ const config = [
       },
     },
   },
+  //------------------------------------------
 
-  // data processing
 
-  // analysis
+  // DATA PROCESSING CATEGORY
+  //=========================
+
+
+  // ANALYSIS CATEGORY
+  //==================
+
+  // Pairwise Correlation - A Customizable Pairwise Correlation (heatmap) component
+  //------------------------------------------
   {
     type: 'pairwise-correlation',
     name: 'PairwiseCorrelation',
@@ -169,6 +224,10 @@ const config = [
       }
     },
   },
+  //------------------------------------------
+
+  // Histogram - A Customizable Histogram Bar Chart
+  //------------------------------------------
   {
     type: 'histogram',
     name: 'Histogram',
@@ -184,6 +243,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Clustering - A Customizable Clustering Bar Chart
+  //------------------------------------------
   {
     type: 'clustering',
     name: 'Clustering',
@@ -201,6 +264,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Feature Importance (RF) - A Customizable Feature Importance Bart Chart
+  //------------------------------------------
   {
     type: 'feature-importance',
     name: 'Feature Importance (RF)',
@@ -217,6 +284,10 @@ const config = [
       },
     },
   },
+  //------------------------------------------
+
+  // Pie - A Customizable Pie Chart
+  //------------------------------------------
   {
     type: 'pie',
     name: 'Pie',
@@ -235,6 +306,10 @@ const config = [
       }
     },
   },
+  //------------------------------------------
+
+  // Scatter 3D - A 3-dimensional Scatter Plot
+  //------------------------------------------
   {
     type: 'scatter3D',
     name: 'Scatter3D',
@@ -261,6 +336,10 @@ const config = [
       }
     },
   },
+  //------------------------------------------
+
+  // Heatmap - A Customizable Heatmap View
+  //------------------------------------------
   {
     type: 'heatmap',
     name: 'HeatMap',
@@ -269,7 +348,6 @@ const config = [
     devStage: "Beta",
     component: HeatMapView,
     settings: {
-      // bins: 5,
       options: {
         colorMap: 'Category10',
         extent: {
@@ -279,9 +357,13 @@ const config = [
       }
     },
   },
+  //------------------------------------------
 
+  // MACHINE LEARNING CATEGORY
+  //==========================
 
-  // machine learning
+  // Regression - A Customizable Regression Scatter Line Plot
+  //------------------------------------------
   {
     type: 'regression',
     name: 'Regression',
@@ -297,6 +379,10 @@ const config = [
       mappings: {},
     },
   },
+  //------------------------------------------
+
+  // Classification - A Customizable Classification Scatter Line Plot
+  //------------------------------------------
   {
     type: 'classification',
     name: 'Classification',
@@ -311,6 +397,7 @@ const config = [
       mappings: {},
     },
   },
+  //------------------------------------------
 ];
-
+//-------------------------------------------------------------------------------------------------
 export default config;

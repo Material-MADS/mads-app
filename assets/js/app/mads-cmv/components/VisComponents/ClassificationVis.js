@@ -1,57 +1,92 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Classification'
+//              module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Classification' is a visualization component using ML-classification on the data before
+//        displaying its result in a classic Scatter plot. (rendered by the Bokeh-Charts library.)
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party pandas, deepEqual, lodash and Bokeh libs, with
+//             various color palettes
+=================================================================================================*/
+
+//*** TODO: Convert this to the newer react component type using hooks or perhaps...
+//*** TODO: Could this (and perhaps Regression) be deleted, and just leave the Scatter Plot with some new settings to replace them
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
-import * as gPalette from 'google-palette';
-
 import * as Bokeh from '@bokeh/bokehjs';
+
+import * as gPalette from 'google-palette';
 import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 
 const Category10_10 = Category10.Category10_10;
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: 'Scatter',
+  title: 'Classification',
   selectionColor: 'orange',
   nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: 400, height: 400 },
 };
+//-------------------------------------------------------------------------------------------------
 
-function createEmptyChart(options) {
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
+function createEmptyChart(options, dataIsEmpty) {
   const params = Object.assign({}, defaultOptions, options);
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
     title: params.title || 'Plot',
     tools,
-    // x_range: [0, 100],
-    // y_range: [0, 100],
+    x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
+    y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
-    // toolbar_location: 'right',
-    // toolbar_sticky: false,
   });
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Class
+//-------------------------------------------------------------------------------------------------
 class ClassificationVis extends Component {
+  // Initiation of the VizComp
   constructor(props) {
     super(props);
-    // this.state = {};
     this.cds = null;
 
     this.rootNode = React.createRef();
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange =
-      this.handleSelectedIndicesChange.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
-    // this.updatePlot = this.updatePlot.bind(this);
   }
 
   componentDidMount() {
@@ -59,23 +94,16 @@ class ClassificationVis extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    // console.warn('0000', nextProps)
     const diff = _.omitBy(nextProps, (v, k) => {
       const { [k]: p } = this.props;
       return p === v;
     });
 
-    // if (diff.filteredIndices) {
-    //   return true;
-    // }
-
     if (diff.colorTags) {
       return true;
     }
 
-    // if (diff.selectedIndices && Object.keys(diff).length === 1) {
     if (diff.selectedIndices) {
-      // console.log(diff);
       if (this.cds) {
         this.cds.selected.indices = diff.selectedIndices;
       }
@@ -86,13 +114,11 @@ class ClassificationVis extends Component {
   }
 
   componentDidUpdate() {
-    // this.updatePlot();
     this.clearChart();
     this.createChart();
   }
 
   componentWillUnmount() {
-    console.info('unmount');
     this.clearChart();
   }
 
@@ -100,39 +126,21 @@ class ClassificationVis extends Component {
     const { onSelectedIndicesChange } = this.props;
     const { indices } = this.cds.selected;
 
-    // console.log('selecting', this.selecting);
     if (this.selecting) {
       return;
     }
 
-    // console.log(indices, this.lastIndices);
-    // if (onSelectedIndicesChange && !deepEqual(this.lastIndices, indices)) {
-    //   onSelectedIndicesChange(indices);
-    //   this.lastIndices = indices;
-    // }
     if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
       this.selecting = true;
-
-      // console.log(indices, this.lastSelections);
       this.lastSelections = [...indices];
       onSelectedIndicesChange(indices);
       this.selecting = false;
     }
   }
 
+  // Clear away the VizComp
   clearChart() {
-    // console.info('clear chart');
-    // if (this.views) {
-    //   Object.keys(this.views).forEach((key) => {
-    //     const v = this.views[key];
-    //     // v.model.disconnect_signals();
-    //     v.remove();
-    //     // console.log('remove', key);
-    //   });
-    // }
-    console.log(this.views);
     if (Array.isArray(this.views)) {
-      console.warn('array!!!', this.views);
     } else {
       const v = this.views;
       if (v) {
@@ -144,8 +152,8 @@ class ClassificationVis extends Component {
     this.views = null;
   }
 
+  // Create the VizComp based on the incomming parameters
   async createChart() {
-    // console.log('create', this.props);
     const {
       data,
       mappings,
@@ -155,19 +163,17 @@ class ClassificationVis extends Component {
       filteredIndices,
     } = this.props;
 
-    // console.log('sc', selectedIndices, this.selecting);
-
     const { x: xName, y: yName, color } = mappings;
-
-    this.mainFigure = createEmptyChart(options);
     const df = new DataFrame(data);
 
     let x = [];
     let y = [];
 
     const cols = df.columns;
-    // console.log(cols)
     window.c = cols;
+
+    // this.mainFigure = createEmptyChart(options);
+    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       x = df.get(xName).to_json({ orient: 'records' });
@@ -195,10 +201,6 @@ class ClassificationVis extends Component {
 
       let mapper = null;
       if (color) {
-        // const palette = Bokeh.require('api/palettes').Viridis256;
-        // const palette = Bokeh.require('api/palettes').RdBu11;
-        // const palette = Bokeh.require('api/palettes').Spectral11;
-        // const pal = palette.map(c => `#${c.toString(16)}`);
         const pal = gPalette('tol-rainbow', 256).map((c) => `#${c}`);
         const low = df.get(color).values.min();
         const high = df.get(color).values.max();
@@ -221,11 +223,8 @@ class ClassificationVis extends Component {
 
       // setup callback
       this.cds.connect(this.cds.selected.change, () => {
-        // console.log(arguments);
         this.handleSelectedIndicesChange();
       });
-
-      // TODO: recover tool selection
 
       // call the circle glyph method to add some circle glyphs
       const selectionColor = options.selectionColor || 'orange';
@@ -272,13 +271,9 @@ class ClassificationVis extends Component {
           filters: [iFilter],
         });
         circles.view = view;
-        console.log(view);
       }
 
-      // const xMax = this.mainFigure.x_range.max;
-      // const yMax = this.mainFigure.y_range.max;
       const yMax = Math.max.apply(null, y);
-      console.warn(yMax);
 
       const source = new Bokeh.ColumnDataSource({
         data: { x: [0, yMax], y: [0, yMax] },
@@ -286,19 +281,13 @@ class ClassificationVis extends Component {
       let line = new Bokeh.Line({
         x: { field: 'x' },
         y: { field: 'y' },
-        // line_color: '#666699',
         line_color: 'red',
         line_width: 1,
       });
       this.mainFigure.add_glyph(line, source);
     }
 
-    // console.trace();
-    // this.views = Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
-    const views = await Bokeh.Plotting.show(
-      this.mainFigure,
-      this.rootNode.current
-    );
+    const views = await Bokeh.Plotting.show( this.mainFigure, this.rootNode.current );
 
     if (this.views) {
       this.clearChart();
@@ -307,10 +296,7 @@ class ClassificationVis extends Component {
     this.views = views;
   }
 
-  // updatePlot() {
-
-  // }
-
+  // Add the VizComp to the DOM
   render() {
     return (
       <div id="container">
@@ -319,7 +305,12 @@ class ClassificationVis extends Component {
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 ClassificationVis.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   mappings: PropTypes.shape({
@@ -341,20 +332,21 @@ ClassificationVis.propTypes = {
   filteredIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 ClassificationVis.defaultProps = {
   data: [],
   mappings: {},
-  options: {
-    title: 'Scatter',
-    selectionColor: 'orange',
-    nonselectionColor: `#${Greys9[3].toString(16)}`,
-    extent: { width: 400, height: 400 },
-  },
+  options: defaultOptions,
   colorTags: [],
   selectedIndices: [],
   filteredIndices: [],
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------
 
 export default ClassificationVis;

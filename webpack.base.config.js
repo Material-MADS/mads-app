@@ -1,9 +1,29 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: Settings for webpacks static module bundler for this app
+// ------------------------------------------------------------------------------------------------
+// Notes: This is the base config that is used by all various deployments
+// ------------------------------------------------------------------------------------------------
+// References: 'NodeJS' platform and 'WebPack' library
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 const path = require('path');
 const webpack = require('webpack');
-
 const nodeModulesDir = path.resolve(__dirname, 'node_modules');
 const BundleTracker = require('webpack-bundle-tracker');
 
+
+//-------------------------------------------------------------------------------------------------
+// Module Exports Webpack Bundle control Info
+//-------------------------------------------------------------------------------------------------
 module.exports = [
   {
     entry: ['./assets/js/common-index.js'],
@@ -47,7 +67,6 @@ module.exports = [
         },
         {
           test: /\.(jpg|png)?$/,
-          // use: ['file-loader?name=i-[contenthash].[ext]'],
           type: 'asset/resource',
           generator: {
             filename: 'i-[contenthash][ext]',
@@ -93,10 +112,6 @@ module.exports = [
         {
           test: /\.css$/,
           use: ['style-loader', 'css-loader', 'postcss-loader'],
-        },
-        {
-          test: /\.scss$/,
-          use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'],
         },
         {
           test: /\.(svg)(\?v=\d+\.\d+\.\d+)?$/,

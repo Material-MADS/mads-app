@@ -1,9 +1,24 @@
-"""[summary]
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided rest api for the 'Prediction' page involving
+#              views
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the REST API part of the serverside module that allows the user to
+#         interact with the 'prediction' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries and rest framework, logging, joblib, tempfile libs and
+#             'prediction' folder's 'models', 'api' subfolder's 'serializers' and 'permissions'
+#             and 'analysis' folder's subfolder 'api' folder's 'utils'
+#=================================================================================================
 
-Returns:
-    [type] -- [description]
-"""
-
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.db.models import Q
 from django.core.files.uploadedfile import SimpleUploadedFile
 import logging
@@ -26,16 +41,15 @@ from .serializers import PretrainedModelSimpleSerializer
 from .permissions import IsOwnerOrReadOnly
 from analysis.api.utils.processor import get_model
 
-
-# from .utils.processor import process_view
-
 import sys
 import tempfile
 
-
 logger = logging.getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 class PretrainedModelFilteredLookupMixin(object):
 
     def get_queryset(self):
@@ -60,8 +74,10 @@ class PretrainedModelFilteredLookupMixin(object):
         ).distinct()
 
         return queryset
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class PretrainedModelAPIViewSet(
         PretrainedModelFilteredLookupMixin,
         viewsets.ModelViewSet,
@@ -190,3 +206,4 @@ class PretrainedModelAPIViewSet(
         pm.save()
 
         return Response(serializer.data)
+#-------------------------------------------------------------------------------------------------

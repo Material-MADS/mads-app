@@ -37,10 +37,6 @@ npm-debug.log
 /webpack-stats.json
 /common-webpack-stats.json
 
-# Sass
-.sass-cache
-*.map
-
 # General
 /venv/
 /env/
@@ -48,10 +44,6 @@ npm-debug.log
 /cache/
 
 logs/
-
-# Spritesmith
-spritesmith-generated/
-spritesmith.scss
 
 # templated email
 tmp_email/

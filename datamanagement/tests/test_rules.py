@@ -1,5 +1,23 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) datamanagement test of the rules code
+# ------------------------------------------------------------------------------------------------
+# Notes: This is a code test for the 'rules' of the serverside module that allows the user to
+#        interact with the 'datamanagement' interface of the website.
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, rules libs and 'datamanagement'-folder's
+#             'models' and 'rules'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.test import TestCase
-# from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
@@ -8,9 +26,11 @@ import rules
 import datamanagement.rules as my_rules
 from datamanagement.models import DataSource
 
+#-------------------------------------------------------------------------------------------------
+
 User = get_user_model()
 
-
+#-------------------------------------------------------------------------------------------------
 class DataSourceRulesTests(TestCase):
 
     def setUp(self):
@@ -58,12 +78,6 @@ class DataSourceRulesTests(TestCase):
         g1, c = Group.objects.get_or_create(name='g1')
         gu1.groups.add(g1)
         internal_d.shared_groups.add(g1)
-        # internal_d.save()
-
-    # def test_predicate_is_datasource_owner(self):
-    #     d = DataSource.objects.get(name='PrivateD1')
-    #     u = User.objects.get(email='test1@example.com')
-    #     self.assertTrue(my_rules.is_datasource_owner(u, d))
 
     ####################
     def test_rule_can_delete_datasource(self):
@@ -144,3 +158,4 @@ class DataSourceRulesTests(TestCase):
         self.assertFalse(rules.test_rule('can_read_datasource', other, d))
         self.assertTrue(rules.test_rule('can_read_datasource', suser, d))
         self.assertTrue(rules.test_rule('can_read_datasource', guser, d))
+#-------------------------------------------------------------------------------------------------

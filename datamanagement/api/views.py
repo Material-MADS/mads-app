@@ -1,4 +1,23 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided rest api for the 'datamanagement' page involving
+#              views
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the REST API part of the serverside module that allows the user to
+#         interact with the 'datamanagement' interface of the website. (DB & server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries and rest framework libs and 'datamanagement' folder's
+#             'models', and api's 'serializers' and 'permissions'
+#=================================================================================================
 
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.db.models import Q
 from rest_framework.generics import (
     ListCreateAPIView,
@@ -12,7 +31,10 @@ from ..models import DataSource
 from .serializers import DataSourceSerializer
 from .permissions import IsOwnerOrReadOnly
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 class DataSourceFilteredLookupMixin(object):
 
     def get_queryset(self):
@@ -37,8 +59,10 @@ class DataSourceFilteredLookupMixin(object):
         ).distinct()
 
         return queryset
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceCreateAPIView(
     # PermissionRequiredMixin,
     DataSourceFilteredLookupMixin,
@@ -49,8 +73,10 @@ class DataSourceCreateAPIView(
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     serializer_class = DataSourceSerializer
     lookup_field = 'id'
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceRetrieveUpdateDestroyAPIView(
     DataSourceFilteredLookupMixin,
     RetrieveUpdateDestroyAPIView
@@ -63,8 +89,10 @@ class DataSourceRetrieveUpdateDestroyAPIView(
     )
     serializer_class = DataSourceSerializer
     lookup_field = 'id'
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceContentsAPIView(
     APIView
 ):
@@ -79,3 +107,4 @@ class DataSourceContentsAPIView(
         """
         # content =
         return ''
+#-------------------------------------------------------------------------------------------------

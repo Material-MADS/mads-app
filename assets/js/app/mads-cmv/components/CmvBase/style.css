@@ -1,3 +1,20 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the CSS styles for 'CmvBase' and related components
+// ------------------------------------------------------------------------------------------------
+// Notes: 'CmvBase' is the main workspace area of the analysis page that provides us with
+//        possibilities that allows us to add different views (visualization components) in order
+//        to study the selected data.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+/*-----------------------------------------------------------------------------------------------*/
 .base-container {
   flex-direction: row;
   flex-wrap: wrap;
@@ -6,26 +23,27 @@
   display: flex;
   margin: 5px;
 }
+/*-----------------------------------------------------------------------------------------------*/
 
+/*-----------------------------------------------------------------------------------------------*/
 .view-container {
   display: inline-block;
   flex: auto;
-  /*width: 400px;
-  height: 300px;*/
   margin: 5px;
   vertical-align: top;
-
   order: 0;
   flex-grow: 0;
   flex-shrink: 1;
   flex-basis: auto;
   align-self: auto;
-  /*border: black dashed 1px;*/
   border: 1px solid rgba(34, 36, 38, 0.15);
   border-radius: 0.28571429rem;
   box-shadow: 0 1px 2px 0 rgba(34, 36, 38, 0.15);
 }
+/*-----------------------------------------------------------------------------------------------*/
 
+/*-----------------------------------------------------------------------------------------------*/
 .view-contents {
   display: flex;
 }
+/*-----------------------------------------------------------------------------------------------*/

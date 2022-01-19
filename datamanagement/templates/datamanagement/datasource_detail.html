@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: (Django) Frontside template for the 'DataManagement' page involving datasource
+               details view
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the template files for the 'datamanagement' interface of the website.
+# ------------------------------------------------------------------------------------------------
+# References: extends 'base.html' from the main templates folder of the application
+#=================================================================================================
+{% endcomment %}
+
 {% load ex_filters %}
 
 {% block title %}Data Management - {{PROJECT_NAME_ABBR}}{% endblock %}
@@ -65,9 +82,6 @@
     <div class="item">This type of data source cannot be displayed.</div>
 {% endif %}
 
-
-
-
     <div class="right item">
         {% if datasource.owner == user %}
         <div>
@@ -81,20 +95,12 @@
     </div>
 </div>
 
-{% comment %}
-<div class="ui active inverted dimmer" id="dimmer">
-    <div class="ui text loader">Loading</div>
-</div> {% endcomment %}
-
 
 {% if contents%}
 <div class="container" id="cc">
     <table id="example" class="display compact" width="100%"></table>
 </div>
 
-<!-- <div class="container" id="bb">
-  <table id="testTable" class="display compact" width="100%"></table>
-</div> -->
 {% endif %}
 
 <hr>
@@ -123,7 +129,6 @@ function sanitizeData(jsonArray) {
 function sanitizeColumns(jsonArray) {
     var dataProp;
     jsonArray.forEach(function(item) {
-        // dataProp = item['data'].replace(/\s/g, '').replace(/\./g, '');
         dataProp = item['data'].replace(/\./g, '__');
         item['data'] = dataProp;
         item['title'] = dataProp;
@@ -145,30 +150,12 @@ columns = sanitizeColumns(columns);
 let table = $('#example').dataTable({
     "data": data,
     "columns": columns,
-    'drawCallback': () => { console.log('table - ready.')}
+    'drawCallback': () => { }
 });
-
-// let testTable = $('#testTable').dataTable({
-//  ajax: { url: "http://data.testsv.info/pref.json", dataSrc: '' },
-//  columns: [
-//      { data: "id" },
-//      { data: "name" }
-//  ]
-//});
-
-
-
-
 
 {% endif %}
 
-//const values = columns.map(c => {
-//    return { name: c.data, value: c.data };
-//});
-
 sel = $('#dropd').dropdown({
-//    placeholder: 'Filter Columns',
-//    values: values,
     useLabels: false
   })
 ;
@@ -206,7 +193,5 @@ selected = $('#selectedColumns').on('change', () => {
     });
 });
 </script>
-
-
 
 {% endblock %}

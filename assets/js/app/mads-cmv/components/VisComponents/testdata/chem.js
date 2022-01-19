@@ -1,3 +1,23 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is an example test sample dataset of chemical production used for
+//              development testing in the localhost Storybook environment and is not used in the
+//              live online website.
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Chem' data contains data of amounts, pressures, temperatures and preparation methods as
+//        well as the produced result.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Chemical Production Variations of preparations and final results
+//-------------------------------------------------------------------------------------------------
 const data = {
   "schema": {
     "fields": [{
@@ -52335,5 +52355,6 @@ const data = {
     "C2selec": null
   }]
 };
+//-------------------------------------------------------------------------------------------------
 
 export default data;

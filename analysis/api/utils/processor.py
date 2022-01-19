@@ -1,3 +1,22 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+# ________________________________________________________________________________________________
+# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) rest api utils for the 'Analysis' page providing access to all
+#              available serverside components
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is sort of the entry of the REST API parts of the 'analysis' interface of the
+#         website that allows serverside work for the available components.
+# ------------------------------------------------------------------------------------------------
+# References: logging libs and all connected serverside available components
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from .histogram import get_histogram
 from .feature_importance import get_feature_importance
 from .clustering import get_clusters
@@ -14,6 +33,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
+
+
 processor_map = {
     'histogram': get_histogram,
     'feature-importance': get_feature_importance,
@@ -28,6 +50,8 @@ processor_map = {
     'bar': get_bar,
 }
 
+
+#-------------------------------------------------------------------------------------------------
 def process_view(data):
     logger.info(data['view']['type'])
 
@@ -40,12 +64,14 @@ def process_view(data):
         result = processor_map[data['view']['type']](data)
 
     return result
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def get_model(data):
     logger.info(data['view']['type'])
 
     _, model = processor_map[data['view']['type']](data)
 
     return model
-
+#-------------------------------------------------------------------------------------------------

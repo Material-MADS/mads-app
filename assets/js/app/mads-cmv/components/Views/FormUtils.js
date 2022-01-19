@@ -1,3 +1,23 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: A set of Support Utility Functions and constants that helps with configuring the
+//              various forms of this application
+// ------------------------------------------------------------------------------------------------
+// Notes: 'FormUtils' manages often reacuring and needed features for the various forms that are
+//         developed and used by the configuration of the different Views.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Convert Extent Values
+// Takes the values (width and height) of the view component and make sure they are valid numbers
+//-------------------------------------------------------------------------------------------------
 export default function convertExtentValues(values) {
   const newValues = { ...values };
 
@@ -9,7 +29,14 @@ export default function convertExtentValues(values) {
 
   return newValues;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Color Map Max
+// Keeps track of the maximum available colors for each color map identified by names and provided
+// by Bokeh Palettes
+//-------------------------------------------------------------------------------------------------
 export const cmMax = {
   Category20: "_20", Category20b: "_20", Category20c: "_20", Category10: "_10", Cividis: "256", Inferno: "256", Magma: "256", Plasma: "256", Viridis: "256",
   Turbo: "256", Accent: "8", Blues: "9", BrBG: "11", BuGn: "9", BuPu: "9", Dark2: "8", GnBu: "9",
@@ -17,7 +44,14 @@ export const cmMax = {
   PuOr: "11", PuRd: "9", Purples: "9", RdBu: "11", RdGy: "11", RdPu: "9", RdYlBu: "11",
   RdYlGn: "11", Reds: "9", Set1: "9", Set2: "8", Set3: "12", Spectral: "11", YlGn: "9", YlGnBu: "9", YlOrBr: "9", YlOrRd: "9", Colorblind: "8",
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Color Map Options
+// Keeps track of the names and descriptions for all the available colors provided by Bokeh
+// Palettes
+//-------------------------------------------------------------------------------------------------
 export const colorMapOptions = [
   {key: "Category20", text: "Category20 (max 20 colors)", value: "Category20"},
   {key: "Category20b", text: "Category20b (max 20 colors)", value: "Category20b"},
@@ -66,3 +100,4 @@ export const colorMapOptions = [
   {key: "YlOrRd", text: "YlOrRd (max 9 colors)", value: "YlOrRd"},
   {key: "Colorblind", text: "Colorblind (max 8 colors)", value: "Colorblind"},
 ];
+//-------------------------------------------------------------------------------------------------

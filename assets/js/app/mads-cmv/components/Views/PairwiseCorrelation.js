@@ -1,19 +1,55 @@
-import withCommandInterface from './ViewWrapper';
-import HeatMap from '../VisComponents/HeatMap';
-import PairwiseCorrelationForm from './PairwiseCorrelationForm';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the
+//              'Pairwise Correlation' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Pairwise Correlation' is the manager of all current input that controls the final view
+//         of this specific case of a 'HeatMap' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party jeezy & chroma libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PairwiseCorrelation & PairwiseCorrelationForm libs,
+=================================================================================================*/
 
-import convertExtentValues from './FormUtils';
-
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import * as jz from 'jeezy';
 import * as chroma from 'chroma-js';
 
+import withCommandInterface from './ViewWrapper';
+import convertExtentValues from './FormUtils';
+
+import HeatMap from '../VisComponents/HeatMap';
+import PairwiseCorrelationForm from './PairwiseCorrelationForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
+
+//=======================
 const settings = {
   options: { title: 'Pairwise Correlation' },
 };
 
 var fcMemory = [];
+//=======================
+//-------------------------------------------------------------------------------------------------
 
-class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorrelationForm, settings) {
+
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
+export default class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorrelationForm, settings) {
+
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
@@ -31,12 +67,8 @@ class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorr
     let data = { xData: [], yData: [], heatVal: [] };
 
     if(newValues.selectAllColumns){
-      console.warn('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-      console.warn(dataset.main.data);
       newValues.featureColumns = (Object.keys(dataset.main.data[0])).filter(col => col != 'index');
       fcMemory = newValues.featureColumns;
-      console.warn(fcMemory);
-      console.warn('-----------------------------');
     }
 
     var mask = [];
@@ -107,7 +139,7 @@ class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorr
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
-
+  // Manages data changes in the view
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
@@ -128,5 +160,4 @@ class PairwiseCorrelationView extends withCommandInterface(HeatMap, PairwiseCorr
     return data;
   };
 }
-
-export default PairwiseCorrelationView;
+//-------------------------------------------------------------------------------------------------

@@ -1,20 +1,36 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'ImageView' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'ImageView' is a visualization component that displays any basic image file based on a
+//        range of available properties.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party jquery, internal support methods fr. VisCompUtils
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
+
 import $ from "jquery";
 
 import { create_UUID } from './VisCompUtils';
 
-import * as Bokeh from "@bokeh/bokehjs";
-
 import noImg from './images/noimage.jpg';
 
-import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
-// Dev and Debug declarations
-window.Bokeh = Bokeh;
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Empty Image View",
   caption: "No Image Loaded",
@@ -26,8 +42,12 @@ const defaultOptions = {
     size: 2,
   }
 };
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -35,25 +55,32 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function ImageView({
   data,
   mappings,
   options,
   colorTags,
 }) {
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   const uid = create_UUID();
   let internalData = data;
   let internalOptions = Object.assign({}, defaultOptions, options);
 
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
-      // internalOptions.title = "Scatter 3D";
-      // internalOptions.axisTitles = ['x', 'y', 'z'];
       delete internalData.resetRequest;
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     $(rootNode.current).empty();
 
@@ -86,8 +113,10 @@ export default function ImageView({
     });
   };
 
+  // Clear away the VizComp
   const clearChart = () => { };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -95,13 +124,19 @@ export default function ImageView({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 ImageView.propTypes = {
   data: PropTypes.shape({ }),
   mappings: PropTypes.shape({}),
@@ -120,10 +155,16 @@ ImageView.propTypes = {
     }),
   }),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 ImageView.defaultProps = {
   data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],
 };
+//-------------------------------------------------------------------------------------------------

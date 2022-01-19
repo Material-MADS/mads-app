@@ -1,23 +1,43 @@
-import React, { useState, useEffect, useRef } from "react";
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+// ________________________________________________________________________________________________
+// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
+//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Molecule3D' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Molecule3D' is a visualization component that displays an interactive 3D molecule in
+//        numerous ways based on a range of available properties, and is rendered with the help of the
+//        Chem-Doodle library.
+// ------------------------------------------------------------------------------------------------
+// References: React, redux & prop-types Libs, 3rd party jquery, lodash libs,
+//             and also internal support methods from VisCompUtils
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { useEffect, useRef } from "react";
 import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
+
 import _ from 'lodash';
 import $ from "jquery";
-
-import { getStandarizedColor, getRGBAColorStrFromAnyColor, create_UUID } from './VisCompUtils';
-import * as Bokeh from "@bokeh/bokehjs";
-
 import '@vendors/chem-doodle/ChemDoodleWeb.css';
 import ChemDoodle from "@vendors/chem-doodle/ChemDoodleWeb";
+
+import { getStandarizedColor, getRGBAColorStrFromAnyColor, create_UUID } from './VisCompUtils';
+
 import iconImg from './images/webLinkIcon.png';
 import scanIconImg from './images/scanLogo.png';
 
-import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
-// Dev and Debug declarations
-window.Bokeh = Bokeh;
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Internal Constants
+//-------------------------------------------------------------------------------------------------
 const molDrawTypes = [
   "Ball and Stick",
   "Stick",
@@ -26,6 +46,12 @@ const molDrawTypes = [
   "Line"
 ];
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Empty 3D Molecule",
   extent: { width: 500, height: 400 },
@@ -40,8 +66,12 @@ const defaultOptions = {
   customBondsEnabled: false,
   customBondsColAndSize: ["gray", "0.3"],
 };
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -49,13 +79,20 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function Molecule3D({
   data,
   mappings,
   options,
   colorTags,
 }) {
+
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   const uid = create_UUID();
   let internalData = data;
@@ -67,12 +104,14 @@ export default function Molecule3D({
     currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
   } catch (error) { /*Just ignore and move on*/ }
 
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       $(rootNode.current).empty();
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     $(rootNode.current).empty();
 
@@ -279,8 +318,6 @@ export default function Molecule3D({
 
       molViewer3d.styles.text_font_size = 24;
 
-
-
       // UNMANAGED CHEMDOODLE CONFIGS
       // -------------------------------------------------------------
       // molViewer3d.styles.text_font_families = ['Times New Roman'];
@@ -372,8 +409,10 @@ export default function Molecule3D({
     }
   };
 
+  // Clear away the VizComp
   const clearChart = () => { };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -381,14 +420,19 @@ export default function Molecule3D({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Add the VizComp to the DOM
   return (
     <div id="container">
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 Molecule3D.propTypes = {
   data: PropTypes.shape({
     name: PropTypes.string,
@@ -397,12 +441,6 @@ Molecule3D.propTypes = {
     smiles: PropTypes.string,
     data: PropTypes.string,
   }),
-  // mappings: PropTypes.shape({
-  //   x: PropTypes.string,
-  //   y: PropTypes.string,
-  //   z: PropTypes.string,
-  //   color: PropTypes.string,
-  // }),
   options: PropTypes.shape({
     title: PropTypes.string,
     extent: PropTypes.shape({
@@ -421,9 +459,15 @@ Molecule3D.propTypes = {
     customBondsColAndSize: PropTypes.arrayOf(PropTypes.string),
   }),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 Molecule3D.defaultProps = {
   data: {},
   mappings: {},
   options: defaultOptions,
 };
+//-------------------------------------------------------------------------------------------------

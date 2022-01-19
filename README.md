@@ -1,3 +1,8 @@
+[//]: # (==============================================================================================================)
+[//]: # (This is the Main ReadMe file for the CADS/MADS project)
+[//]: # (Description: How to set up the project server from Git, how to manage it as well as credits to the developers)
+[//]: # (==============================================================================================================)
+
 [![License: MIT](https://img.shields.io/github/license/vintasoftware/django-react-boilerplate.svg)](LICENSE.txt)
 
 # MADS/CADS Application (madsapp)
@@ -53,7 +58,7 @@ Please see some guide line like https://opensource.guide/how-to-contribute/ .
 
 You may follow blow procedure:
 
-1. Folk the repository
+1. Fork the repository
 2. Create a branch
 3. Commit changes
 4. Push the branch
