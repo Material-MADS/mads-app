@@ -18,6 +18,7 @@
 import api from '../api';
 import * as datasetActions from './dataset';
 import * as messageActions from './message';
+import * as loadingActions from './loading';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -91,12 +92,14 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
   dispatch(requestViewUpdateRemote());
   view.settings = values;
   dispatch(updateView(values));
+  dispatch(loadingActions.setLoadingState(true));
 
   return api.views
     .sendRequestViewUpdate(view, data)
     .then((res) => {
       dispatch(receiveViewUpdateRemote(res.data));
       dispatch(datasetActions.addDatasetView(view.id, res.data));
+      dispatch(loadingActions.setLoadingState(false));
     })
     .catch((err) => {
       console.dir(err);
@@ -108,6 +111,7 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
           type: 'error',
         })
       );
+      dispatch(loadingActions.setLoadingState(false));
     });
 };
 //-------------------------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ class App extends React.Component {
         <MessagePanel />
 
         <Dimmer active={isLoading} page>
-          <Loader size="small">Loading</Loader>
+          <Loader size="huge">Loading and/or Processing Data</Loader>
         </Dimmer>
       </div>
     );

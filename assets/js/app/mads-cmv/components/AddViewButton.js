@@ -109,7 +109,7 @@ class AddViewButton extends React.Component {
     return (
       <Modal
         trigger={
-          <Button onClick={this.open}>
+          <Button onClick={this.open} style={{marginTop: "5px"}}>
             <Icon name="add" />
             Add View
           </Button>

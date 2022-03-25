@@ -32,6 +32,8 @@ import convertExtentValues from './FormUtils';
 import RegressionVis from '../VisComponents/RegressionVis';
 import RegressionForm from './RegressionForm';
 
+import DevStage from '../FormFields/DevStage';
+
 //-------------------------------------------------------------------------------------------------
 
 
@@ -85,10 +87,11 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
     // set mapping
     newValues.mappings = {
       x: values.targetColumn,
-      y: `${values.targetColumn}--predicted`,
+      y: `${values.targetColumn}--Predicted`,
     };
 
     newValues = convertExtentValues(newValues);
+    settings.options.title = "Regression (" + newValues.method + ") [" + newValues.cvmethod + "]";
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
@@ -109,24 +112,51 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
   // Manages data changes in the view
   mapData = (dataset) => {
     const { id, view, actions } = this.props;
-    const data = [];
+    const data = {d1: {data: []}, d2: {data: []}};
 
     if (dataset[id]) {
       const targetName = view.settings.targetColumn;
-      const pName = `${targetName}--predicted`;
-      const xx = dataset[id][targetName];
-      const yy = dataset[id][pName];
+      const pName = `${targetName}--Predicted`;
+      let xx, yy, xx2, yy2;
+
+      // Make sure backwards compability is implemented so old regression components will still work
+      if(dataset[id]['d1']){
+        xx = dataset[id]['d1'][targetName];
+        yy = dataset[id]['d1'][pName];
+        xx2 = dataset[id]['d2'][targetName];
+        yy2 = dataset[id]['d2'][pName];
+      }
+      else{
+        xx = dataset[id][targetName];
+        yy = dataset[id][pName];
+        xx2 = [];
+        yy2 = [];
+      }
 
       if (!xx && !yy) {
-        return [];
+        return  {d1: {data: []}, d2: {data: []}};
       }
 
       xx.forEach((x, i) => {
         const item = {};
         item[targetName] = x;
         item[pName] = yy[i];
-        data.push(item);
+        data.d1.data.push(item);
       });
+
+      xx2.forEach((x, i) => {
+        const item = {};
+        item[targetName] = x;
+        item[pName] = yy2[i];
+        data.d2.data.push(item);
+      });
+
+      if (!(dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn))) {
+        data.d1 = {data: []};
+        data.d2 = {data: []};
+        data["resetRequest"] = true;
+        data["resetTitle"] = "Regression";
+      }
     }
 
     return data;
@@ -144,6 +174,8 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
       isLoggedIn,
       showMessage,
       actions,
+      version,
+      devStage
     } = this.props;
 
     const { main } = dataset;
@@ -167,6 +199,7 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
       filteredIndices = Array.from(s);
     }
 
+
     // extract scores
     const scores = {};
     if (dataset[id]) {
@@ -181,15 +214,17 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
       }
     }
 
+    if(data["resetRequest"] && data["resetRequest"] === true){
+      scores.meanR2 = '';
+      scores.meanMAE = '';
+    }
+
     return (
       <div className="view-container">
-        <Button
-          size="mini"
-          icon="remove"
-          onClick={() => this.onDeleteClick(id)}
-        />
+        <Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />
         <Button size="mini" icon="configure" onClick={() => this.show()} />
-
+        <Button className="the-drag-handle" size="mini" icon="arrows alternate" /> {/* Remove this if customized component position order is to be turned off */}
+        <DevStage stage={devStage} version={version} />
         <div className="view-contents">
           <RegressionVis
             data={data || []}

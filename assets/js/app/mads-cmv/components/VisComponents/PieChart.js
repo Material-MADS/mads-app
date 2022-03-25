@@ -17,11 +17,11 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import * as deepEqual from 'deep-equal';
-import * as Bokeh from "@bokeh/bokehjs";
+import * as Bokeh from '@bokeh/bokehjs';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
@@ -67,58 +67,114 @@ function createEmptyChart(options) {
 //-------------------------------------------------------------------------------------------------
 
 
-//-------------------------------------------------------------------------------------------------
-// Returns the previous value
-//-------------------------------------------------------------------------------------------------
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-//-------------------------------------------------------------------------------------------------
-
 
 //-------------------------------------------------------------------------------------------------
-// This Visualization Component Creation Method
+// This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
-export default function PieChart({
-  data,
-  mappings,
-  options,
-  colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
-}) {
+
+export default class PieChart extends Component {
   // Initiation of the VizComp
-  const rootNode = useRef(null);
-  let views = null;
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
-  let selectedIndicesInternal = [];
-  let internalData = data;
-  let internalOptions = options;
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
 
-  // Clear away all data if requested
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions.title = undefined;
-      delete internalData.resetRequest;
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
     }
-  }, [internalData])
+
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
 
   // Create the VizComp based on the incomming parameters
-  const createChart = async () => {
-    const fig = createEmptyChart(internalOptions);
-    setMainFigure(fig);
+  async createChart() {
+    const {
+      data,
+      mappings,
+      options,
+      colorTags,
+      selectedIndices,
+      onSelectedIndicesChange,
+    } = this.props;
+
+    let selectedIndicesInternal = [];
+    let internalData = data;
+    let internalOptions = options;
+
+    // Create the VizComp based on the incomming parameters
+    this.mainFigure = createEmptyChart(internalOptions);
 
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     const { dimensions, values } = mappings;
 
     if(internalData[values] && internalData[values].length > 256){
-      fig.title.text_color = "red";
-      fig.title.text = "Your target column includes way too many categories (" + internalData[values].length + "), No Pie Chart drawn!";
+      this.mainFigure.title.text_color = "red";
+      this.mainFigure.title.text = "Your target column includes way too many categories (" + internalData[values].length + "), No Pie Chart drawn!";
       internalData = {};
     }
 
@@ -179,11 +235,11 @@ export default function PieChart({
           percentage,
         },
       });
-      cds = sData;
+      this.cds = sData;
 
       // setup callback
-      if (cds) {
-        cds.connect(cds.selected.change, () => {
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, () => {
           const indices = sData.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
@@ -194,9 +250,9 @@ export default function PieChart({
         });
       }
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@' + dimensions + ': @' + values + ' (@percentage %)' }));
+      this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: '@' + dimensions + ': @' + values + ' (@percentage %)' }));
 
-      fig.wedge({
+      this.mainFigure.wedge({
         x: 0,
         y: 0,
         radius: 0.4,
@@ -210,56 +266,31 @@ export default function PieChart({
         source: sData,
       });
 
-      fig.xaxis[0].axis_label = null;
-      fig.yaxis[0].axis_label = null;
-      fig.xaxis[0].visible = false;
-      fig.yaxis[0].visible = false;
-      fig.xgrid[0].grid_line_color = null;
-      fig.ygrid[0].grid_line_color = null;
+      this.mainFigure.xaxis[0].axis_label = null;
+      this.mainFigure.yaxis[0].axis_label = null;
+      this.mainFigure.xaxis[0].visible = false;
+      this.mainFigure.yaxis[0].visible = false;
+      this.mainFigure.xgrid[0].grid_line_color = null;
+      this.mainFigure.ygrid[0].grid_line_color = null;
     }
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
-  };
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
-  // Clear away the VizComp
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
-
-  // Recreate the chart if the data and settings change
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
-
-  // Catch current data selections properly in the VizComp
-  const prevCds = usePrevious(cds);
-  useEffect(() => {
-    if (selectedIndices.length === 0) {
-      if (prevCds) {
-        prevCds.selected.indices = [];
-      }
-    }
-  }, [selectedIndices]);
+    this.views = views;
+  }
 
   // Add the VizComp to the DOM
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
 //-------------------------------------------------------------------------------------------------
 

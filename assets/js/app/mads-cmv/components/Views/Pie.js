@@ -34,19 +34,6 @@ import PieForm from './PieForm';
 //-------------------------------------------------------------------------------------------------
 export default class PieView extends withCommandInterface(PieChart, PieForm) {
 
-  // Manages data selection changes in the view
-  handleSelectionChange = (indices) => {
-    const { dataset, updateSelection } = this.props;
-    const data = this.mapData(dataset);
-
-    let selections = [];
-    indices.forEach((i) => {
-      const idx = data.indices[i];
-      selections = [...selections, ...idx];
-    });
-    updateSelection(selections);
-  };
-
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;

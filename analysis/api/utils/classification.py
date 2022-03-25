@@ -21,7 +21,13 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import RidgeClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +39,7 @@ def get_classification(data):
     feature_columns  = data['view']['settings']['featureColumns']
     target_column = data['view']['settings']['targetColumn']
     method = data['view']['settings']['method']
+    method_args = data['view']['settings']['methodArguments']
 
     dataset = data['data']
     df = pd.DataFrame(dataset)
@@ -46,9 +53,21 @@ def get_classification(data):
     model = None
 
     if method == 'RandomForest':
-        model = RandomForestClassifier(n_estimators=10, random_state=0)
-    else: #  KNeighbors
+        model = RandomForestClassifier(random_state=int(method_args['arg1']), n_estimators=int(method_args['arg2']))
+    elif method == 'SVC':
+        model = SVC(C=float(method_args['arg1']), gamma=float(method_args['arg2']))
+    elif method == 'ExtraTrees':
+        model = ExtraTreesClassifier(random_state=int(method_args['arg1']), n_estimators=int(method_args['arg2']))
+    elif method == 'GradientBoosting':
+        model = GradientBoostingClassifier()
+    elif method == 'KNeighbors':
         model = KNeighborsClassifier(n_neighbors=3)
+    elif method == 'SGD':
+        model = SGDClassifier()
+    elif method == 'MLP':
+        model = MLPClassifier(random_state=int(method_args['arg1']), max_iter=int(method_args['arg2']))
+    else: #  Ridge
+        model = RidgeClassifier(alpha=float(method_args['arg1']))
 
     model.fit(X, y)
     y_predict = model.predict(X)

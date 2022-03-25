@@ -17,7 +17,7 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import { Series, DataFrame } from 'pandas-js';
+import { DataFrame } from 'pandas-js';
 
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
@@ -32,19 +32,6 @@ import BarForm from './BarForm';
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
 export default class BarView extends withCommandInterface(Bar, BarForm) {
-
-  // Manages data selection changes in the view
-  handleSelectionChange = (indices) => {
-    const { dataset, updateSelection } = this.props;
-    const data = this.mapData(dataset);
-
-    let selections = [];
-    indices.forEach((i) => {
-      const idx = data.indices[i];
-      selections = [...selections, ...idx];
-    });
-    updateSelection(selections);
-  };
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
@@ -85,7 +72,7 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
     let data = {};
 
     if (dataset[id]) {
-      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.mappings.dimension)) {
+      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.mappings.measures[0])) {
         data = dataset[id];
       }
       else{

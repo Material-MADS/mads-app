@@ -32,10 +32,6 @@ import PeriodicTableForm from './PeriodicTableForm';
 //-------------------------------------------------------------------------------------------------
 export default class PeriodicTableView extends withCommandInterface(PeriodicTableChart, PeriodicTableForm) {
 
-  // Manages data selection changes in the view
-  handleSelectionChange = (indices) => {
-  };
-
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;

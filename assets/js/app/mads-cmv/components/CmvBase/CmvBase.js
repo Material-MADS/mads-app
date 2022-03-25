@@ -18,95 +18,175 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React from 'react';
+import React, { useState } from 'react';
+import ResizeObserver from 'rc-resize-observer';
 import PropTypes from 'prop-types';
 
 import ColorTags from '../../containers/ColorTags';
 import AddViewButton from '../../containers/AddView';
+import { Button } from 'semantic-ui-react';
 import config from '../Views/ViewCatalog';
 
 import './style.css';
 
+import { Responsive, WidthProvider } from "react-grid-layout"
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+
 //-------------------------------------------------------------------------------------------------
+// Component Global Variables
+//-------------------------------------------------------------------------------------------------
+let gridUnitWidth, gridUnitHeight = 100;
+const border = { borderWidth: '1px', borderStyle: 'dashed'};
 
-// *** TODO *** TRYING TO IMPLEMENT MOVABLE VIEWS
-// import { Responsive, WidthProvider } from "react-grid-layout" //*** TODO: movable views
-// import "react-grid-layout/css/styles.css"; //*** TODO: movable views
-// import "react-resizable/css/styles.css"; //*** TODO: movable views
-// const ResponsiveReactGridLayout = WidthProvider(Responsive) //*** TODO: movable views
 
 //-------------------------------------------------------------------------------------------------
-// The Component Class
+// The Component Function
 //-------------------------------------------------------------------------------------------------
-class CmvBase extends React.Component {
-  static propTypes = {
-    views: PropTypes.arrayOf(PropTypes.any),
-    actions: PropTypes.objectOf(PropTypes.any),
-    dataset: PropTypes.objectOf(PropTypes.any),
-    selection: PropTypes.arrayOf(PropTypes.number),
-    colorTags: PropTypes.arrayOf(PropTypes.any),
-  };
+export default function CmvBase({
+    views,
+    actions,
+    dataset,
+    selection,
+    colorTags,
+    userInfo,
+    showMessage,
+  }) {
 
-  static defaultProps = {
-    views: [],
-    actions: {},
-    dataset: {},
-    selection: [],
-    colorTags: [],
-  };
+  const [layout, setLayout] = useState([]);
+  const [borderVisibility, setBorderVisibility] = useState(false);
 
-  componentDidMount() {}
-
-  render() {
-    const {
-      views,
-      actions,
-      dataset,
-      selection,
-      colorTags,
-      userInfo,
-      showMessage,
-    } = this.props;
-
-    const viewContainers = views.map((view) => {
-      const componentDef = config.find((c) => view.type === c.type);
-      if(componentDef){
-        const View = componentDef.component;
-
-        return (
-          <View
-            key={view.id}
-            id={view.id}
-            view={view}
-            dataset={dataset}
-            selection={selection}
-            colorTags={colorTags}
-            removeView={actions.removeViewData}
-            updateView={actions.updateView}
-            updateSelection={actions.updateSelection}
-            actions={actions}
-            isLoggedIn={userInfo.isLoggedIn}
-            version={componentDef.version}
-            devStage={componentDef.devStage}
-          />
-        );
-      }
-    });
-
-    return (
-      <div>
-        <ColorTags />
-
-        <div className="ui divider" />
-
-        <div className="base-container">
-          {viewContainers}
-          <AddViewButton views={views} />
-        </div>
-      </div>
-    );
+  const handleClick = (e) => {
+    setBorderVisibility(!borderVisibility);
   }
+
+  const layoutHasChanged = (newLayout) => {
+    views.map((view) => {
+        view.rgl = newLayout.find((e) => e.i == view.id)
+    });
+    setLayout(newLayout);
+  }
+
+  const resizeWasDone = (newLayout, gridItemBeforeResize, gridItemAfterResize) => {
+    const theActiveView = views.find((v) => v.id == gridItemAfterResize.i);
+    const newSettings = {...theActiveView.settings, options: { ...theActiveView.settings.options, extent: {width: parseInt(gridItemAfterResize.w*gridUnitWidth-(gridUnitWidth/2)), height: parseInt(gridItemAfterResize.h*gridUnitHeight-(gridUnitHeight/2))}}};
+    actions.updateView(gridItemAfterResize.i, newSettings);
+    layoutHasChanged(newLayout);
+  }
+
+  const componentInnerSizeChanged = (eventValues, eventElement) => {
+    const theLayoutItem = layout.find((e) => e.i == eventElement.parentElement.id);
+    if(gridUnitWidth == undefined){ gridUnitWidth = parseInt(eventElement.parentElement.clientWidth / theLayoutItem.w) }
+
+    let newGUSize = {w: 0, h: 0}
+    for(var i = 1; i <= 30; i++){
+        if(newGUSize.w == 0 && (gridUnitWidth * i) > eventValues.width){
+          newGUSize.w = i;
+        }
+        if(newGUSize.h == 0 && (gridUnitHeight * i) > eventValues.height){
+          newGUSize.h = i;
+        }
+        if(newGUSize.w > 0 && newGUSize.h > 0){
+          break;
+        }
+    }
+
+    if(newGUSize.w != theLayoutItem.w || newGUSize.h != theLayoutItem.h){
+      const theLayoutIndex = layout.findIndex((e) => e.i == eventElement.parentElement.id);
+      let newLayout = layout.map(item => ({ ...item }));
+      newLayout[theLayoutIndex].w = newGUSize.w;
+      newLayout[theLayoutIndex].h = newGUSize.h;
+      layoutHasChanged(newLayout);
+    }
+  }
+
+
+  const viewContainers = views.map((view) => {
+    const componentDef = config.find((c) => view.type === c.type);
+    if(componentDef){
+      const View = componentDef.component;
+      const theRGL = Object.keys(view.rgl).length === 0 ? {x: 0, y: 0, w: 2, h: 2, } : view.rgl;
+      if(view.rglRules && view.rglRules.isResizable !== undefined){
+        theRGL['isResizable'] = view.rglRules.isResizable
+      }
+
+      return (
+        <div
+          id={view.id}
+          style={{...border, borderColor: (borderVisibility ? 'gray' : 'transparent')}}
+          key={view.id}
+          // Remove data-grid if customized component position order is to be turned off
+          data-grid={theRGL}
+        >
+          {/* Remove ResizeObserver container if customized component position order is to be turned off */}
+          <ResizeObserver onResize={componentInnerSizeChanged}>
+            <View
+              key={view.id}
+              id={view.id}
+              view={view}
+              dataset={dataset}
+              selection={selection}
+              colorTags={colorTags}
+              removeView={actions.removeViewData}
+              updateView={actions.updateView}
+              updateSelection={actions.updateSelection}
+              actions={actions}
+              isLoggedIn={userInfo.isLoggedIn}
+              version={componentDef.version}
+              devStage={componentDef.devStage}
+            />
+          </ResizeObserver>
+        </div>
+      );
+    }
+  });
+
+  return (
+    <div>
+      <div className="base-container">
+        <ColorTags />
+        <Button toggle active={borderVisibility} onClick={handleClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Show Border</Button> {/* Remove this if customized component position order is to be turned off */}
+        <AddViewButton views={views} />
+      </div>
+
+      <div className="ui divider" />
+
+      <div>  {/* add className="base-container" ti this div if customized component position order is to be turned off */}
+        {/* Remove ResponsiveGridLayout container if customized component position order is to be turned off */}
+        <ResponsiveGridLayout
+          rowHeight={gridUnitHeight}
+          className="layout"
+          layouts={{lg: layout}}
+          compactType={'horizontal'}
+          style={{...border, borderColor: (borderVisibility ? 'blue' : 'transparent')}}
+          // isResizable={true}
+          onLayoutChange={layoutHasChanged}
+          onResizeStop={resizeWasDone}
+          draggableHandle= {".the-drag-handle"}
+        >
+          {viewContainers}
+        </ResponsiveGridLayout>
+      </div>
+    </div>
+  );
 }
 //-------------------------------------------------------------------------------------------------
 
-export default CmvBase;
+CmvBase.propTypes = {
+  views: PropTypes.arrayOf(PropTypes.any),
+  actions: PropTypes.objectOf(PropTypes.any),
+  dataset: PropTypes.objectOf(PropTypes.any),
+  selection: PropTypes.arrayOf(PropTypes.number),
+  colorTags: PropTypes.arrayOf(PropTypes.any),
+};
+
+CmvBase.defaultProps = {
+  views: [],
+  actions: {},
+  dataset: {},
+  selection: [],
+  colorTags: [],
+};

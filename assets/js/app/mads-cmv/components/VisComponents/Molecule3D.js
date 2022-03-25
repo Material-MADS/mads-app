@@ -252,7 +252,21 @@ export default function Molecule3D({
     if(internalData){
       // Read and create the molecule from the data
       try {
-        molecule = ChemDoodle.readMOL(internalData.data, 1);
+        if(internalData.fileExt == "mol"){
+          molecule = ChemDoodle.readMOL(internalData.data, 1);
+        }
+        else if(internalData.fileExt == "cif"){
+          molecule = ChemDoodle.readCIF(internalData.data).molecule;
+        }
+        else if(internalData.fileExt == "xyz"){
+          molecule = ChemDoodle.readXYZ(internalData.data, 1);
+        }
+        else if(internalData.fileExt == undefined || internalData.fileExt == ""){
+          // Do nothing
+        }
+        else{
+          throw new Exception("Wrong Filetype");
+        }
       } catch (error) {
         internalData.name = "MOL DATA ERROR";
         internalOptions.bkgCol = defaultOptions.bkgCol;
@@ -261,6 +275,10 @@ export default function Molecule3D({
         internalData.url = "";
         overlayDiv.find("[name='cd-overlayTxt3']").text('This is not a proper molecule.');
         console.error("Something is wrong in the MOL string and cannot be read properly");
+      }
+
+      if(!internalData.name && (internalData.fileExt == "xyz" || internalData.fileExt == "cif") ){
+        internalData.name = internalData.fileExt + " molecule";
       }
 
       // Setup overlay info text based on data
@@ -422,7 +440,7 @@ export default function Molecule3D({
 
   // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );

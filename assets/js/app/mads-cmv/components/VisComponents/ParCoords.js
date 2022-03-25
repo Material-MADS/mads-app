@@ -229,7 +229,7 @@ export default function ParCoordsPlot({
 
   // Add the VizComp to the DOM
   return (
-    <div id="container" style={style}>
+    <div style={style}>
       <Header size="tiny" style={headerStyle}>
         Parallel Coordinates
       </Header>

@@ -97,7 +97,31 @@ const ClassificationForm = (props) => {
     props: { style: '' },
   }));
 
-  const methods = ['RandomForest', 'KNeighbors'];
+  const methods = ['RandomForest', 'SVC', 'ExtraTrees', 'GradientBoosting', 'KNeighbors', 'SGD', 'MLP', 'Ridge'];
+  const methodsArgs = {
+    RandomForest: [
+      { name: 'random_state', defVal: 0 },
+      { name: 'n_estimators', defVal: 100 }
+    ],
+    SVC: [
+      { name: 'C', defVal: 1.0 },
+      { name: 'gamma', defVal: 0.1 }
+    ],
+    ExtraTrees: [
+      { name: 'random_state', defVal: 0 },
+      { name: 'n_estimators', defVal: 100 }
+    ],
+    GradientBoosting: [],
+    KNeighbors: [],
+    SGD: [],
+    MLP: [
+      { name: 'random_state', defVal: 1 },
+      { name: 'max_iter', defVal: 500 }
+    ],
+    Ridge: [
+      { name: 'alpha', defVal: 1.0 },
+    ],
+  };
 
   // input managers
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -176,6 +200,27 @@ const ClassificationForm = (props) => {
     }
   };
 
+  const [currentMethodVal, setValue] = useState(
+    initialValues.method
+  );
+
+  const onMethodChange = (event) => {
+    setValue(event);
+    if(event != "GradientBoosting" && event != "KNeighbors" && event != "SGD"){
+      props.change('methodArguments.arg1', methodsArgs[event][0].defVal);
+      if(event != "Ridge"){
+        props.change('methodArguments.arg2', methodsArgs[event][1].defVal);
+      }
+      else{
+        props.change('methodArguments.arg2', initialValues.methodArguments.arg2);
+      }
+    }
+    else{
+      props.change('methodArguments.arg1', initialValues.methodArguments.arg1);
+      props.change('methodArguments.arg2', initialValues.methodArguments.arg2);
+    }
+  };
+
   // The form itself, as being displayed in the DOM
   return (
     <>
@@ -199,6 +244,7 @@ const ClassificationForm = (props) => {
             placeholder="Method"
             search
             options={getDropdownOptions(methods)}
+            onChange={onMethodChange}
           />
         </Form.Field>
 
@@ -223,6 +269,28 @@ const ClassificationForm = (props) => {
             options={columns}
           />
         </Form.Field>
+
+        {(currentMethodVal != 'GradientBoosting' && currentMethodVal != 'KNeighbors' && currentMethodVal != 'SGD') && <div>
+          <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentMethodVal} Parameters:</label>
+          <Form.Group widths="equal" style={{paddingTop: "6px"}}>
+            <Form.Field>
+              <label>{methodsArgs[currentMethodVal][0].name}:</label>
+              <Field
+                name="methodArguments.arg1"
+                component="input"
+                type="number"
+              />
+            </Form.Field>
+            {(currentMethodVal != 'Ridge') && <Form.Field>
+            <label>{methodsArgs[currentMethodVal][1].name}:</label>
+              <Field
+                name="methodArguments.arg2"
+                component="input"
+                type="number"
+              />
+            </Form.Field>}
+          </Form.Group>
+        </div>}
 
         <hr />
         <Form.Group widths="equal">

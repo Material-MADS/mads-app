@@ -42,6 +42,7 @@ export function getMol3DDataPack(){
       formula: "C19H20N2O3",
       url: "http://www.chemspider.com/Chemical-Structure.3036.html?rid=e194f339-8bb1-40cc-b68f-c0cf8faa316e",
       data: moleculeData01,
+      fileExt: "mol"
   };
 
   return {data};
@@ -57,6 +58,7 @@ const data02 = {
     formula: "C21H24AgAuClF6N2Sb",
     url: "http://www.chemspider.com/Chemical-Structure.17621620.html?rid=9c7eb7d1-7025-4ba3-a2e5-9d22f5bf8f9f&page_num=0",
     data: moleculeData02,
+    fileExt: "mol"
 };
 const opts01 = {
   bkgCol: "black",
@@ -73,6 +75,7 @@ const data03 = {
     formula: "C23H22N2O3S2",
     url: "https://www.molinstincts.com/sdf-mol-file/Silica-aerogel-sdf-CT1066924105.html",
     data: moleculeData03,
+    fileExt: "mol"
 };
 const opts02 = {
   molDrawType: "Stick",

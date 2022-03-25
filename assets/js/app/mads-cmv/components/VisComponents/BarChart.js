@@ -17,7 +17,8 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { Component, useState, useEffect, useRef } from 'react';
+// import React, { Component, useState, useEffect, useRef } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import * as deepEqual from 'deep-equal';
@@ -69,62 +70,115 @@ function createEmptyChart(options, dataIsEmpty) {
 
 
 //-------------------------------------------------------------------------------------------------
-// Returns the previous value
-//-------------------------------------------------------------------------------------------------
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-//-------------------------------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
-export default function BokehBarChart({
-  data,
-  mappings,
-  options,
-  colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
-}) {
+export default class BokehBarChart extends Component {
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
 
-  // Initiation of the VizComp
-  const rootNode = useRef(null);
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
-  let views = null;
-  let selectedIndicesInternal = [];
-  const internalOptions = Object.assign({}, defaultOptions, options);
-  let internalData = data;
+  componentDidMount() {
+    this.createChart();
+  }
 
-  // Clear away all data if requested
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions.title = undefined;
-      delete internalData.resetRequest;
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
     }
-  }, [internalData])
 
-  // Create the VizComp based on the incomming parameters
-  const createChart = async () => {
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      delete this.props.options.x_range;
+      delete this.props.options.y_range;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
+
+  async createChart() {
+    const {
+      data,
+      mappings,
+      options,
+      colorTags,
+      selectedIndices,
+      onSelectedIndicesChange,
+    } = this.props;
+
+    let selectedIndicesInternal = [];
+
     const { dimension, measures } = mappings;
 
+    const testDataMapMeasure = measures ? [...measures][0] : undefined;
+
     // setup ranges
-    if (dimension && measures && data[dimension]) {
+    if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
       data[dimension] = data[dimension].map(String);
       options.x_range = data[dimension];
     }
 
-    const fig = createEmptyChart(options, !(dimension && measures && data[dimension]));
+    this.mainFigure = createEmptyChart(options, !(dimension && measures && data[dimension] && data[testDataMapMeasure]));
 
-    if (dimension && measures && data[dimension]) {
+    if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
       const ds = new Bokeh.ColumnDataSource({ data });
-      cds = ds;
+      this.cds = ds;
 
       let pal = options.palette;
       if (!pal && measures.length > 0) {
@@ -132,8 +186,8 @@ export default function BokehBarChart({
       }
 
       // setup callback
-      if (cds) {
-        cds.connect(cds.selected.change, (...args) => {
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, (...args) => {
           const indices = ds.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
@@ -151,7 +205,7 @@ export default function BokehBarChart({
         const xv = new Bokeh.Dodge({
           name: dimension,
           value: step * i - (step * (measures.length - 1)) / 2,
-          range: fig.x_range,
+          range: this.mainFigure.x_range,
         });
 
         const l = data[dimension].length;
@@ -163,7 +217,7 @@ export default function BokehBarChart({
           });
         }
 
-        fig.vbar({
+        this.mainFigure.vbar({
           x: { field: dimension, transform: xv },
           top: { field: m },
           width: barWidth,
@@ -173,52 +227,27 @@ export default function BokehBarChart({
             value: measures[i],
           },
         });
-        fig.legend.location = options.legendLocation || 'top_right';
+        this.mainFigure.legend.location = options.legendLocation || 'top_right';
       });
     }
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
-  };
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
-  // Clear away the VizComp
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
-
-  // Recreate the chart if the data and settings change
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
-
-  // Catch current data selections properly in the VizComp
-  const prevCds = usePrevious(cds);
-  useEffect(() => {
-    if (selectedIndices.length === 0) {
-      if (prevCds) {
-        prevCds.selected.indices = [];
-      }
-    }
-  }, [selectedIndices]);
+    this.views = views;
+  }
 
   // Add the VizComp to the DOM
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
 //-------------------------------------------------------------------------------------------------
 

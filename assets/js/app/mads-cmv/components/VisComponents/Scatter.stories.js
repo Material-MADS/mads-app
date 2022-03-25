@@ -60,16 +60,34 @@ const SDPack = getScatterDataPack();
 const stories = storiesOf('Scatter', module);
 stories
   .add('empty scatter plot', () => <Scatter />)
-  .add('with data', () => (
-    <Scatter
-      data={data}
-      mappings={{
-        x: 'Formation Energy (eV)',
-        y: 'Band Gap (eV)',
-      }}
-      onSelectedIndicesChange={action('selected_change')}
-    />
-  ))
+  .add('with data', () => {
+    const cTag = new ColorTag({
+      color: 'red',
+      itemIndices: [0, 10],
+    });
+    return (
+      <Scatter
+        data={data}
+        mappings={{
+          x: 'Formation Energy (eV)',
+          y: 'Band Gap (eV)',
+        }}
+        onSelectedIndicesChange={action('selected_change')}
+        colorTags={[cTag]}
+      />
+    );
+  })
+  // .add('with data', () => (
+  //   <Scatter
+  //     data={data}
+
+  //     mappings={{
+  //       x: 'Formation Energy (eV)',
+  //       y: 'Band Gap (eV)',
+  //     }}
+  //     onSelectedIndicesChange={action('selected_change')}
+  //   />
+  // ))
   .add('with bigger data', () => (
     <Scatter
       data = { SDPack.data }

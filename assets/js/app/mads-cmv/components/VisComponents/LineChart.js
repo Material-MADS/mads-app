@@ -238,7 +238,7 @@ export default function LineChart({
 
   // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );
