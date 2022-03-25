@@ -108,7 +108,8 @@ export default function CmvBase({
     const componentDef = config.find((c) => view.type === c.type);
     if(componentDef){
       const View = componentDef.component;
-      const theRGL = Object.keys(view.rgl).length === 0 ? {x: 0, y: 0, w: 2, h: 2, } : view.rgl;
+
+      const theRGL = (view.rgl !== undefined && view.rgl.x !== undefined) ? view.rgl : {x: 0, y: 0, w: 2, h: 2, };
       if(view.rglRules && view.rglRules.isResizable !== undefined){
         theRGL['isResizable'] = view.rglRules.isResizable
       }
@@ -137,6 +138,7 @@ export default function CmvBase({
               isLoggedIn={userInfo.isLoggedIn}
               version={componentDef.version}
               devStage={componentDef.devStage}
+              tomten={view.tomten}
             />
           </ResizeObserver>
         </div>
