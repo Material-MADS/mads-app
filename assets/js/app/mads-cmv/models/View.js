@@ -28,6 +28,8 @@ export default class View {
     this.id = initialState.id || ShortId.generate();
     this.name = initialState.name || '';
     this.type = initialState.type || '';
+    this.rgl = initialState.rgl || {};
+    this.rglRules = initialState.rglRules || {};
     this.component = initialState.component || new (class empty {})();
     this.settings = initialState.settings ? { ...initialState.settings } : {};
     this.properties = initialState.properties ? { ...initialState.properties } : {};

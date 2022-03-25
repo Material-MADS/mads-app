@@ -45,8 +45,7 @@ def get_feature_importance(data):
     df_target = df[target_columns]
     y = np.ravel(np.array(df_target))
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
     model = None
     try:

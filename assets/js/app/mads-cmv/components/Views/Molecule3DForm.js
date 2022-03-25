@@ -51,6 +51,7 @@ const Molecule3DForm = (props) => {
   // input managers
   const fileChange = e => {
     var file = e.target.files[0]; // File object
+    props.change('fileExt', e.target.files[0].name.split('.').pop().toLowerCase());
     var reader = new FileReader();
 
     reader.onloadend = function(evt) {
@@ -65,6 +66,7 @@ const Molecule3DForm = (props) => {
         }
         else{
           props.change('molForm', "");
+          document.getElementsByName('molForm')[0].placeholder='';
         }
 
         var csidPos = trimmedMolStr.indexOf("<csid>");
@@ -111,12 +113,15 @@ const Molecule3DForm = (props) => {
             .catch(err => {
               console.error(err);
               props.change('molName', "");
+              document.getElementsByName('molName')[0].placeholder='';
               props.change('molSmiles', "");
             });
         }
         else{
           props.change('molUrl', "");
+          document.getElementsByName('molUrl')[0].placeholder='';
           props.change('molName', "");
+          document.getElementsByName('molName')[0].placeholder='';
           props.change('molSmiles', "");
         }
       }
@@ -152,11 +157,12 @@ const Molecule3DForm = (props) => {
       <hr />
 
       <Form.Field>
-        <label>MOL File String: (Paste text or <Button as="label" htmlFor="file" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>Load File</Button>) [Use <a target='_blank' href='http://www.chemspider.com'>ChemSpider</a> for best support]</label>
+      <label>MOL, XYZ or CIF File: <Button as="label" htmlFor="file" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>Load File</Button> [Perhaps Use <a target='_blank' href='http://www.chemspider.com'>ChemSpider</a> for locating files]</label>
         <Field
           fluid
           name="molStr"
-          component={TextArea}
+          component={Input}
+          disabled={true}
           placeholder="CT1000292221
             3  2  0  0  0               999 V2000
               0.0021   -0.0041    0.0020 H   0  0  0  0  0  0  0  0  0  0  0  0
@@ -203,6 +209,10 @@ const Molecule3DForm = (props) => {
       <input
         type="hidden"
         name="molSmiles"
+      />
+      <input
+        type="hidden"
+        name="fileExt"
       />
 
       <hr />

@@ -18,7 +18,7 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
+import React, { Component } from 'react';
 import PropTypes from "prop-types";
 
 import * as Bokeh from "@bokeh/bokehjs";
@@ -112,22 +112,100 @@ function createEmptyChart(options) {
 
 
 //-------------------------------------------------------------------------------------------------
-// This Visualization Component Creation Method
+// This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
-export default function PeriodicTable() {
 
+export default class PeriodicTable extends Component {
   // Initiation of the VizComp
-  const rootNode = useRef(null);
-  let views = null;
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
 
-  // Create the VizComp based on the pre initiated data
-  const createChart = async () => {
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
+    }
+
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
+
+  // Create the VizComp based on the incomming parameters
+  async createChart() {
+    const {
+      options,
+    } = this.props;
+
+
+    // Create the VizComp based on the incomming parameters
     const data = new Bokeh.ColumnDataSource({ data: { ...dataset,}, });
-    const fig = createEmptyChart({});
+    this.mainFigure = createEmptyChart({});
 
-    const r = fig.rect({
+    const r = this.mainFigure.rect({
       x: { field: 'group' },
       y: { field: 'period' },
       width: 0.95,
@@ -144,12 +222,12 @@ export default function PeriodicTable() {
       },
     });
 
-    fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [r] }));
+    this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [r] }));
 
     const text_props = {source: data, text_align: "left", text_baseline: "middle"};
-    const x = { field: 'group', transform: new Bokeh.Dodge({ value: -0.4, range: fig.x_range, }) };
+    const x = { field: 'group', transform: new Bokeh.Dodge({ value: -0.4, range: this.mainFigure.x_range, }) };
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: { field: 'period' },
       text: { field: 'symbol' },
@@ -157,24 +235,24 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
          field: "period",
-         transform: new Bokeh.Dodge({ value: 0.3, 'range': fig.y_range })
+         transform: new Bokeh.Dodge({ value: 0.3, 'range': this.mainFigure.y_range })
       },
       text: { field: 'atomic number' },
       text_font_size: '11px',
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
         field: 'period',
         transform: new Bokeh.Dodge({
           value: -0.35,
-          range: fig.y_range,
+          range: this.mainFigure.y_range,
         }),
       },
       text: { field: 'name' },
@@ -182,13 +260,13 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
         field: 'period',
         transform: new Bokeh.Dodge({
           value: -0.2,
-          range: fig.y_range,
+          range: this.mainFigure.y_range,
         }),
       },
       text: { field: 'atomic mass' },
@@ -196,7 +274,7 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: ["3", "3"],
       y: ["VI", "VII"],
       text: ["LA", "AC"],
@@ -204,52 +282,36 @@ export default function PeriodicTable() {
       text_baseline: "middle",
     });
 
-    fig.outline_line_color = null;
-    fig.xgrid[0].grid_line_color = null;
-    fig.ygrid[0].grid_line_color = null;
-    fig.xaxis[0].axis_line_color = null;
-    fig.yaxis[0].axis_line_color = null;
-    fig.xaxis[0].major_tick_line_color = null;
-    fig.yaxis[0].major_tick_line_color = null;
-    fig.xaxis[0].major_label_standoff = 0;
-    fig.yaxis[0].major_label_standoff = 0;
-    fig.legend.orientation = "horizontal";
-    fig.legend.location = "top_center";
+    this.mainFigure.outline_line_color = null;
+    this.mainFigure.xgrid[0].grid_line_color = null;
+    this.mainFigure.ygrid[0].grid_line_color = null;
+    this.mainFigure.xaxis[0].axis_line_color = null;
+    this.mainFigure.yaxis[0].axis_line_color = null;
+    this.mainFigure.xaxis[0].major_tick_line_color = null;
+    this.mainFigure.yaxis[0].major_tick_line_color = null;
+    this.mainFigure.xaxis[0].major_label_standoff = 0;
+    this.mainFigure.yaxis[0].major_label_standoff = 0;
+    this.mainFigure.legend.orientation = "horizontal";
+    this.mainFigure.legend.location = "top_center";
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    $(rootNode.current).parent().parent().find(".ui.mini.icon.button").eq(1).hide();
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
+    $(this.rootNode.current).parent().parent().find(".ui.mini.icon.button").eq(1).hide();
 
-    return cds;
-  };
-
-  // Clear away the VizComp
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
-
-  // Recreate the chart if the data and settings change
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  });
+    this.views = views;
+  }
 
   // Add the VizComp to the DOM
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
 //-------------------------------------------------------------------------------------------------
 

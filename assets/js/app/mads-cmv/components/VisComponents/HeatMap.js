@@ -17,7 +17,7 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
+import React, { Component } from 'react';
 import PropTypes from "prop-types";
 
 import * as deepEqual from 'deep-equal';
@@ -74,50 +74,107 @@ function createEmptyChart(options) {
 
 
 //-------------------------------------------------------------------------------------------------
-// Returns the previous value
-//-------------------------------------------------------------------------------------------------
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
+// This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
 
-
-//-------------------------------------------------------------------------------------------------
-// This Visualization Component Creation Method
-//-------------------------------------------------------------------------------------------------
-export default function HeatMap({
-  data,
-  mappings,
-  options,
-  colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
-}) {
+export default class HeatMap extends Component {
   // Initiation of the VizComp
-  const rootNode = useRef(null);
-  let views = null;
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
-  let selectedIndicesInternal = [];
-  let internalData = data;
-  let internalOptions = options;
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
 
-  // Clear away all data if requested
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions = defaultOptions;
-      delete internalData.resetRequest;
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
     }
-  }, [internalData])
+
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      this.props.options.x_range = [-1.0, 1.0];
+      this.props.options.y_range = [-1.0, 1.0];
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
 
   // Create the VizComp based on the incomming parameters
-  const createChart = async () => {
-    const fig = createEmptyChart(internalOptions);
-    setMainFigure(fig);
+  async createChart() {
+    const {
+      data,
+      mappings,
+      options,
+      colorTags,
+      selectedIndices,
+      onSelectedIndicesChange,
+    } = this.props;
+
+    let selectedIndicesInternal = [];
+    let internalData = data;
+    let internalOptions = options;
+
+    // Create the VizComp based on the incomming parameters
+    this.mainFigure = createEmptyChart(internalOptions);
 
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     const { xData, yData, heatVal } = mappings;
@@ -143,8 +200,8 @@ export default function HeatMap({
       }
 
       // setup callback
-      if (cds) {
-        cds.connect(cds.selected.change, () => {
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, () => {
           const indices = bData.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
@@ -155,23 +212,23 @@ export default function HeatMap({
         });
       }
 
-      fig.xgrid[0].grid_line_color = null;
-      fig.ygrid[0].grid_line_color = null;
-      fig.xaxis[0].axis_line_color = null;
-      fig.yaxis[0].axis_line_color = null;
-      fig.xaxis[0].major_tick_line_color = null;
-      fig.yaxis[0].major_tick_line_color = null;
-      fig.xaxis[0].major_label_text_font_size = internalOptions.fontSize || defaultOptions.fontSize;
-      fig.yaxis[0].major_label_text_font_size = internalOptions.fontSize || defaultOptions.fontSize;
-      fig.xaxis[0].major_label_standoff = 0;
-      fig.yaxis[0].major_label_standoff = 0;
-      fig.xaxis[0].major_label_orientation = Math.PI / 3;
-      fig.yaxis[0].major_label_orientation = Math.PI / 3;
+      this.mainFigure.xgrid[0].grid_line_color = null;
+      this.mainFigure.ygrid[0].grid_line_color = null;
+      this.mainFigure.xaxis[0].axis_line_color = null;
+      this.mainFigure.yaxis[0].axis_line_color = null;
+      this.mainFigure.xaxis[0].major_tick_line_color = null;
+      this.mainFigure.yaxis[0].major_tick_line_color = null;
+      this.mainFigure.xaxis[0].major_label_text_font_size = internalOptions.fontSize || defaultOptions.fontSize;
+      this.mainFigure.yaxis[0].major_label_text_font_size = internalOptions.fontSize || defaultOptions.fontSize;
+      this.mainFigure.xaxis[0].major_label_standoff = 0;
+      this.mainFigure.yaxis[0].major_label_standoff = 0;
+      this.mainFigure.xaxis[0].major_label_orientation = Math.PI / 3;
+      this.mainFigure.yaxis[0].major_label_orientation = Math.PI / 3;
 
       const bData = new Bokeh.ColumnDataSource({ data: { ...internalData,}, });
-      cds = bData;
+      this.cds = bData;
 
-      const renderer = fig.rect({
+      const renderer = this.mainFigure.rect({
         x: { field: xData },
         y: { field: yData },
         width: 1,
@@ -198,7 +255,7 @@ export default function HeatMap({
         [activeToolTipTitles[2], '@'+heatVal+' '+activeHeatValUnit],
       ];
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+      this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
 
       const color_bar = new Bokeh.ColorBar({
         color_mapper: mapper,
@@ -209,51 +266,26 @@ export default function HeatMap({
         border_line_color: null
       });
 
-      fig.add_layout(color_bar, 'right');
+      this.mainFigure.add_layout(color_bar, 'right');
     }
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
-  };
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
-  // Clear away the VizComp
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
-
-  // Recreate the chart if the data and settings change
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
-
-  // Catch current data selections properly in the VizComp
-  const prevCds = usePrevious(cds);
-  useEffect(() => {
-    if (selectedIndices.length === 0) {
-      if (prevCds) {
-        prevCds.selected.indices = [];
-      }
-    }
-  }, [selectedIndices]);
+    this.views = views;
+  }
 
   // Add the VizComp to the DOM
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
 //-------------------------------------------------------------------------------------------------
 

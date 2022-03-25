@@ -126,7 +126,7 @@
       <a
         class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
         href="{% url 'docs:index' %}"
-        href="{% url 'docs:index' %}"
+        href="{% url 'docs:index' %}" target="_blank"
         >Docs</a
       >
 
@@ -174,7 +174,7 @@
         >
         <a
           class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
-          href="{% url 'docs:index' %}"
+          href="{% url 'docs:index' %}" target="_blank"
           >Docs</a
         >
 

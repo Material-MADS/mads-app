@@ -54,6 +54,7 @@ export default class Molecule3DView extends withCommandInterface(Molecule3D, Mol
       url: newValues.molUrl,
       smiles: newValues.molSmiles,
       data: newValues.molStr,
+      fileExt: newValues.fileExt,
     };
     newValues["data"] = data;
 

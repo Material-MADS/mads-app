@@ -129,7 +129,6 @@ export const saveWorkspace = (name, overwrite, id) => async (
     colorTags: state.colorTags,
     dataSources: state.dataSources,
     dataset: state.dataset,
-    dependencies: state.dependencies,
     selection: state.selection,
     views: state.views,
   };

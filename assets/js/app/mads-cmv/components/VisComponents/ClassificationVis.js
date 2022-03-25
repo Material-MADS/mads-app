@@ -74,7 +74,7 @@ function createEmptyChart(options, dataIsEmpty) {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
-class ClassificationVis extends Component {
+export default class ClassificationVis extends Component {
   // Initiation of the VizComp
   constructor(props) {
     super(props);
@@ -299,7 +299,7 @@ class ClassificationVis extends Component {
   // Add the VizComp to the DOM
   render() {
     return (
-      <div id="container">
+      <div>
         <div ref={this.rootNode} />
       </div>
     );
@@ -349,4 +349,4 @@ ClassificationVis.defaultProps = {
 };
 //-------------------------------------------------------------------------------------------------
 
-export default ClassificationVis;
+

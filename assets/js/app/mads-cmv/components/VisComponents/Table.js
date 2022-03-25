@@ -26,6 +26,9 @@ import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
 import * as Bokeh from '@bokeh/bokehjs';
 
+//To Surpress unwanted warnings
+Bokeh.logger.set_level("error");
+
 //-------------------------------------------------------------------------------------------------
 
 
@@ -244,7 +247,7 @@ class BokehTable extends Component {
   // Add the VizComp to the DOM
   render() {
     return (
-      <div id="container">
+      <div>
         <div ref={this.rootNode} />
       </div>
     );

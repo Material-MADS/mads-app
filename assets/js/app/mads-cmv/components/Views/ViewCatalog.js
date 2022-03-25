@@ -135,6 +135,7 @@ const config = [
     settings: {
       columns: [],
     },
+    rglRules : {isResizable: false},
   },
   //------------------------------------------
 
@@ -144,6 +145,8 @@ const config = [
     type: 'parcoords',
     name: 'Parallel Coordinates',
     category: 'Visualization',
+    version: 0.9,
+    devStage: "Beta",
     component: ParCoordsView,
     settings: {
       axes: [],
@@ -232,8 +235,8 @@ const config = [
     type: 'histogram',
     name: 'Histogram',
     category: 'Analysis',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.95,
+    devStage: "Beta",
     component: HistView,
     settings: {
       bins: 10,
@@ -373,9 +376,14 @@ const config = [
     component: RegressionView,
     settings: {
       method: 'Linear',
+      methodArguments: {
+        arg1: 0,
+        arg2: 0
+      },
       featureColumns: [],
       targetColumn: '',
-      folds: 5,
+      cvmethod: "TrainTestSplit",
+      cvmethodArg: 0.2,
       mappings: {},
     },
   },
@@ -392,6 +400,10 @@ const config = [
     component: ClassificationView,
     settings: {
       method: 'RandomForest',
+      methodArguments: {
+        arg1: 0,
+        arg2: 100
+      },
       featureColumns: [],
       targetColumn: '',
       mappings: {},

@@ -45,6 +45,7 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
     }
 
     newValues["data"] = { data: newValues.imgData };
+    newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
 
     newValues = convertExtentValues(newValues);
     updateView(id, newValues);

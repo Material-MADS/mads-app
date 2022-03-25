@@ -32,9 +32,18 @@ import ClassificationForm from './ClassificationForm';
 
 
 //-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
+const settings = {
+  options: { title: 'Classification' },
+};
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ClassificationView extends withCommandInterface( ClassificationVis, ClassificationForm ) {
+export default class ClassificationView extends withCommandInterface( ClassificationVis, ClassificationForm, settings ) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
@@ -76,6 +85,8 @@ export default class ClassificationView extends withCommandInterface( Classifica
     };
 
     newValues = convertExtentValues(newValues);
+    settings.options.title = "Classification (" + newValues.method + ")";
+
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
   };

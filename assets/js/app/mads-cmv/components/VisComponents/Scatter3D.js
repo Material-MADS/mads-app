@@ -28,6 +28,9 @@ import Plotly from 'plotly.js-dist-min';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
+
+import * as loadingActions from '../../actions/loading';
+
 // Dev and Debug declarations
 window.Plotly = Plotly;
 
@@ -259,10 +262,13 @@ export default function Scatter3D({
     let layout = getChartLayout(internalData, internalOptions, currentDataSourceName);
     let config = getChartConfig(internalOptions);
 
-    $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="https://miro.medium.com/max/700/1*CsJ05WEGfunYMLGfsT2sXA.gif" width="300" />');
+    loadingActions.setLoadingState(true);
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
-        $( "#Scatter3DLoadingGif" ).remove();
+        loadingActions.setLoadingState(false);
+      })
+      .finally(function() {
+        loadingActions.setLoadingState(false);
       });
 
       (rootNode.current).on('plotly_relayout', function(internalData){ internalOptions["camera"] = (rootNode.current).layout.scene.camera});
@@ -282,7 +288,7 @@ export default function Scatter3D({
 
   // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );

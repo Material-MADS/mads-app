@@ -161,12 +161,9 @@ export default function withCommandInterface(
       // Add the ViewWrapper to the DOM
       return (
         <div className="view-container">
-          <Button
-            size="mini"
-            icon="remove"
-            onClick={() => this.onDeleteClick(id)}
-          />
+          <Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />
           <Button size="mini" icon="configure" onClick={() => this.show()} />
+          <Button className="the-drag-handle" size="mini" icon="arrows alternate" /> {/* Remove this if customized component position order is to be turned off */}
           <DevStage stage={devStage} version={version} />
           <WrappedComponent
             data={data || []}
@@ -182,7 +179,7 @@ export default function withCommandInterface(
             showMessage={actions.showMessage}
           />
 
-          <Modal open={propSheetOpen} onClose={this.close}>
+          <Modal open={propSheetOpen} onClose={this.close} onMouseDown={ e => e.stopPropagation() }> {/* FORTEST: [onMouseDown={ e => e.stopPropagation() }] */}
             <Modal.Header>
               {view.name} {`[${view.id}]`}
             </Modal.Header>

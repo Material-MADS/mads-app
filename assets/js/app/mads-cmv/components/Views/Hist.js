@@ -43,19 +43,6 @@ const settings = {
 //-------------------------------------------------------------------------------------------------
 export default class HistView extends withCommandInterface(QuadBarChart, HistForm, settings) {
 
-  // Manages data selection changes in the view
-  handleSelectionChange = (indices) => {
-    const { dataset, updateSelection } = this.props;
-    const data = this.mapData(dataset);
-
-    let selections = [];
-    indices.forEach((i) => {
-      const idx = data.indices[i];
-      selections = [...selections, ...idx];
-    });
-    updateSelection(selections);
-  };
-
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
@@ -91,7 +78,13 @@ export default class HistView extends withCommandInterface(QuadBarChart, HistFor
     let data = {};
 
     if (dataset[id]) {
-      data = dataset[id];
+      // data = dataset[id];
+      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumns[0])) {
+        data = dataset[id];
+      }
+      else{
+        data["resetRequest"] = true;
+      }
     }
 
     return data;

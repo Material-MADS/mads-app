@@ -15,8 +15,6 @@
 //             with various color palettes
 =================================================================================================*/
 
-//*** TODO: Convert this to the newer react component type using hooks
-
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
@@ -73,7 +71,7 @@ function createEmptyChart(options, dataIsEmpty) {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
-class BokehScatter extends Component {
+export default class BokehScatter extends Component {
   // Initiation of the VizComp
   constructor(props) {
     super(props);
@@ -172,12 +170,12 @@ class BokehScatter extends Component {
 
     const cols = df.columns;
 
-    // this.mainFigure = createEmptyChart(options);
     this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       x = df.get(xName).to_json({ orient: 'records' });
       y = df.get(yName).to_json({ orient: 'records' });
+
       this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
 
       // if data is categorical, warn
@@ -301,10 +299,7 @@ class BokehScatter extends Component {
       }
     }
 
-    const views = await Bokeh.Plotting.show(
-      this.mainFigure,
-      this.rootNode.current
-    );
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
     if (this.views) {
       this.clearChart();
@@ -316,7 +311,7 @@ class BokehScatter extends Component {
   // Add the VizComp to the DOM
   render() {
     return (
-      <div id="container">
+      <div>
         <div ref={this.rootNode} />
       </div>
     );
@@ -371,5 +366,3 @@ BokehScatter.defaultProps = {
   onSelectedIndicesChange: undefined,
 };
 //-------------------------------------------------------------------------------------------------
-
-export default BokehScatter;

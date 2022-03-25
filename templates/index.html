@@ -202,7 +202,7 @@
       <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
       <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
       <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-      <a class="item" href="{% url 'docs:index' %}">Docs</a>
+      <a class="item" href="{% url 'docs:index' %}" target="_blank">Docs</a>
 
       {% if user.is_authenticated %}
         <div class="item">{{ user.get_username }}</div>
@@ -227,7 +227,7 @@
             <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
             <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
             <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-            <a class="item" href="{% url 'docs:index' %}">Docs</a>
+            <a class="item" href="{% url 'docs:index' %}" target="_blank">Docs</a>
             <div class="right item">
               {% if user.is_authenticated %}
                 <div class="ui inverted">{{ user.get_username }}</div>

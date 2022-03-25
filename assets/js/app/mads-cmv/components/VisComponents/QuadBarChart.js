@@ -19,7 +19,8 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useEffect, useRef } from 'react';
+import React, { Component } from 'react';
+// import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import * as deepEqual from 'deep-equal';
@@ -70,44 +71,107 @@ function createEmptyChart(options, dataIsEmpty) {
 
 
 //-------------------------------------------------------------------------------------------------
-// Returns the previous value
-//-------------------------------------------------------------------------------------------------
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
+// This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
 
-
-//-------------------------------------------------------------------------------------------------
-// This Visualization Component Creation Method
-//-------------------------------------------------------------------------------------------------
-export default function QuadBarChart({
-  data,
-  mappings,
-  options,
-  colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
-}) {
-
+export default class QuadBarChart extends Component {
   // Initiation of the VizComp
-  const rootNode = useRef(null);
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
-  let views = null;
-  let selectedIndicesInternal = [];
-  const color = `#${Category10_10[0].toString(16)}`;
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
+
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
+    }
+
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      // this.props.options.title = defaultOptions.title;
+      delete this.props.options.x_range;
+      delete this.props.options.y_range;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
 
   // Create the VizComp based on the incomming parameters
-  const createChart = async () => {
+  async createChart() {
+    const {
+      data,
+      mappings,
+      options,
+      colorTags,
+      selectedIndices,
+      onSelectedIndicesChange,
+    } = this.props;
+
+    let selectedIndicesInternal = [];
+    const color = `#${Category10_10[0].toString(16)}`;
+
     const { n, bins } = mappings;
 
-    const fig = createEmptyChart(options, !(n && bins && data[n] && data[bins]));
-    setMainFigure(fig);
+    this.mainFigure = createEmptyChart(options, !(n && bins && data[n] && data[bins]));
 
     if (n && data[n] && bins && data[bins]) {
       const hhist = data[n];
@@ -133,11 +197,11 @@ export default function QuadBarChart({
           right: hedges.slice(1),
         },
       });
-      cds = ds;
+      this.cds = ds;
 
       // setup callback
-      if (cds) {
-        cds.connect(cds.selected.change, () => {
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, () => {
           const indices = ds.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
@@ -148,7 +212,7 @@ export default function QuadBarChart({
         });
       }
 
-      fig.quad({
+      this.mainFigure.quad({
         bottom: 0,
         left: { field: 'left' },
         right: { field: 'right' },
@@ -159,48 +223,23 @@ export default function QuadBarChart({
       });
     }
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
-  };
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
-  // Clear away the VizComp
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
-
-  // Recreate the chart if the data and settings change
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
-
-  // Catch current data selections properly in the VizComp
-  const prevCds = usePrevious(cds);
-  useEffect(() => {
-    if (selectedIndices.length === 0) {
-      if (prevCds) {
-        prevCds.selected.indices = [];
-      }
-    }
-  }, [selectedIndices]);
+    this.views = views;
+  }
 
   // Add the VizComp to the DOM
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
 //-------------------------------------------------------------------------------------------------
 

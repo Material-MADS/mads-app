@@ -126,7 +126,7 @@ export default function ImageView({
 
   // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );

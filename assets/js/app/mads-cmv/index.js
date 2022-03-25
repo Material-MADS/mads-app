@@ -26,8 +26,6 @@ import App from './containers/MadsApp';
 import * as reducers from './reducers';
 import generalSettings from '../../configSettings'
 import $ from 'jquery';
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 
 //-------------------------------------------------------------------------------------------------
 
@@ -57,7 +55,6 @@ const rootReducer = (state, action) => {
         selectedDataSource: workspace.dataSources.selectedDataSource,
       },
       dataset: workspace.dataset,
-      dependencies: workspace.dependencies,
       selection: workspace.selection,
       views: workspace.views,
     };
