@@ -120,6 +120,7 @@ const config = [
     settings: {
       columns: [],
     },
+    rglRules : {isResizable: false},
   },
   //------------------------------------------
 

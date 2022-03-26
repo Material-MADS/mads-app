@@ -85,7 +85,6 @@ export default class ClassificationView extends withCommandInterface( Classifica
     };
 
     newValues = convertExtentValues(newValues);
-    settings.options.title = "Classification (" + newValues.method + ")";
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);

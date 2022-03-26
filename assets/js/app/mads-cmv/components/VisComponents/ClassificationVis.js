@@ -58,13 +58,17 @@ function createEmptyChart(options, dataIsEmpty) {
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
-    title: params.title || 'Plot',
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
   });
+
+  fig.title.text = params.title || 'Plot'; //title object must be set separately or it will become a string (bokeh bug)
+  // fig.title.text_color = "#303030";
+  //fig.title.text_font_size = "40px";
+  //fig.title.text_font = "Times New Roman";
 
   return fig;
 }
@@ -180,6 +184,7 @@ export default class ClassificationVis extends Component {
       y = df.get(yName).to_json({ orient: 'records' });
       this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
 
+      this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.method + ")";
       this.mainFigure.xaxis[0].axis_label = xName;
       this.mainFigure.yaxis[0].axis_label = yName;
 
