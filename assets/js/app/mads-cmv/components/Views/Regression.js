@@ -91,7 +91,6 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
     };
 
     newValues = convertExtentValues(newValues);
-    settings.options.title = "Regression (" + newValues.method + ") [" + newValues.cvmethod + "]";
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
