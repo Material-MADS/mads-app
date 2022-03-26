@@ -125,15 +125,15 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
         xx2 = dataset[id]['d2'][targetName];
         yy2 = dataset[id]['d2'][pName];
       }
-      else{
+      else if(dataset[id][targetName]){
         xx = dataset[id][targetName];
         yy = dataset[id][pName];
         xx2 = [];
         yy2 = [];
       }
 
-      if (!xx && !yy) {
-        return  {d1: {data: []}, d2: {data: []}};
+      if (xx == undefined || !Array.isArray(xx) || yy == undefined || !Array.isArray(yy)) {
+        return  {};
       }
 
       xx.forEach((x, i) => {
