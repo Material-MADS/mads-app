@@ -53,18 +53,30 @@ const defaultOptions = {
 //-------------------------------------------------------------------------------------------------
 // Creates an empty basic default Visualization Component of the specific type
 //-------------------------------------------------------------------------------------------------
-function createEmptyChart(options, dataIsEmpty) {
+function createEmptyChart(options, dataIsEmpty, isThisOld) {
   const params = Object.assign({}, defaultOptions, options);
+  if(isThisOld){ params.title = "Settings out of date. Update settings!" }
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
-    title: params.title || 'Plot',
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
   });
+
+  fig.title.text = params.title; //title object must be set separately or it will become a string (bokeh bug)
+  if(isThisOld){
+    fig.title.text_color = "red";
+    fig.title.text_font_size = "20px";
+  }
+  else{
+    fig.title.text_color = "#303030";
+    fig.title.text_font_size = "13px";
+  }
+  //fig.title.text_font_size = "40px";
+  //fig.title.text_font = "Times New Roman";
 
   return fig;
 }
@@ -170,7 +182,8 @@ export default class RegressionVis extends Component {
       filteredIndices,
     } = this.props;
 
-    let internalData = data;
+    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: []}};
+
     const { x: xName, y: yName } = mappings;
     const df = new DataFrame(internalData.d1.data);
     const df2 = new DataFrame(internalData.d2.data);
@@ -178,7 +191,7 @@ export default class RegressionVis extends Component {
     let y = [];
     const cols = df.columns;
 
-    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)));
+    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       y = df.get(xName).to_json({ orient: 'records' });
@@ -186,6 +199,7 @@ export default class RegressionVis extends Component {
 
       this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
 
+      this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.cvmethod + ") [" + this.props.method + "]";
       this.mainFigure.xaxis[0].axis_label = yName;
       this.mainFigure.yaxis[0].axis_label = xName + '--True';
 
