@@ -55,7 +55,7 @@ const defaultOptions = {
 //-------------------------------------------------------------------------------------------------
 function createEmptyChart(options, dataIsEmpty, isThisOld) {
   const params = Object.assign({}, defaultOptions, options);
-  if(isThisOld){ params.title = "Settings out of date. Update settings!" }
+  if(isThisOld){ params.title = "Out of date. Old Settings! Replace with New!" }
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
@@ -69,7 +69,7 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   fig.title.text = params.title; //title object must be set separately or it will become a string (bokeh bug)
   if(isThisOld){
     fig.title.text_color = "red";
-    fig.title.text_font_size = "20px";
+    fig.title.text_font_size = "15px";
   }
   else{
     fig.title.text_color = "#303030";
