@@ -16,12 +16,12 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 import $ from "jquery";
 
-import { create_UUID } from './VisCompUtils';
+import { create_UUID, fillObjectWithMissingKeys, getRGBAColorStrFromAnyColor } from './VisCompUtils';
 
 import noImg from './images/noimage.jpg';
 
@@ -34,14 +34,56 @@ import noImg from './images/noimage.jpg';
 const defaultOptions = {
   title: "Empty Image View",
   caption: "No Image Loaded",
-  extent: { width: undefined, height: undefined },
-  pad: 0,
+  imgManip: "None",
   border: {
     color: "black",
     style: "solid",
-    size: 2,
-  }
+    size: 1,
+  },
+  extent: { width: undefined, height: undefined },
+  pad: 0,
+  cssFilters: {
+    isEnabled: false,
+    grayscaleVal: 0,
+    blurVal: 0,
+    brightnessVal: 100,
+    contrastVal: 100,
+    hueRotateVal: 0,
+    invertVal: 0,
+    opacityVal: 100,
+    saturateVal: 100,
+    sepiaVal: 0,
+  },
+  skImg: {
+    isEnabled: false,
+  },
 };
+
+const annotationMemory = {};
+const isThisFirstTimeInit = {};
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Takes an internal image url and returns the image as base64
+//-------------------------------------------------------------------------------------------------
+function toDataUrl(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function() {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+          callback(reader.result);
+      }
+      reader.readAsDataURL(xhr.response);
+  };
+  xhr.open('GET', url);
+  xhr.responseType = 'blob';
+  xhr.send();
+}
+let noImg64 = noImg;
+toDataUrl(noImg, function(theBase64) {
+  noImg64 = theBase64;
+});
 //-------------------------------------------------------------------------------------------------
 
 
@@ -59,6 +101,46 @@ function usePrevious(value) {
 
 
 //-------------------------------------------------------------------------------------------------
+// Save the image file to the local computer
+//-------------------------------------------------------------------------------------------------
+function saveBase64AsFile(base64, fileName, image, annotation, cssFilters) {
+  const annodata = JSON.parse(annotation.getAttribute("annodata"));
+
+  if(annodata.imgData.length > 0 || cssFilters != undefined){
+    var fna = "", fnf = "";
+    var imgCanvas = document.createElement("canvas");
+    var imgContext = imgCanvas.getContext("2d");
+
+    imgCanvas.width = image.naturalWidth;
+    imgCanvas.height = image.naturalHeight;
+
+    if(cssFilters != undefined){
+      imgContext.filter = 'grayscale(' + cssFilters.grayscaleVal + '%) blur(' + cssFilters.blurVal + 'px) brightness(' + cssFilters.brightnessVal + '%) contrast(' + cssFilters.contrastVal + '%) hue-rotate(' + cssFilters.hueRotateVal + 'deg) invert(' + cssFilters.invertVal + '%) saturate(' + cssFilters.saturateVal + '%) sepia(' + cssFilters.sepiaVal + '%) opacity(' + cssFilters.opacityVal + '%)';
+      fnf = "(CSS Filtered) ";
+    }
+
+    imgContext.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+
+    if( annodata.imgData.length > 0){
+      imgContext.filter = 'grayscale(0%) blur(0px) brightness(100%) contrast(100%) hue-rotate(0deg) invert(0%) saturate(100%) sepia(0%) opacity(100%)';
+      imgContext.drawImage(annotation, 0, 0, image.naturalWidth, image.naturalHeight);
+      fna = "(Annotated) ";
+    }
+
+    base64 = imgCanvas.toDataURL("image/png");
+    fileName = fnf + fna + fileName;
+  }
+
+  const link = document.createElement("a");
+  link.setAttribute("href", base64);
+  link.setAttribute("target", "_blank");
+  link.setAttribute("download", fileName);
+  link.click();
+}
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
 export default function ImageView({
@@ -66,51 +148,272 @@ export default function ImageView({
   mappings,
   options,
   colorTags,
+  originalOptions,
+  id,
 }) {
   // Initiation of the VizComp
   const rootNode = useRef(null);
-  const uid = create_UUID();
+  const uid = id;
   let internalData = data;
-  let internalOptions = Object.assign({}, defaultOptions, options);
+  let internalOptions = {...defaultOptions, ...options};
+
+  let annotationEnabled = false;
+
+  if(!isThisFirstTimeInit[uid]){
+    if(internalOptions.annotation && internalOptions.annotation.length > 0){
+      annotationMemory[uid] = { uid: uid, lastMouse: {x: 0, y: 0}, imgData: [], lineData: {}, gco: "", toolType: 0, brushColor: "#ffff00", brushOpacity: 1, brushSize: 4 }
+      annotationMemory[uid].imgData = internalOptions.annotation;
+    }
+    isThisFirstTimeInit[uid] = uid;
+  }
+
+  // Make sure that older versions of imageView loads without any problem and that empty values will not cause any problems
+  if(!internalOptions.cssFilters) { internalOptions["cssFilters"] = {} }
+  if(originalOptions){
+    fillObjectWithMissingKeys(originalOptions.cssFilters, internalOptions.cssFilters);
+    if(!internalOptions.skImg) { internalOptions["skImg"] = {} }
+    fillObjectWithMissingKeys(originalOptions.skImg, internalOptions.skImg);
+    if(!internalOptions.imgData && internalData.data){ internalOptions.imgData = internalData.data; }
+  }
 
   // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       delete internalData.resetRequest;
     }
-  }, [internalData])
+  }, [internalData]);
+
+  //=== BEGIN: ANNOTATION EVENT HANDLERS & METHODS ================================================================
+  const onMouseDown = function(e){
+    if(e.which === 1 && annotationEnabled){
+        const annodata = JSON.parse(e.target.getAttribute("annodata"));
+        var drawSurface = $(e.target);
+        var ctx = drawSurface[0].getContext("2d");
+
+        annodata.lastMouse = {x: (e.offsetX || e.clientX - $(e.target).offset().left), y: (e.offsetY || e.clientY - $(e.target).offset().top)};
+
+        if(ctx.globalCompositeOperation != "destination-out"){
+          annodata.gco = ctx.globalCompositeOperation;
+        }
+
+        if(parseFloat(annodata.toolType) == 1){
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.strokeStyle = "rgba(0,0,0,1)";
+        }
+        else{
+            ctx.globalCompositeOperation = annodata.gco;
+            ctx.strokeStyle = getRGBAColorStrFromAnyColor(annodata.brushColor, parseFloat(annodata.brushOpacity));
+        }
+
+        ctx.lineWidth = parseInt(annodata.brushSize);
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        annodata.lineData = {color: annodata.brushColor, opacity: annodata.brushOpacity, size: annodata.brushSize, points: [annodata.lastMouse]};
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+        drawSurface.on('mousemove', onMouseMove);
+        drawSurface.on('mouseup', onMouseUp);
+        e.stopPropagation();
+    }
+  };
+
+  const onMouseMove = function(e){
+    const annodata = JSON.parse(e.target.getAttribute("annodata"));
+    var drawSurface = $(e.target);
+    var ctx = drawSurface[0].getContext("2d");
+
+    var currentMouse= {x: (e.offsetX || e.clientX - $(e.target).offset().left), y: (e.offsetY || e.clientY - $(e.target).offset().top)};
+
+    ctx.beginPath();
+    ctx.moveTo(annodata.lastMouse.x, annodata.lastMouse.y);
+    ctx.lineTo(currentMouse.x, currentMouse.y);
+    ctx.stroke();
+    ctx.closePath();
+
+    annodata.lastMouse = currentMouse;
+    annodata.lineData.points.push(annodata.lastMouse);
+    drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+  };
+
+  const onMouseUp = function(e){
+    const annodata = JSON.parse(e.target.getAttribute("annodata"));
+    var drawSurface = $(e.target);
+
+    drawSurface.off('mousemove');
+    drawSurface.off('mouseup');
+    annodata.imgData.push(annodata.lineData);
+    drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+
+    annotationMemory[annodata.uid] = annodata;
+    options["annotation"] = annodata.imgData;
+  };
+
+  const redrawPreviousImg = function(theDrawSurface, theImgData){
+    var ctx = theDrawSurface.getContext("2d");
+    for(var i = 0; i <  theImgData.length; i++){
+      ctx.strokeStyle = getRGBAColorStrFromAnyColor(theImgData[i].color, parseFloat(theImgData[i].opacity));
+      ctx.lineWidth = parseInt(theImgData[i].size);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      var thePnts = theImgData[i].points;
+      for(var n = 0; n < thePnts.length - 1; n++){
+        ctx.beginPath();
+        ctx.moveTo(thePnts[n].x, thePnts[n].y);
+        ctx.lineTo(thePnts[n+1].x, thePnts[n+1].y);
+        ctx.stroke();
+        ctx.closePath();
+      }
+    }
+  };
+  //=== END: ANNOTATION EVENT HANDLERS & METHODS ================================================================
 
   // Create the VizComp based on the incomming parameters
   const createChart = async () => {
     $(rootNode.current).empty();
 
-    let activeImgSrc = noImg;
-    if(internalData.data){
-      activeImgSrc = internalData.data;
+    let activeImgSrc = noImg64;
+    let filenamePrefix = "";
+    if(internalOptions.skImg.isEnabled){
+      if(internalData.origin){
+        if(internalData.manipVer != ""){
+          filenamePrefix = "(SciKit-Image Processed) ";
+          activeImgSrc = internalData.manipVer;
+        }
+        else{
+          activeImgSrc = internalData.origin;
+        }
+      }
+    }
+    else if(internalOptions.imgData){
+      internalData = {};
+      activeImgSrc = internalOptions.imgData;
     }
 
+    if(activeImgSrc == noImg64){
+      internalOptions = {...internalOptions, ...defaultOptions};
+    }
+
+    const cssFilters = internalOptions.cssFilters.isEnabled ? internalOptions.cssFilters : {grayscaleVal: 0, blurVal: 0, brightnessVal: 100, contrastVal: 100, hueRotateVal: 0, invertVal: 0, opacityVal: 100, saturateVal: 100, sepiaVal: 0,};
     $(rootNode.current).append(`
       <div>
         <figure>
           <label id="CadsWSUserImageTitle` + uid + `" style="font-weight: bold; font-size: 16px;"></label></br>
-          <img id="CadsWSUserImage` + uid + `"
-            src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-            style="
-              margin-top: 5px;
-              border: ` + (internalOptions.border.style || defaultOptions.border.style) + ` ` + (internalOptions.border.color || defaultOptions.border.color) + ` ` + (internalOptions.border.size || defaultOptions.border.size) + `px;
-              padding: ` + internalOptions.pad + `px;
-            "
-            width="` + internalOptions.extent.width + `"
-          />
+          <div id="drawingContainer` + uid + `" style="
+            position: relative;
+            border: ` + internalOptions.border.style + ` ` + internalOptions.border.color + ` ` + internalOptions.border.size + `px;
+            width: ` + internalOptions.extent.width + `;
+            height: 280;
+          ">
+            <img id="CadsWSUserImage` + uid + `"
+              src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+              style="
+                position:absolute;
+                padding: ` + internalOptions.pad + `px;
+                filter: grayscale(` + cssFilters.grayscaleVal + `%) blur(` + cssFilters.blurVal + `px) brightness(` + cssFilters.brightnessVal + `%) contrast(` + cssFilters.contrastVal + `%) hue-rotate(` + cssFilters.hueRotateVal + `deg) invert(` + cssFilters.invertVal + `%) saturate(` + cssFilters.saturateVal + `%) sepia(` + cssFilters.sepiaVal + `%) opacity(` + cssFilters.opacityVal + `%);
+              "
+              width="` + internalOptions.extent.width + `"
+            />
+            <canvas id="drawSurface` + uid + `" style="position: absolute;"></canvas>
+          </div>
           <figcaption id="CadsWSUserImageCaption` + uid + `"style="font-style: italic; font-size: 12px; font-weight: lighter; text-align: center;"></figcaption>
         </figure>
       </div>`
     );
 
-    var thisImg = $(rootNode.current).find('#CadsWSUserImage' + uid).attr("src", activeImgSrc).on('load', function () {
+    var thisImg = $(rootNode.current).find('#CadsWSUserImage' + uid).on('load', function () {
+      thisImg.off('load');
+      var drawingContainer = $(rootNode.current).find("#drawingContainer" + uid);
+      var borderSizeAddOn = internalOptions.border.size * 2;
+      drawingContainer.css({'width': (thisImg.width() + borderSizeAddOn) + "px", 'height': (thisImg.height() + borderSizeAddOn) + "px"});
       $(rootNode.current).find('#CadsWSUserImageTitle' + uid).text(internalOptions.title);
       $(rootNode.current).find('#CadsWSUserImageCaption' + uid).width(thisImg.width()).text(internalOptions.caption);
-    });
+
+      const viewWrapperCustomButton_SaveImg = $(rootNode.current).parent().parent().find('#saveImg' + uid);
+      viewWrapperCustomButton_SaveImg.off('click');
+      const viewWrapperCustomButton_AnnotateImg = $(rootNode.current).parent().parent().find('#annotateImg' + uid);
+      viewWrapperCustomButton_AnnotateImg.off('click');
+      viewWrapperCustomButton_AnnotateImg.css('margin-right', '20px;');
+      const viewWrapperCustomButton_AnnotationType = $(rootNode.current).parent().parent().find('#annotateBrushType' + uid);
+      viewWrapperCustomButton_AnnotationType.off('change');
+      viewWrapperCustomButton_AnnotationType.hide();
+      const viewWrapperCustomButton_AnnotationColor = $(rootNode.current).parent().parent().find('#annotationColor' + uid);
+      viewWrapperCustomButton_AnnotationColor.off('change');
+      viewWrapperCustomButton_AnnotationColor.hide();
+      const viewWrapperCustomButton_AnnotationSize = $(rootNode.current).parent().parent().find('#annotationSize' + uid);
+      viewWrapperCustomButton_AnnotationSize.off('change');
+      viewWrapperCustomButton_AnnotationSize.hide();
+      const viewWrapperCustomButton_AnnotationOpacity = $(rootNode.current).parent().parent().find('#annotationOpacity' + uid);
+      viewWrapperCustomButton_AnnotationOpacity.off('change');
+      viewWrapperCustomButton_AnnotationOpacity.hide();
+      const viewWrapperCustomButton_AnnotationReset = $(rootNode.current).parent().parent().find('#annotateImgReset' + uid);
+      viewWrapperCustomButton_AnnotationReset.off('click');
+      viewWrapperCustomButton_AnnotationReset.hide();
+
+      // Annotation Feature
+      let annotateData = { uid: uid, lastMouse: {x: 0, y: 0}, imgData: [], lineData: {}, gco: "", toolType: 0, brushColor: "#ff0000", brushOpacity: 1, brushSize: 2 }
+      if(annotationMemory[uid] && typeof annotationMemory[uid][0] !== 'string' ){
+        annotateData = annotationMemory[uid];
+      }
+
+      var drawSurface = $(rootNode.current).find("#drawSurface" + uid);
+      drawSurface.off('mouseup');
+      drawSurface[0].setAttribute("width", thisImg.width() + "px");
+      drawSurface[0].setAttribute("height", thisImg.height() + "px");
+      drawSurface[0].setAttribute("annodata", JSON.stringify(annotateData));
+
+      viewWrapperCustomButton_SaveImg.on( "click", function () { saveBase64AsFile(activeImgSrc, (filenamePrefix + internalOptions.title), thisImg[0], drawSurface[0], (internalOptions.cssFilters.isEnabled ? cssFilters : undefined)); });
+      viewWrapperCustomButton_AnnotateImg.on( "click", function (e) {
+        if(annotationEnabled){
+          viewWrapperCustomButton_AnnotateImg.css("background-color", '');
+          viewWrapperCustomButton_AnnotationColor.hide();
+          viewWrapperCustomButton_AnnotationSize.hide();
+          viewWrapperCustomButton_AnnotationType.hide();
+          viewWrapperCustomButton_AnnotationOpacity.hide();
+          viewWrapperCustomButton_AnnotationReset.hide();
+        }
+        else{
+          viewWrapperCustomButton_AnnotateImg.css("background-color", "green");
+          viewWrapperCustomButton_AnnotationColor.show();
+          viewWrapperCustomButton_AnnotationSize.show();
+          viewWrapperCustomButton_AnnotationType.show();
+          viewWrapperCustomButton_AnnotationOpacity.show();
+          viewWrapperCustomButton_AnnotationReset.show();
+        }
+        annotationEnabled = !annotationEnabled;
+      });
+      viewWrapperCustomButton_AnnotationType.on('change', function (e) {
+        const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
+        annodata.toolType = e.target.value;
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+      });
+      viewWrapperCustomButton_AnnotationColor.on('change', function (e) {
+        const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
+        annodata.brushColor = e.target.value;
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+      });
+      viewWrapperCustomButton_AnnotationSize.on('change', function (e) {
+        const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
+        annodata.brushSize = e.target.value;
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+      });
+      viewWrapperCustomButton_AnnotationOpacity.on('change', function (e) {
+        const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
+        annodata.brushOpacity = e.target.value;
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+      });
+      viewWrapperCustomButton_AnnotationReset.on('click', function (e) {
+        var ctx = drawSurface[0].getContext("2d");
+        ctx.clearRect(0,0,thisImg.width(),thisImg.height());
+        const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
+        annodata.imgData = [];
+        drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
+        options["annotation"] = annodata.imgData;
+      });
+
+      drawSurface.on('mousedown', onMouseDown);
+      if(annotationMemory[uid]){
+        redrawPreviousImg(drawSurface[0], annotateData.imgData);
+      }
+    }).attr("src", activeImgSrc);
   };
 
   // Clear away the VizComp
@@ -149,6 +452,22 @@ ImageView.propTypes = {
       style: PropTypes.string,
       size: PropTypes.number,
     }),
+    cssFilters: PropTypes.shape({
+      isEnabled: PropTypes.bool,
+      grayscaleVal: PropTypes.number,
+      blurVal: PropTypes.number,
+      brightnessVal: PropTypes.number,
+      contrastVal: PropTypes.number,
+      hueRotateVal: PropTypes.number,
+      invertVal: PropTypes.number,
+      opacityVal: PropTypes.number,
+      saturateVal: PropTypes.number,
+      sepiaVal: PropTypes.number,
+    }),
+    skImg: PropTypes.shape({
+      isEnabled: PropTypes.bool,
+    }),
+    imgManip: PropTypes.string,
     extent: PropTypes.shape({
       width: PropTypes.number,
       height: PropTypes.number,

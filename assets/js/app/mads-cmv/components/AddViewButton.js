@@ -24,6 +24,7 @@ import { Button, Dropdown, Header, Modal, Icon } from 'semantic-ui-react';
 
 import config from './Views/ViewCatalog';
 import createView from './Views/factory';
+import { createNewId } from './compUtils';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -55,22 +56,6 @@ for(let i = 0; i < uniqueCategories.length; i++){
 }
 //-------------------------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------------------------
-// Component Support Methods
-//-------------------------------------------------------------------------------------------------
-function createNewId(existingViews) {
-  const ids = existingViews.map((v) => v.id);
-  let currentId = startId;
-
-  let id = currentId.toString();
-  while (ids.includes(id)) {
-    currentId += 1;
-    id = currentId.toString();
-  }
-
-  return id;
-}
-//-------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------
 // The Component Class
@@ -94,7 +79,7 @@ class AddViewButton extends React.Component {
     const { actions, views } = this.props;
 
     // create new id
-    const id = createNewId(views);
+    const id = createNewId(views, startId);
     const view = createView(selected, id);
     actions.addView(view);
   }

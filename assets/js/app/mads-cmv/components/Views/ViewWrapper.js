@@ -18,7 +18,7 @@
 //-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal } from 'semantic-ui-react';
+import { Button, Modal, Popup } from 'semantic-ui-react';
 
 import DevStage from '../FormFields/DevStage';
 
@@ -36,6 +36,14 @@ export default function withCommandInterface(
 ) {
   // The ViewWrapper Class
   class ViewWrapper extends React.Component {
+
+    componentDidMount() {
+      if(this.props.view.settings.isDupli){
+        this.props.view.settings.isDupli = false;
+        this.handleSubmit(this.props.view.settings);
+      }
+    }
+
     state = {
       propSheetOpen: false,
     };
@@ -122,6 +130,10 @@ export default function withCommandInterface(
       this.props.removeView(id);
     };
 
+    onDuplicateClick = (id, view) => {
+      this.props.duplicateView(id, view);
+    };
+
     render() {
       const {
         dataset,
@@ -129,10 +141,13 @@ export default function withCommandInterface(
         view,
         id,
         selection,
+        defaultOptions,
+        customButtons,
         colorTags,
         isLoggedIn,
         showMessage,
         actions,
+        getNewAvailableId,
         version,
         devStage
       } = this.props;
@@ -161,9 +176,43 @@ export default function withCommandInterface(
       // Add the ViewWrapper to the DOM
       return (
         <div className="view-container">
-          <Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />
-          <Button size="mini" icon="configure" onClick={() => this.show()} />
-          <Button className="the-drag-handle" size="mini" icon="arrows alternate" /> {/* Remove this if customized component position order is to be turned off */}
+          <Popup
+            trigger={<Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />}
+            content='Delete'
+            // disabled
+            size='small'
+          />
+          <Popup
+            trigger={<Button size="mini" icon="configure" onClick={() => this.show()} />}
+            content='Configure'
+            size='small'
+          />
+          {/* Remove this one below if customized component position order is to be turned off */}
+          <Popup
+            trigger={<Button className="the-drag-handle" size="mini" icon="arrows alternate" /> }
+            content='Move'
+            size='small'
+          />
+          <Popup
+            trigger={<Button size="mini" icon="copy"  onClick={() => this.onDuplicateClick(id, view)} style={{marginRight: '20px'}}/>}
+            content='Duplicate'
+            size='small'
+          />
+          {customButtons.map((cb,index)=>{
+              if(cb.type == "color"){
+                return <Popup key={index} trigger={<input id={cb.name+view.id} type='color' style={{width: "25px", marginLeft: "2px"}} defaultValue="#ff0000"></input>} content={cb.text} size='small' />
+              }
+              else if(cb.type == "number"){
+                return <Popup key={index} trigger={<input id={cb.name+view.id} type='number' step={cb.step} min={cb.min || 0} max={cb.max || 100} style={{width: "40px", marginLeft: "2px"}} defaultValue={cb.defVal || 0}></input>} content={cb.text} size='small' />
+              }
+              else if(cb.type == "list"){
+                return <Popup key={index} trigger={<select id={cb.name+view.id} defaultValue={cb.options[0].value}>{cb.options.map(o => (<option key={o.value} value={o.value}>{o.text}</option>))}</select>} content={cb.text} size='small' />
+              }
+              else{
+                return <Popup key={index} trigger={<Button id={cb.name+view.id} className="ui custom-btn-color button" style={{border: '1px solid gray'}} size="mini" icon={cb.icon} />} content={cb.text} size='small' />
+              }
+          })}
+
           <DevStage stage={devStage} version={version} />
           <WrappedComponent
             data={data || []}
@@ -171,6 +220,8 @@ export default function withCommandInterface(
             {...view.settings}
             properties={view.properties}
             selectedIndices={selectionInternal}
+            id={view.id}
+            originalOptions={defaultOptions}
             colorTags={colorTags}
             filteredIndices={filteredIndices}
             onSelectedIndicesChange={(indices) =>
@@ -187,6 +238,7 @@ export default function withCommandInterface(
               <SettingForm
                 initialValues={view.settings}
                 enableReinitialize
+                defaultOptions={defaultOptions}
                 ref={(form) => {
                   this.formReference = form;
                 }}

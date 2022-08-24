@@ -20,6 +20,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Form, Dropdown } from 'semantic-ui-react';
+import { selection } from 'd3';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -32,12 +33,15 @@ const SemanticDropdown = ({
   type,
   label,
   placeholder,
+  renderLabel,
+  styleMaker=styleMaker || (() => {return {}}),
   meta: { touched, error, warning },
   ...props
 }) =>{
   return (
   <Form.Field>
     <Dropdown
+      style={styleMaker(input.value)}
       fluid
       selection
       {...input}

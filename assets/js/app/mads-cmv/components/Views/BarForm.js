@@ -5,9 +5,10 @@
 // Authors: Jun Fujima (Former Lead Developer) [2018-2021]
 //          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'Pie' View, driven by ReduxForm
+// Description: This is the Settings Configuration Form for the 'Bar' View,
+//              driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
-// Notes: 'PieForm' opens a customized form for the 'PieChart' visualization component and allows
+// Notes: 'BarForm' opens a customized form for the 'BarChart' visualization component and allows
 //        the user to edit its look, feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party

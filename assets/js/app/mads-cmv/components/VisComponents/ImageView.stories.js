@@ -46,9 +46,26 @@ const testOptions = {
     color: "red",
     style: "dashed",
     size: 4,
-  }
+  },
+  imgData: testData.data,
+  cssFilters: {
+    isEnabled: false,
+    grayscaleVal: 0,
+    blurVal: 0,
+    brightnessVal: 100,
+    contrastVal: 100,
+    hueRotateVal: 0,
+    invertVal: 0,
+    opacityVal: 100,
+    saturateVal: 100,
+    sepiaVal: 0,
+  },
+  skImg: {
+    isEnabled: false,
+  },
 };
 //=========================================
+
 
 // Medium local File Sample Data
 //=========================================
@@ -63,7 +80,23 @@ const localFileOptions = {
     color: "green",
     style: "solid",
   },
-  pad: 2
+  pad: 2,
+  imgData: localTestImg,
+  cssFilters: {
+    isEnabled: false,
+    grayscaleVal: 0,
+    blurVal: 0,
+    brightnessVal: 100,
+    contrastVal: 100,
+    hueRotateVal: 0,
+    invertVal: 0,
+    opacityVal: 100,
+    saturateVal: 100,
+    sepiaVal: 0,
+  },
+  skImg: {
+    isEnabled: false,
+  },
 };
 //=========================================
 
@@ -84,6 +117,22 @@ export function getImageViewDataPack(){
     },
     pad: 5,
     extent: { width: 500, },
+    imgData: data.data,
+    cssFilters: {
+      isEnabled: false,
+      grayscaleVal: 0,
+      blurVal: 0,
+      brightnessVal: 100,
+      contrastVal: 100,
+      hueRotateVal: 0,
+      invertVal: 0,
+      opacityVal: 100,
+      saturateVal: 100,
+      sepiaVal: 0,
+    },
+    skImg: {
+      isEnabled: false,
+    },
   };
 
   return {data, options};

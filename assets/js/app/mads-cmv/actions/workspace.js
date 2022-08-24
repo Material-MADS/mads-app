@@ -68,6 +68,7 @@ const fetchCurrentWorkspaceInfo = () => (dispatch) => {
   dispatch(requestWorkspaceInfo());
 
   if (window.workspaceId) {
+    dispatch(loadingActions.setLoadingState(true));
     return api.workspace
       .fetchWorkspaceInfo(window.workspaceId)
       .then((res) => {
