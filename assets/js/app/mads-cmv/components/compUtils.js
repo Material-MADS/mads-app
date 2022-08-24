@@ -5,40 +5,43 @@
 // Authors: Jun Fujima (Former Lead Developer) [2018-2021]
 //          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Visual Component 'Factory' that calls for the creation of a VisComp
-//              when a user selects Add View
+// Description: This is a set of Utility Support Functions for the Components
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Factory' gets a View Type and ID and then creates a new View of that type as found in
-//        the ViewCatalog.
+// Notes: 'compUtils' is a set of utility support methods provided for the Components when needed.
 // ------------------------------------------------------------------------------------------------
-// References: Internal 'View' & 'ViewCatalog'
+// References: None
 =================================================================================================*/
+
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import View from '../../models/View';
-import config from './ViewCatalog';
 
 //-------------------------------------------------------------------------------------------------
 
 
+
 //-------------------------------------------------------------------------------------------------
-// Create View
-// Method that creates a instance of the 'View' Class and returns it
+// Create New Id
+// Returns a new id to be used when creating a new view making sure it will not be used already
 //-------------------------------------------------------------------------------------------------
-const createView = (type, id, duplicateSettings) => {
-  const viewSettings = {...(config.find((v) => v.type === type))};
-  if (id) {
-    viewSettings.id = id;
+export function createNewId(existingViews, startId) {
+  const ids = existingViews.map((v) => v.id);
+  let currentId = startId || 1;
+
+  let id = currentId.toString();
+  while (ids.includes(id)) {
+    currentId += 1;
+    id = currentId.toString();
   }
 
-  if (duplicateSettings) {
-    viewSettings.settings = {...duplicateSettings}
-  }
-  const v = new View(viewSettings);
-  return v;
-};
+  return id;
+}
 //-------------------------------------------------------------------------------------------------
 
-export default createView;
+
+//-------------------------------------------------------------------------------------------------
+// Component Support Methods
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------

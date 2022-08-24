@@ -18,7 +18,7 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ResizeObserver from 'rc-resize-observer';
 import PropTypes from 'prop-types';
 
@@ -26,6 +26,9 @@ import ColorTags from '../../containers/ColorTags';
 import AddViewButton from '../../containers/AddView';
 import { Button } from 'semantic-ui-react';
 import config from '../Views/ViewCatalog';
+
+import { createNewId } from '../compUtils';
+import createView from '../Views/factory';
 
 import './style.css';
 
@@ -42,6 +45,8 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 let gridUnitWidth, gridUnitHeight = 100;
 const border = { borderWidth: '1px', borderStyle: 'dashed'};
 
+//-------------------------------------------------------------------------------------------------
+
 
 //-------------------------------------------------------------------------------------------------
 // The Component Function
@@ -55,7 +60,6 @@ export default function CmvBase({
     userInfo,
     showMessage,
   }) {
-
   const [layout, setLayout] = useState([]);
   const [borderVisibility, setBorderVisibility] = useState(false);
 
@@ -68,6 +72,13 @@ export default function CmvBase({
         view.rgl = newLayout.find((e) => e.i == view.id)
     });
     setLayout(newLayout);
+  }
+
+  const duplicateView = (id, view) => {
+    const newSettings = {...view.settings, isDupli: true}
+    const newId = createNewId(views);
+    const newView = createView(view.type, newId, newSettings);
+    actions.addView(newView);
   }
 
   const resizeWasDone = (newLayout, gridItemBeforeResize, gridItemAfterResize) => {
@@ -103,7 +114,6 @@ export default function CmvBase({
     }
   }
 
-
   const viewContainers = views.map((view) => {
     const componentDef = config.find((c) => view.type === c.type);
     if(componentDef){
@@ -132,13 +142,15 @@ export default function CmvBase({
               selection={selection}
               colorTags={colorTags}
               removeView={actions.removeViewData}
+              defaultOptions={componentDef.settings.options}
+              customButtons={componentDef.customBtns || []}
+              duplicateView={duplicateView}
               updateView={actions.updateView}
               updateSelection={actions.updateSelection}
               actions={actions}
               isLoggedIn={userInfo.isLoggedIn}
               version={componentDef.version}
               devStage={componentDef.devStage}
-              tomten={view.tomten}
             />
           </ResizeObserver>
         </div>

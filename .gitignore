@@ -51,3 +51,4 @@ tmp_email/
 # VSCode
 .vscode
 .history
+yarn-error.log

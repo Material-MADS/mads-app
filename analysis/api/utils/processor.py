@@ -28,6 +28,7 @@ from .scatter3D import get_scatter3D
 from .heatmap import get_hm
 from .custom import get_custom
 from .bar import get_bar
+from .scikit_image_manip import get_scikit_image_manip
 
 import logging
 
@@ -48,6 +49,7 @@ processor_map = {
     'heatmap': get_hm,
     'custom': get_custom,
     'bar': get_bar,
+    'imageView': get_scikit_image_manip,
 }
 
 

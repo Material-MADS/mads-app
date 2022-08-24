@@ -44,11 +44,21 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
       newValues.filter = filteredFilters;
     }
 
-    newValues["data"] = { data: newValues.imgData };
+    let data = {};
     newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-
     newValues = convertExtentValues(newValues);
-    updateView(id, newValues);
+    for (const cf in newValues.options.cssFilters) {
+      if(cf !== "isEnabled"){
+        newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
+      }
+    }
+
+    if(newValues.options.skImg.isEnabled){
+      const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
+      const manipData = dataset[id] ? dataset[id].manipVer : "";
+      data = {origin: originData, manipVer: manipData};
+    }
+    actions.sendRequestViewUpdate(view, newValues, data);
   };
 
   // Manages data changes in the view
@@ -58,8 +68,12 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
 
     if (dataset[id]) {
       data = dataset[id];
-    }
 
+      if (data.debugInfo) {
+        console.log("SERVER SIDE DEBUG INFO:");
+        console.log(data.debugInfo);
+      }
+    }
     return data;
   };
 }

@@ -26,7 +26,7 @@ import React from 'react';
 //-------------------------------------------------------------------------------------------------
 // The FormField Component
 //-------------------------------------------------------------------------------------------------
-const inputTrad = ({ input, label, type, meta: { touched, error, warning }, value }) => (
+const inputTrad = ({ input, label, type, min, max, step, style, meta: { touched, error, warning }, value }) => (
   <div>
     <label>{label}</label>
     <div>{JSON.stringify(error)}</div>
@@ -35,6 +35,10 @@ const inputTrad = ({ input, label, type, meta: { touched, error, warning }, valu
         {...input}
         placeholder={label}
         type={type}
+        style={style}
+        min={min}
+        max={max}
+        step={step}
       />
       {touched &&
         ((error && <span><i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i></span>) ||

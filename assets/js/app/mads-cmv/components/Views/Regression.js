@@ -23,16 +23,11 @@
 import { DataFrame } from 'pandas-js';
 import _ from 'lodash';
 
-import React from 'react';
-import { Button, Modal, Card } from 'semantic-ui-react';
-
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
 import RegressionVis from '../VisComponents/RegressionVis';
 import RegressionForm from './RegressionForm';
-
-import DevStage from '../FormFields/DevStage';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -156,130 +151,13 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
         data["resetRequest"] = true;
         data["resetTitle"] = "Regression";
       }
+
+      if (dataset[id].scores) {
+        data["scores"] = dataset[id].scores;
+      }
     }
 
     return data;
   };
-
-  // Draws additional features to the chart
-  render() {
-    const {
-      dataset,
-      removeView,
-      view,
-      id,
-      selection,
-      colorTags,
-      isLoggedIn,
-      showMessage,
-      actions,
-      version,
-      devStage
-    } = this.props;
-
-    const { main } = dataset;
-    const { propSheetOpen } = this.state;
-    const columnOptions = this.getColumnOptions();
-    const data = this.mapData(dataset);
-    const selectionInternal = this.getSelection(selection);
-
-    // compose filtered indices
-    let filteredIndices = [];
-    if (view.settings.filter) {
-      view.settings.filter.forEach((f) => {
-        const cTag = colorTags.find((c) => c.id === f);
-        if (!cTag) {
-          return;
-        }
-        filteredIndices = filteredIndices.concat(cTag.itemIndices);
-      });
-
-      const s = new Set(filteredIndices);
-      filteredIndices = Array.from(s);
-    }
-
-
-    // extract scores
-    const scores = {};
-    if (dataset[id]) {
-      if (dataset[id].scores) {
-        const ss = dataset[id].scores;
-        if (ss['test_r2']) {
-          scores.meanR2 = _.mean(ss['test_r2']);
-        }
-        if (ss['test_mae']) {
-          scores.meanMAE = _.mean(ss['test_mae']);
-        }
-      }
-    }
-
-    if(data["resetRequest"] && data["resetRequest"] === true){
-      scores.meanR2 = '';
-      scores.meanMAE = '';
-    }
-
-    return (
-      <div className="view-container">
-        <Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />
-        <Button size="mini" icon="configure" onClick={() => this.show()} />
-        <Button className="the-drag-handle" size="mini" icon="arrows alternate" /> {/* Remove this if customized component position order is to be turned off */}
-        <DevStage stage={devStage} version={version} />
-        <div className="view-contents">
-          <RegressionVis
-            data={data || []}
-            {...settings}
-            {...view.settings}
-            properties={view.properties}
-            selectedIndices={selectionInternal}
-            colorTags={colorTags}
-            filteredIndices={filteredIndices}
-            onSelectedIndicesChange={(indices) =>
-              this.handleSelectionChange(indices)
-            }
-            showMessage={actions.showMessage}
-          />
-
-          <div style={{ marginRight: '5px' }}>
-            <Card>
-              <Card.Content>
-                <h3>CV scores:</h3>
-                <ul>
-                  <li>mean r2: {scores.meanR2}</li>
-                  <li>mean MAE: {scores.meanMAE}</li>
-                </ul>
-              </Card.Content>
-            </Card>
-          </div>
-        </div>
-
-        <Modal open={propSheetOpen} onClose={this.close}>
-          <Modal.Header>
-            {view.name} {`[${view.id}]`}
-          </Modal.Header>
-          <Modal.Content>
-            <RegressionForm
-              initialValues={view.settings}
-              enableReinitialize
-              ref={(form) => {
-                this.formReference = form;
-              }}
-              onSubmit={this.handleSubmit}
-              columns={columnOptions}
-              targetId={id}
-              colorTags={colorTags}
-              onModelSave={this.handleModelSave}
-              isLoggedIn={isLoggedIn}
-            />
-          </Modal.Content>
-          <Modal.Actions>
-            <Button negative onClick={() => this.close()}>
-              Cancel
-            </Button>
-            <Button positive content="Submit" onClick={this.onSubmitClick} />
-          </Modal.Actions>
-        </Modal>
-      </div>
-    );
-  }
 }
 //-------------------------------------------------------------------------------------------------

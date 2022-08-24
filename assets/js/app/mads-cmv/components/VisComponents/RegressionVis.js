@@ -21,13 +21,14 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { Component } from 'react';
+import { Card } from 'semantic-ui-react';
 import PropTypes from 'prop-types';
 import ColorTag from '../../models/ColorTag';
 
 import { DataFrame } from 'pandas-js';
 import * as Bokeh from '@bokeh/bokehjs';
 import * as deepEqual from 'deep-equal';
-import _ from 'lodash';
+import _, { find } from 'lodash';
 
 import * as gPalette from 'google-palette';
 import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
@@ -41,7 +42,7 @@ const Category10_10 = Category10.Category10_10;
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: 'Scatter',
+  title: 'Regression',
   color: `#${Category10_10[0].toString(16)}`, //blue
   selectionColor: 'orange',
   nonselectionColor: `#${Greys9[3].toString(16)}`,
@@ -101,6 +102,11 @@ export default class RegressionVis extends Component {
     this.lastSelections = [];
     this.selecting = false;
   }
+
+  state = {
+    scores: {},
+    dataShouldBeFine: false,
+  };
 
   componentDidMount() {
     this.createChart();
@@ -166,6 +172,9 @@ export default class RegressionVis extends Component {
       delete this.props.options.y_range;
       delete this.props.data.resetRequest;
       delete this.props.data.resetTitle;
+      if((this.state.scores !== {})){
+        this.setState({ scores: {} });
+      }
     }
     this.mainFigure = null;
     this.views = null;
@@ -191,7 +200,7 @@ export default class RegressionVis extends Component {
     let y = [];
     const cols = df.columns;
 
-    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined));
+    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined && !this.state.dataShouldBeFine));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       y = df.get(xName).to_json({ orient: 'records' });
@@ -286,6 +295,21 @@ export default class RegressionVis extends Component {
         line_color: 'red',
         line_width: 1,
       });
+
+      const scores = {};
+      if (internalData.scores) {
+        const ss = internalData.scores;
+        if (ss['test_r2']) {
+          scores.meanR2 = _.mean(ss['test_r2']);
+        }
+        if (ss['test_mae']) {
+          scores.meanMAE = _.mean(ss['test_mae']);
+        }
+      }
+      if((scores.meanR2 || scores.meanMAE) && (scores.meanR2 !== this.state.scores.meanR2 || scores.meanMAE !== this.state.scores.meanMAE)){
+        this.setState({ scores: scores });
+      }
+
       this.mainFigure.add_glyph(line, source);
     }
 
@@ -299,13 +323,28 @@ export default class RegressionVis extends Component {
     }
 
     this.views = views;
+
+    if(!this.state.dataShouldBeFine){
+      this.setState({ dataShouldBeFine: true });
+    }
   }
 
   // Add the VizComp to the DOM
   render() {
     return (
-      <div>
+      <div style={{display: 'flex'}} >
         <div ref={this.rootNode} />
+        <div style={{marginLeft: '10px', marginRight: '10px'}}>
+          <Card>
+           <Card.Content>
+              <h3>CV scores:</h3>
+              <ul>
+                <li>mean r2: {this.state.scores.meanR2}</li>
+                <li>mean MAE: {this.state.scores.meanMAE}</li>
+              </ul>
+            </Card.Content>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -348,7 +387,7 @@ RegressionVis.defaultProps = {
   data: {data: []},
   mappings: {},
   options: {
-    title: 'Scatter',
+    title: 'Regression',
     color: defaultOptions.color,
     selectionColor: defaultOptions.selectionColor,
     nonselectionColor: defaultOptions.nonselectionColor,
