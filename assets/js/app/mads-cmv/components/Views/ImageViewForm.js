@@ -252,6 +252,7 @@ const ImageViewForm = (props) => {
   const [skImgSwitchColorEnabled, toggleSKImgSwitchColorEnabled] = useState( initialValues.options.skImg.switchColorEnabled );
   if(!initialValues.options.skImg.switchColorFromColor){ initialValues.options.skImg.switchColorFromColor = "#ffffff" };
   if(!initialValues.options.skImg.switchColorToColor){ initialValues.options.skImg.switchColorToColor = "#000000" };
+  if(!initialValues.options.skImg.switchColorExtendRangeValue){ initialValues.options.skImg.switchColorExtendRangeValue = 0 };
 
   const [skImgFlipEnabled, toggleSKImgFlipEnabled] = useState( initialValues.options.skImg.flipEnabled );
   if(!initialValues.options.skImg.flipHorizontallyEnabled){ initialValues.options.skImg.flipHorizontallyEnabled = false };
@@ -265,6 +266,14 @@ const ImageViewForm = (props) => {
   const [skImgSkeletonizeEnabled, toggleSKImgSkeletonizeEnabled] = useState( initialValues.options.skImg.skeletonizeEnabled );
 
   const [skImgObjectDetectionEnabled, toggleSKImgObjectDetectionEnabled] = useState( initialValues.options.skImg.objectDetectionEnabled );
+
+  const [skImgContourFindingEnabled, toggleSKImgContourFindingEnabled] = useState( initialValues.options.skImg.contourFindingEnabled );
+  if(!initialValues.options.skImg.contourFindingLevel){ initialValues.options.skImg.contourFindingLevel = 0.8 };
+  if(!initialValues.options.skImg.contourOnlyEnabled){ initialValues.options.skImg.contourOnlyEnabled = false };
+  if(!initialValues.options.skImg.contourPoppingEnabled){ initialValues.options.skImg.contourPoppingEnabled = false };
+
+  const [skImgFlorescentColorsEnabled, toggleSKImgFlorescentColorsEnabled] = useState( initialValues.options.skImg.florescentColorsEnabled );
+
   // ----------------------------------------------------------------------------------------
 
 
@@ -784,6 +793,18 @@ const ImageViewForm = (props) => {
                   type="color"
                 />
               </Form.Field>
+              <Form.Field>
+                <label>Extend Range Value<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='If you want to affect nearby colors on the RGB scale (0-255) provide a number of how many colors above and below for each R, G and B. (ex. value = 2, affects max 125 colors).' size='small' />:</label>
+                <Field
+                  fluid
+                  name="options.skImg.switchColorExtendRangeValue"
+                  component={inputTrad}
+                  type="number"
+                  step={1}
+                  min={0}
+                  max={255}
+                />
+              </Form.Field>
             </div>}
           </Form.Field>
           <Form.Field width={3}>
@@ -880,6 +901,54 @@ const ImageViewForm = (props) => {
               component={SemCheckbox}
               toggle
               onChange={(e, data) => { toggleSKImgObjectDetectionEnabled(data); }}
+            />
+          </Form.Field>
+          <Form.Field width={3}>
+            <label>Contour Finding<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This feature works best when the original image is a JPEG, and works less as expected with a PNG. So make sure your original image is of the proper type.' size='small' />:</label>
+            <Field
+              name="options.skImg.contourFindingEnabled"
+              component={SemCheckbox}
+              toggle
+              onChange={(e, data) => { toggleSKImgContourFindingEnabled(data); }}
+            />
+            {skImgContourFindingEnabled && <div>
+              <Form.Field>
+                <label>Level:</label>
+                <Field
+                  fluid
+                  name="options.skImg.contourFindingLevel"
+                  component={inputTrad}
+                  type="number"
+                  step={0.05}
+                  min={0}
+                  max={1}
+                />
+              </Form.Field>
+              <Form.Field>
+                <label>Show Contours Only:</label>
+                <Field
+                  name="options.skImg.contourOnlyEnabled"
+                  component={SemCheckbox}
+                  toggle
+                />
+              </Form.Field>
+              <Form.Field>
+                <label>More Popping Style:</label>
+                <Field
+                  name="options.skImg.contourPoppingEnabled"
+                  component={SemCheckbox}
+                  toggle
+                />
+              </Form.Field>
+            </div>}
+          </Form.Field>
+          <Form.Field width={3}>
+            <label>Florescent Colors:</label>
+            <Field
+              name="options.skImg.florescentColorsEnabled"
+              component={SemCheckbox}
+              toggle
+              onChange={(e, data) => { toggleSKImgFlorescentColorsEnabled(data); }}
             />
           </Form.Field>
         </Form.Group>

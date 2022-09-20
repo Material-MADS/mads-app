@@ -27,18 +27,6 @@ import base64
 import scipy
 import skimage
 
-# FOR EDGES
-# ----------------------------------------------------
-from skimage.color.adapt_rgb import adapt_rgb
-def as_gray(image_filter, image, *args, **kwargs):
-    gray_image = skimage.color.rgb2gray(image)
-    return image_filter(gray_image, *args, **kwargs)
-
-@adapt_rgb(as_gray)
-def sobel_gray(image):
-    return skimage.filters.sobel(image)
-# ----------------------------------------------------
-
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
 
@@ -285,9 +273,20 @@ def get_scikit_image_manip(data):
         # 19. SWITCH COLOR  (dType Out: uint8)
         if imgOpts['skImg']['switchColorEnabled'] == True:
             no_of_changes = no_of_changes + 1
+            extendRangeValue = int(imgOpts['skImg']['switchColorExtendRangeValue'])
             frRed, frGreen, frBlue = bytes.fromhex(imgOpts['skImg']['switchColorFromColor'].split("#")[1])
             toRed, toGreen, toBlue = bytes.fromhex(imgOpts['skImg']['switchColorToColor'].split("#")[1])
-            workingImg[np.all(workingImg == (frRed, frGreen, frBlue), axis=-1)] = (toRed,toGreen,toBlue)
+
+            if (extendRangeValue > 0):
+                frRedRange = range(max(frRed-extendRangeValue, 0),min(frRed+extendRangeValue, 255))
+                frGreenRange = range(max(frGreen-extendRangeValue, 0),min(frGreen+extendRangeValue, 255))
+                frBlueRange = range(max(frBlue-extendRangeValue, 0),min(frBlue+extendRangeValue, 255))
+                for r in frRedRange:
+                    for g in frGreenRange:
+                        for b in frBlueRange:
+                            workingImg[np.all(workingImg == (r, g, b), axis=-1)] = (toRed,toGreen,toBlue)
+            else:
+                workingImg[np.all(workingImg == (frRed, frGreen, frBlue), axis=-1)] = (toRed,toGreen,toBlue)
 
 
         # 20. FLIP  (dType Out: uint8)
@@ -335,6 +334,58 @@ def get_scikit_image_manip(data):
             fd, hog_image = skimage.feature.hog(workingImg, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=True, channel_axis=-1)
             hog_image_rescaled = skimage.exposure.rescale_intensity(hog_image, in_range=(-10, 10))
             workingImg = hog_image_rescaled
+
+
+        # 24. CONTOUR FINDING  (dType Out: )
+        if imgOpts['skImg']['contourFindingEnabled'] == True:
+            no_of_changes = no_of_changes + 1
+            contourFindingLevel = float(imgOpts['skImg']['contourFindingLevel'])
+            contourOnlyEnabled = imgOpts['skImg']['contourOnlyEnabled']
+            contourPoppingEnabled = imgOpts['skImg']['contourPoppingEnabled']
+
+            contours = skimage.measure.find_contours(skimage.color.rgb2gray(workingImg), contourFindingLevel)
+
+            baseImg = Image.fromarray(skimage.img_as_ubyte(workingImg)).convert('RGBA')
+            h, w, c =  np.array(baseImg.copy()).shape
+            combined_mask = 255 * np.zeros(shape=(h, w, c), dtype=np.uint8)
+            for c in contours:
+                c_mask = np.zeros_like(workingImg, dtype='bool')
+                c_mask[np.round(c[:, 0]).astype('int'), np.round(c[:, 1]).astype('int')] = 1
+                c_mask = scipy.ndimage.binary_fill_holes(c_mask)
+                c_mask = ~c_mask
+
+                if(contourPoppingEnabled):
+                    c_mask = skimage.filters.hessian(c_mask, sigmas=[3], mode='constant', black_ridges=True)
+
+                color = np.random.randint(255, size=3)
+                overlayImg = Image.fromarray(skimage.img_as_ubyte(c_mask)).convert("RGBA")
+                oi_data = overlayImg.getdata()
+                newData = []
+                for item in oi_data:
+                    if item[0] == 255 and item[1] == 255 and item[2] == 255:
+                        newData.append((255, 255, 255, 0))
+                    else:
+                        newData.append((color[0], color[1], color[2], 255))
+
+                overlayImg.putdata(newData)
+                combined_mask += np.array(overlayImg)
+
+            if contourOnlyEnabled == True:
+                workingImg = combined_mask
+            else:
+                mergedImg = Image.alpha_composite(baseImg, Image.fromarray(skimage.img_as_ubyte(combined_mask)).convert("RGBA"))
+                workingImg = mergedImg
+
+        # 25. FLORESCENT COLORING  (dType Out: )
+        if imgOpts['skImg']['florescentColorsEnabled'] == True:
+            no_of_changes = no_of_changes + 1
+            ihc_rgb = workingImg
+            ihc_hed = skimage.color.rgb2hed(ihc_rgb)
+            null = np.zeros_like(ihc_hed[:, :, 0])
+            h = skimage.exposure.rescale_intensity(ihc_hed[:, :, 0], out_range=(0, 1), in_range=(0, np.percentile(ihc_hed[:, :, 0], 99)))
+            d = skimage.exposure.rescale_intensity(ihc_hed[:, :, 2], out_range=(0, 1), in_range=(0, np.percentile(ihc_hed[:, :, 2], 99)))
+            zdh = np.dstack((null, d, h))
+            workingImg = zdh
 
 
         if no_of_changes > 0:

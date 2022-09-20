@@ -249,6 +249,8 @@ const config = [
           circleFrameRadius: -1,
           skeletonizeEnabled: false,
           objectDetectionEnabled: false,
+          contourFindingEnabled: false,
+          florescentColorsEnabled: false,
         },
         annotation: [],
       },

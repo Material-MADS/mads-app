@@ -149,7 +149,8 @@ export default function withCommandInterface(
         actions,
         getNewAvailableId,
         version,
-        devStage
+        devStage,
+        freeMobilityEnabled,
       } = this.props;
 
       const { main } = dataset;
@@ -187,12 +188,13 @@ export default function withCommandInterface(
             content='Configure'
             size='small'
           />
-          {/* Remove this one below if customized component position order is to be turned off */}
-          <Popup
+
+          {freeMobilityEnabled && <Popup
             trigger={<Button className="the-drag-handle" size="mini" icon="arrows alternate" /> }
             content='Move'
             size='small'
-          />
+          />}
+
           <Popup
             trigger={<Button size="mini" icon="copy"  onClick={() => this.onDuplicateClick(id, view)} style={{marginRight: '20px'}}/>}
             content='Duplicate'
