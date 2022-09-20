@@ -44,6 +44,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 //-------------------------------------------------------------------------------------------------
 let gridUnitWidth, gridUnitHeight = 100;
 const border = { borderWidth: '1px', borderStyle: 'dashed'};
+let sortNeedsUpdate;
 
 //-------------------------------------------------------------------------------------------------
 
@@ -62,9 +63,15 @@ export default function CmvBase({
   }) {
   const [layout, setLayout] = useState([]);
   const [borderVisibility, setBorderVisibility] = useState(false);
+  const [mobilityEnabling, setMobilityEnabling] = useState(false);
 
-  const handleClick = (e) => {
+  const handleBVClick = (e) => {
     setBorderVisibility(!borderVisibility);
+  }
+
+  const handleMEClick = (e) => {
+    if(mobilityEnabling){ sortNeedsUpdate = true; }
+    setMobilityEnabling(!mobilityEnabling);
   }
 
   const layoutHasChanged = (newLayout) => {
@@ -114,6 +121,9 @@ export default function CmvBase({
     }
   }
 
+  if(sortNeedsUpdate == undefined && views.length > 0){ sortNeedsUpdate = false; views.sort((a, b) => a.rgl.y - b.rgl.y || a.rgl.x - b.rgl.x); }
+  if(sortNeedsUpdate){ sortNeedsUpdate = false; views.sort((a, b) => a.rgl.y - b.rgl.y || a.rgl.x - b.rgl.x); }
+
   const viewContainers = views.map((view) => {
     const componentDef = config.find((c) => view.type === c.type);
     if(componentDef){
@@ -124,35 +134,41 @@ export default function CmvBase({
         theRGL['isResizable'] = view.rglRules.isResizable
       }
 
+      const getTheViewDom = () => (
+        <View
+          key={view.id}
+          id={view.id}
+          freeMobilityEnabled={mobilityEnabling}
+          view={view}
+          dataset={dataset}
+          selection={selection}
+          colorTags={colorTags}
+          removeView={actions.removeViewData}
+          defaultOptions={componentDef.settings.options}
+          customButtons={componentDef.customBtns || []}
+          duplicateView={duplicateView}
+          updateView={actions.updateView}
+          updateSelection={actions.updateSelection}
+          actions={actions}
+          isLoggedIn={userInfo.isLoggedIn}
+          version={componentDef.version}
+          devStage={componentDef.devStage}
+        />
+      );
+
       return (
         <div
           id={view.id}
           style={{...border, borderColor: (borderVisibility ? 'gray' : 'transparent')}}
           key={view.id}
-          // Remove data-grid if customized component position order is to be turned off
           data-grid={theRGL}
         >
-          {/* Remove ResizeObserver container if customized component position order is to be turned off */}
-          <ResizeObserver onResize={componentInnerSizeChanged}>
-            <View
-              key={view.id}
-              id={view.id}
-              view={view}
-              dataset={dataset}
-              selection={selection}
-              colorTags={colorTags}
-              removeView={actions.removeViewData}
-              defaultOptions={componentDef.settings.options}
-              customButtons={componentDef.customBtns || []}
-              duplicateView={duplicateView}
-              updateView={actions.updateView}
-              updateSelection={actions.updateSelection}
-              actions={actions}
-              isLoggedIn={userInfo.isLoggedIn}
-              version={componentDef.version}
-              devStage={componentDef.devStage}
-            />
-          </ResizeObserver>
+          {mobilityEnabling ? (
+            <ResizeObserver onResize={componentInnerSizeChanged}>
+              { getTheViewDom() }
+            </ResizeObserver>
+          ) : getTheViewDom()
+          }
         </div>
       );
     }
@@ -162,27 +178,33 @@ export default function CmvBase({
     <div>
       <div className="base-container">
         <ColorTags />
-        <Button toggle active={borderVisibility} onClick={handleClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Show Border</Button> {/* Remove this if customized component position order is to be turned off */}
-        <AddViewButton views={views} />
+        <Button toggle active={mobilityEnabling} onClick={handleMEClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Enable Mobility</Button>
+        {mobilityEnabling && <div style={{display: "inline"}}>
+          <Button toggle active={borderVisibility} onClick={handleBVClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Show Border</Button>
+          <AddViewButton views={views} />
+        </div>}
       </div>
 
       <div className="ui divider" />
 
-      <div>  {/* add className="base-container" ti this div if customized component position order is to be turned off */}
-        {/* Remove ResponsiveGridLayout container if customized component position order is to be turned off */}
-        <ResponsiveGridLayout
-          rowHeight={gridUnitHeight}
-          className="layout"
-          layouts={{lg: layout}}
-          compactType={'horizontal'}
-          style={{...border, borderColor: (borderVisibility ? 'blue' : 'transparent')}}
-          // isResizable={true}
-          onLayoutChange={layoutHasChanged}
-          onResizeStop={resizeWasDone}
-          draggableHandle= {".the-drag-handle"}
-        >
-          {viewContainers}
-        </ResponsiveGridLayout>
+      <div  className={(!mobilityEnabling ? 'base-container' : '')}>
+        {mobilityEnabling ? (
+          <ResponsiveGridLayout
+            rowHeight={gridUnitHeight}
+            className="layout"
+            layouts={{lg: layout}}
+            compactType={'horizontal'}
+            style={{...border, borderColor: (borderVisibility ? 'blue' : 'transparent')}}
+            // isResizable={true}
+            onLayoutChange={layoutHasChanged}
+            onResizeStop={resizeWasDone}
+            draggableHandle= {".the-drag-handle"}
+          >
+            { viewContainers }
+          </ResponsiveGridLayout>
+        ) : viewContainers
+        }
+        {!mobilityEnabling && <AddViewButton views={views} />}
       </div>
     </div>
   );
