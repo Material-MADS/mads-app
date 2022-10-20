@@ -34,7 +34,6 @@ export default class ScatterView extends withCommandInterface(Scatter, ScatterFo
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, updateView, colorTags } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags

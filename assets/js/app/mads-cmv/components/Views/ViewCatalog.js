@@ -73,8 +73,8 @@ const config = [
     type: 'scatter',
     name: 'Scatter',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: ScatterView,
     settings: {
       options: {
@@ -93,8 +93,8 @@ const config = [
     type: 'bar',
     name: 'Bar',
     category: 'Visualization',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: BarView,
     settings: {
       options: {
@@ -103,7 +103,9 @@ const config = [
           height: 400,
         },
         colorMap: 'Category10',
+        legendLocation: 'top_right',
       },
+      mappings: {},
     },
   },
   //------------------------------------------

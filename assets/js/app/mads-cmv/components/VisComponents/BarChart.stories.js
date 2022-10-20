@@ -51,6 +51,30 @@ export function getBarChartDataPack(){
 const barChartDataPack = getBarChartDataPack();
 //=========================================
 
+// 'same as above but transposed data'
+//=========================================
+export function getBarChartDataPackTransposed(){
+  const data = {
+    years: ['2015', '2016', '2017'],
+    Apples: [2, 5, 3],
+    Pears: [1, 3, 2],
+    Nectarines: [4, 3, 4],
+    Plums: [3, 2, 4],
+    Grapes: [2, 4, 5],
+    Strawberries: [4, 6, 3],
+  };
+
+  const mappings = { dimension: 'years', measures: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'] };
+  const options = { legendLocation: 'top_left' };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, options, onSelectedIndicesChange};
+}
+const barChartDataPackTransposed = getBarChartDataPackTransposed();
+//=========================================
+
+
+//=========================================
 
 // 'with simple data specified with x axis (4 measures)'
 //=========================================
@@ -152,6 +176,14 @@ stories
       mappings = { barChartDataPack.mappings }
       options = { barChartDataPack.options }
       onSelectedIndicesChange = { barChartDataPack.onSelectedIndicesChange }
+    />
+  ))
+  .add('same as above with transposed data', () => (
+    <BarChart
+      data = { barChartDataPackTransposed.data }
+      mappings = { barChartDataPackTransposed.mappings }
+      options = { barChartDataPackTransposed.options }
+      // onSelectedIndicesChange = { barChartDataPackTransposed.onSelectedIndicesChange }
     />
   ))
   .add('with simple data specified with x axis (2 measures)', () => (

@@ -17,15 +17,21 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-// import React, { Component, useState, useEffect, useRef } from 'react';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { getRGBAColorStrFromAnyColor, RGB_Linear_Blend } from './VisCompUtils';
 
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from '@bokeh/bokehjs';
+// import { DataFrame } from 'pandas-js';
+// import _ from 'lodash';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import gPalette from 'google-palette';
+// import * as gPalette from 'google-palette';
+// import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+// import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+// const Category10_10 = Category10.Category10_10;
 
 //-------------------------------------------------------------------------------------------------
 
@@ -40,6 +46,7 @@ const defaultOptions = {
   extent: { width: 400, height: 400 },
   colorMap: 'Category10',
   barColors: [],
+  barType: "Vertical",
 };
 //-------------------------------------------------------------------------------------------------
 
@@ -48,11 +55,10 @@ const defaultOptions = {
 // Creates an empty basic default Visualization Component of the specific type
 //-------------------------------------------------------------------------------------------------
 function createEmptyChart(options, dataIsEmpty) {
-  const params = { ...defaultOptions, ...options };
-  const tools = 'pan,crosshair,tap,reset,save,hover';
+  const params = { ...options };
+  const tools = 'pan,crosshair,tap,reset,save';
 
   const fig = Bokeh.Plotting.figure({
-    title: params.title,
     tools,
     x_range: params.x_range || (dataIsEmpty ? ['A', 'B'] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
@@ -64,7 +70,31 @@ function createEmptyChart(options, dataIsEmpty) {
     fig.xaxis[0].major_label_orientation = params.xaxis_orientation;
   }
 
+  fig.title.text = params.title || defaultOptions.title; //title object must be set separately or it will become a string (bokeh bug)
+  //fig.title.text_color = "red";
+  //fig.title.text_font_size = "40px";
+  //fig.title.text_font = "Times New Roman";
+
   return fig;
+}
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Reset Key Props
+//-------------------------------------------------------------------------------------------------
+function resetKeyProps(compProps) {
+  compProps.options.title = defaultOptions.title;
+  delete compProps.options.x_range;
+  delete compProps.options.y_range;
+  compProps.options.transposeEnabled = false;
+  delete compProps.options.transposeGroup;
+  delete compProps.options.transposeGroupLabel;
+  delete compProps.options.transposeSplitColumn;
+  compProps.options.valCalcMethod = false;
+
+  compProps.mappings.dimension = "";
+  compProps.mappings.measures = [];
 }
 //-------------------------------------------------------------------------------------------------
 
@@ -143,9 +173,7 @@ export default class BokehBarChart extends Component {
       }
     }
     if(this.props.data.resetRequest){
-      this.props.options.title = defaultOptions.title;
-      delete this.props.options.x_range;
-      delete this.props.options.y_range;
+      resetKeyProps(this.props);
       delete this.props.data.resetRequest;
     }
     this.mainFigure = null;
@@ -163,7 +191,7 @@ export default class BokehBarChart extends Component {
     } = this.props;
 
     let selectedIndicesInternal = [];
-
+    let internalOptions = {...defaultOptions, ...options};
     const { dimension, measures } = mappings;
 
     const testDataMapMeasure = measures ? [...measures][0] : undefined;
@@ -171,18 +199,28 @@ export default class BokehBarChart extends Component {
     // setup ranges
     if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
       data[dimension] = data[dimension].map(String);
-      options.x_range = data[dimension];
+      if(internalOptions.barType == "Vertical"){ internalOptions.x_range = data[dimension]; }
+      else { internalOptions.y_range = data[dimension]; }
     }
 
-    this.mainFigure = createEmptyChart(options, !(dimension && measures && data[dimension] && data[testDataMapMeasure]));
+    this.mainFigure = createEmptyChart(internalOptions, !(dimension && measures && data[dimension] && data[testDataMapMeasure]));
 
     if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
       const ds = new Bokeh.ColumnDataSource({ data });
       this.cds = ds;
 
-      let pal = options.palette;
-      if (!pal && measures.length > 0) {
-        pal = gPalette('tol-rainbow', measures.length).map((c) => `#${c}`);
+      var noOfMeasures = measures.length > 2 ? measures.length : 3;
+      var cm = (allPal[(internalOptions.colorMap + noOfMeasures)] != undefined) ? allPal[(internalOptions.colorMap + noOfMeasures)] : allPal[(internalOptions.colorMap + '_' + noOfMeasures)];
+      let colors = [];
+      if(noOfMeasures <= 20){ colors = cm.slice(0, noOfMeasures); }
+      else{
+        if(allPal[(internalOptions.colorMap + '256')] != undefined){ cm = allPal[(internalOptions.colorMap + '256')]; }
+        else{ cm = allPal.Magma256;  internalOptions.colorMap = 'Magma'; }
+        if(noOfMeasures > 20 && noOfMeasures < 256){
+          const step = Math.floor(256/noOfMeasures);
+          for(let i = 0; i < noOfMeasures; i++) { colors.push(cm[i*step]); };
+        }
+        else{ colors = cm; }
       }
 
       // setup callback
@@ -200,34 +238,59 @@ export default class BokehBarChart extends Component {
 
       const barWidth = 4 / (measures.length * 5);
       const step = barWidth + barWidth * 0.1;
-
       measures.forEach((m, i) => {
         const xv = new Bokeh.Dodge({
           name: dimension,
           value: step * i - (step * (measures.length - 1)) / 2,
-          range: this.mainFigure.x_range,
+          range: ((internalOptions.barType == "Vertical") ? this.mainFigure.x_range : this.mainFigure.y_range),
         });
 
         const l = data[dimension].length;
-        const ppal = new Array(l).fill(pal[i]);
+        const ppal = new Array(l).fill(colors[i]);
 
-        if (options.barColors) {
-          options.barColors.forEach((c, i) => {
+        if (internalOptions.barColors) {
+          internalOptions.barColors.forEach((c, i) => {
             ppal[i] = c;
           });
         }
 
-        this.mainFigure.vbar({
-          x: { field: dimension, transform: xv },
-          top: { field: m },
-          width: barWidth,
+        for(var n = 0, ct; ct = colorTags[n]; n++){
+          var target = parseInt(ct.itemIndices[0]);
+          const baseColorAsHexStr = "#" + (ppal[target] & 0x00FFFFFF).toString(16).padStart(6, '0');
+          const baseColorAsRGB = getRGBAColorStrFromAnyColor(baseColorAsHexStr);
+          const tintColorAsRGB = getRGBAColorStrFromAnyColor(ct.color);
+          ppal[target] = RGB_Linear_Blend(0.85,baseColorAsRGB,tintColorAsRGB);
+        }
+
+        const barChartParamObj = {
+          x: ((internalOptions.barType == "Vertical") ? { field: dimension, transform: xv } : undefined),
+          y: ((internalOptions.barType != "Vertical") ? { field: dimension, transform: xv } : undefined),
+          top: ((internalOptions.barType == "Vertical") ? { field: m } : undefined),
+          right: ((internalOptions.barType != "Vertical") ? { field: m } : undefined),
+          width: ((internalOptions.barType == "Vertical") ? barWidth : undefined),
+          height: ((internalOptions.barType != "Vertical") ? barWidth : undefined),
           source: ds,
           color: ppal,
           legend: {
             value: measures[i],
           },
-        });
-        this.mainFigure.legend.location = options.legendLocation || 'top_right';
+        };
+
+        let renderer;
+        if(internalOptions.barType == "Vertical"){
+          renderer = this.mainFigure.vbar(barChartParamObj);
+        }
+        else {
+          renderer = this.mainFigure.hbar(barChartParamObj);
+        }
+
+        const tooltip = [
+          [dimension, '@'+dimension+'\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
+          ["Group", m],
+          ["Value", '@'+m],
+        ]
+        this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+        this.mainFigure.legend.location = internalOptions.legendLocation || 'top_right';
       });
     }
 

@@ -178,7 +178,7 @@ class DataSourceDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # read contents if the file is CSS or EXCEL
+        # read contents if the file is CSS (or EXCEL?)
         context["file"] = context["object"].file
 
         contents, file_type, columns = get_contents_from_file(context["object"].file)

@@ -27,6 +27,19 @@ import BarForm from './BarForm';
 
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Support Methods and Variables
+//-------------------------------------------------------------------------------------------------
+
+//====================
+// Get Median
+//-------------------------------------------------------------------------------------------------
+const getMedian = function(arr) {
+  const mid = Math.floor(arr.length / 2), nums = [...arr].sort((a, b) => a - b);
+  return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+};
+//-------------------------------------------------------------------------------------------------
+
 
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
@@ -35,6 +48,8 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
+    if(values.mappings.measures.length == 0){ throw "No data to work with" }
+
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
 
@@ -47,24 +62,71 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
       newValues.filter = filteredFilters;
     }
 
-    if (newValues.mappings.dimension == undefined || newValues.mappings.measures == undefined) {
-      return;
+    // extract data
+    var transposedData;
+    if(newValues.options.transposeEnabled){
+      var transposeSplitColumnValues = dataset.main.data.map(r => r[newValues.options.transposeSplitColumn].toString());
+      transposedData = newValues.options.transposeGroup.map((tgm) => {return {[newValues.options.transposeGroupLabel]: tgm};} );
+
+      for(var i = 0; i < transposeSplitColumnValues.length; i++){
+        const theValueRow = dataset.main.data.filter(row => row[newValues.options.transposeSplitColumn] == transposeSplitColumnValues[i]);
+        for(var k = 0; k < transposedData.length; k++){
+          const theValue = theValueRow[0][newValues.options.transposeGroup[k]];
+          transposedData[k][transposeSplitColumnValues[i]] = theValue;
+        }
+      }
     }
 
-    // extract data
-    const df = new DataFrame(dataset.main.data);
-    const s1 = df.get(newValues.mappings.dimension);
-    const s2 = df.get(newValues.mappings.measures);
-    const data = {};
-    data[newValues.mappings.dimension] = s1.values.toArray();
-    data[newValues.mappings.measures] = s2.values.toArray();
+    var dataSource = (transposedData != undefined) ? transposedData : dataset.main.data
+    var categorizedData;
+    if(newValues.options.valCalcMethod){
+      var filteredUniqueCategoriesOnly = [...new Set(dataSource.map(r => r[newValues.mappings.dimension].toString()))] ;
+      categorizedData = filteredUniqueCategoriesOnly.map((uc) => {return {[newValues.mappings.dimension]: uc }; });
+      for(var j = 0, cdr; cdr = categorizedData[j]; j++){
+        const theCatRows = dataSource.filter(row => row[newValues.mappings.dimension] == cdr[newValues.mappings.dimension]);
+        for(var i = 0, msrs; msrs = newValues.mappings.measures[i]; i++){
+          switch (newValues.options.valCalcMethod) {
+            case 'Total':
+              var theSum = theCatRows.reduce(function (acc, obj) { return acc + obj[msrs]; }, 0);
+              cdr[msrs] = theSum;
+              break;
+            case 'Mean':
+              var theSum = theCatRows.reduce(function (acc, obj) { return acc + obj[msrs]; }, 0);
+              cdr[msrs] = (theSum / theCatRows.length);
+              break;
+            case 'Median':
+              cdr[msrs] = getMedian(theCatRows.map(o => o[msrs]));
+              break;
+            case 'Max':
+              cdr[msrs] = (Math.max(...theCatRows.map(o => o[msrs])));
+              break;
+            case 'Min':
+              cdr[msrs] = (Math.min(...theCatRows.map(o => o[msrs])));
+              break;
 
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+
+    const data = {};
+    const df = (categorizedData != undefined) ? new DataFrame(categorizedData) : new DataFrame(dataSource);
+    const dimensions = df.get(newValues.mappings.dimension);
+    const measures = df.get(newValues.mappings.measures);
+    data[newValues.mappings.dimension] = dimensions.values.toArray();
+    newValues.mappings.measures.forEach((c) => {
+      const mc = df.get(c);
+      data[c] = mc.values.toArray();
+    });
     newValues = convertExtentValues(newValues);
-    newValues['options']['title'] = 'The value of "' + newValues.mappings.measures + '" for each "' + newValues.mappings.dimension + '"';
-    newValues.mappings.measures = [newValues.mappings.measures];
+    newValues['options']['title'] = 'The ' + ((categorizedData != undefined) ? newValues.options.valCalcMethod+" " : "") + 'values of [' + newValues.mappings.measures.map(c => `"${c}", `).join('') + '] for ' + ((categorizedData != undefined) ? "the categories of " : "") + '"' + newValues.mappings.dimension + '"';
 
     actions.sendRequestViewUpdate(view, newValues, data);
   };
+
 
   // Manages data changes in the view
   mapData = (dataset) => {
@@ -72,7 +134,8 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
     let data = {};
 
     if (dataset[id]) {
-      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.mappings.measures[0])) {
+      var testValue = this.props.view.settings.options.transposeEnabled ? this.props.view.settings.options.transposeGroup[0] : this.props.view.settings.mappings.measures[0]
+      if (dataset.main.schema.fields.some(e => e.name === testValue)) {
         data = dataset[id];
       }
       else{

@@ -27,7 +27,14 @@ import operations from '../operations/views';
 function views(state = [], action) {
   switch (action.type) {
     case ADD_VIEW:
-      return [...state, action.view];
+      if(!isNaN(action.index)){
+        const newViewsList = [...state];
+        newViewsList.splice(action.index, 0, action.view);
+        return newViewsList;
+      }
+      else{
+        return [...state, action.view];
+      }
     case REMOVE_VIEW:
       return state.filter((view) => view.id !== action.id);
     case UPDATE_VIEW:

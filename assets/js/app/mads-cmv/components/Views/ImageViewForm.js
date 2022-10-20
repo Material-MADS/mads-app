@@ -196,6 +196,7 @@ const ImageViewForm = (props) => {
 
   // SciKit Image Processing --------------------------------------------
   const [skImgEnabled, toggleSKImgEnabled] = useState( initialValues.options.skImg.isEnabled );
+
   const [skImgGrayscaleEnabled, toggleSKImgGrayscaleEnabled] = useState( initialValues.options.skImg.grayscaleEnabled );
 
   const [skImgRotateEnabled, toggleSKImgRotateEnabled] = useState( initialValues.options.skImg.rotateEnabled );

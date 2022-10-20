@@ -40,7 +40,11 @@ export default function withCommandInterface(
     componentDidMount() {
       if(this.props.view.settings.isDupli){
         this.props.view.settings.isDupli = false;
-        this.handleSubmit(this.props.view.settings);
+        try {
+          this.handleSubmit(this.props.view.settings);
+        } catch (error) {
+          // No need to do something, just dont try again with this one
+        }
       }
     }
 
@@ -238,6 +242,7 @@ export default function withCommandInterface(
             </Modal.Header>
             <Modal.Content>
               <SettingForm
+                dataset={dataset}
                 initialValues={view.settings}
                 enableReinitialize
                 defaultOptions={defaultOptions}
