@@ -74,9 +74,10 @@ class OwnedResourceModelFilterHelper(FormHelper):
     )
 #-------------------------------------------------------------------------------------------------
 
+
 #-------------------------------------------------------------------------------------------------
 def get_contents_from_file(file):
-    """Read contents from the specified file only if the type of the file is "CSS" or "EXCEL".
+    """Read contents from the specified file only if the type of the file is "CSV".
 
     Arguments:
         file {FieldFile} -- The file.
@@ -92,7 +93,17 @@ def get_contents_from_file(file):
 
     if (file_extension == '.csv'):
         file_type = 'csv'
-        df = pd.read_csv(file)
+
+        # Extract which delimiter is used in this csv file
+        delimiter = '@'
+        possible_delimeters = [',', ';', '\t', '\s', '|']
+        df_check = pd.read_csv(file, sep=delimiter, nrows=2)
+        cellStr = df_check.iat[0,0]
+        cnt = [cellStr.count(','), cellStr.count(';'), cellStr.count('\t'), cellStr.count('\s'), cellStr.count('|') ]
+        delimiter = possible_delimeters[cnt.index(max(cnt))]
+        file.seek(0)
+
+        df = pd.read_csv(file, sep=delimiter)
         json = df.to_json(orient='table')
         contents = json
         columns = df.columns

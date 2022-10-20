@@ -82,10 +82,11 @@ export default function CmvBase({
   }
 
   const duplicateView = (id, view) => {
+    const index = views.findIndex(v => v.id ===id) + 1;
     const newSettings = {...view.settings, isDupli: true}
     const newId = createNewId(views);
     const newView = createView(view.type, newId, newSettings);
-    actions.addView(newView);
+    actions.addView(newView, index);
   }
 
   const resizeWasDone = (newLayout, gridItemBeforeResize, gridItemAfterResize) => {

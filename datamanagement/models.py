@@ -105,7 +105,7 @@ def delete_previous_file(function):
 #-------------------------------------------------------------------------------------------------
 class DataSource(OwnedResourceModel):
 
-    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304)
+    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304, content_types="text/csv")
     # file = PrivateFileField("File")
     shared_users = models.ManyToManyField(
         'users.User', blank=True,
