@@ -68,7 +68,7 @@ const defaultOptions = {
 // Get Chart Data
 // Support Method that extracts and prepare the provided data for the VisComp
 //-------------------------------------------------------------------------------------------------
-function getChartData(data, options) {
+function getChartData(data, options, selectedIndices, colorTags) {
   const params = Object.assign({}, defaultOptions, options, _.isEmpty(data)?{marker: {size: 1, color: 'transparent', opacity: 0}}:{});
   data = _.isEmpty(data)?{x: [0.1, 0.2], y: [0.1, 0.2], z: [0.1, 0.2]}:data;
   let uniques = [... new Set(data.gr)];
@@ -90,10 +90,10 @@ function getChartData(data, options) {
     }
     else{
       cm = allPal.Magma256;
-      internalOptions.colorMap = 'Magma';
+      params.colorMap = 'Magma';
     }
     if(uniques.length > 20 && uniques.length < 256){
-      const step = Math.floor(256/angles.length);
+      const step = Math.floor(256/uniques.length);
       for(let i = 0; i < uniques.length; i++) {
         colors.push(cm[i*step]);
       };
@@ -106,7 +106,26 @@ function getChartData(data, options) {
 
   let styles = undefined;
   if(colors !== undefined){
-    styles = uniques.map((grCatName, index) => { return {target: grCatName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
+    styles = uniques.map((grColName, index) => { return {target: grColName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
+  }
+
+  var theMarkerColors = params.marker.color;
+  if((selectedIndices && selectedIndices.length > 0) || colorTags.length > 0){
+    theMarkerColors = data.x.map(v => params.marker.color);
+  }
+
+  if(selectedIndices && selectedIndices.length > 0){
+    for(var i = 0; i < selectedIndices.length; i++){
+      theMarkerColors[selectedIndices[i]] = '#FFA500';
+    }
+  }
+
+  if(colorTags.length > 0){
+    colorTags.forEach((colorTag) => {
+      colorTag.itemIndices.forEach((i) => {
+        theMarkerColors[i] = colorTag.color;
+      });
+    });
   }
 
   var cData = [{
@@ -121,8 +140,8 @@ function getChartData(data, options) {
     y: data.y,
     z: data.z,
     marker: {
-      size: params.marker.size,
-      color: params.marker.color,
+      size: (params.marker.manySizes && params.marker.manySizes.length > 0) ? params.marker.manySizes : params.marker.size,
+      color: theMarkerColors,
       opacity: params.marker.opacity,
     },
   },];
@@ -213,31 +232,19 @@ function getChartConfig(options) {
 
 
 //-------------------------------------------------------------------------------------------------
-// Returns the previous value (Not used or fully implemented)
-//-------------------------------------------------------------------------------------------------
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-//-------------------------------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
 export default function Scatter3D({
   data,
-  mappings,
   options,
   colorTags,
+  selectedIndices,
+  isPropSheetOpen,
+  actions,
 }) {
 
   // Initiation of the VizComp
   const rootNode = useRef(null);
-  let internalData = data;
   let internalOptions = options;
 
   let currentDataSourceName = "";
@@ -246,45 +253,52 @@ export default function Scatter3D({
     currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
   } catch (error) { /*Just ignore and move on*/ }
 
-  // Clear away all data if requested
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions.title = "Scatter 3D";
-      internalOptions.axisTitles = ['x', 'y', 'z'];
-      delete internalData.resetRequest;
-    }
-  }, [internalData])
-
   // Create the VizComp based on the incomming parameters
   const createChart = async () => {
+    actions.setLoadingState(true);
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
-    let sData = getChartData(internalData, internalOptions);
-    let layout = getChartLayout(internalData, internalOptions, currentDataSourceName);
+    let sData = getChartData(data, internalOptions, selectedIndices, colorTags);
+    let layout = getChartLayout(data, internalOptions, currentDataSourceName);
     let config = getChartConfig(internalOptions);
 
     loadingActions.setLoadingState(true);
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
-        loadingActions.setLoadingState(false);
       })
       .finally(function() {
-        loadingActions.setLoadingState(false);
+        internalOptions["camera"] = (rootNode.current).layout.scene.camera;
+        actions.setLoadingState(false);
       });
-
-      (rootNode.current).on('plotly_relayout', function(internalData){ internalOptions["camera"] = (rootNode.current).layout.scene.camera});
     });
   };
 
   // Clear away the VizComp
-  const clearChart = () => { };
+  const clearChart = () => { /* Called when component is deleted */ };
+
+  // Only called at init and set our final exit function
+  useEffect(() => {
+    return () => { clearChart(); };
+  }, []);
 
   // Recreate the chart if the data and settings change
   useEffect(() => {
+    if(isPropSheetOpen){ return; }
+
+    // Clear away all data if requested
+    if(data.resetRequest){
+      internalOptions.title = "";
+      internalOptions.axisTitles = ['x', 'y', 'z'];
+      delete data['gr'];
+      delete data.resetRequest;
+    }
+
     createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
+  }, [data, options]);
+
+  useEffect(() => {
+    if(isPropSheetOpen){ return; }
+    createChart();
+  }, [selectedIndices, colorTags]);
 
   // Add the VizComp to the DOM
   return (

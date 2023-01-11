@@ -17,7 +17,7 @@
 #-------------------------------------------------------------------------------------------------
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
-from .histogram import get_histogram
+from .histogram import get_histograms
 from .feature_importance import get_feature_importance
 from .clustering import get_clusters
 from .regression import get_regression
@@ -29,6 +29,7 @@ from .heatmap import get_hm
 from .custom import get_custom
 from .bar import get_bar
 from .scikit_image_manip import get_scikit_image_manip
+from .node_graph import get_node_graph
 
 import logging
 
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 processor_map = {
-    'histogram': get_histogram,
+    'histogram': get_histograms,
     'feature-importance': get_feature_importance,
     'clustering': get_clusters,
     'regression': get_regression,
@@ -50,6 +51,7 @@ processor_map = {
     'custom': get_custom,
     'bar': get_bar,
     'imageView': get_scikit_image_manip,
+    'nodeGraph': get_node_graph,
 }
 
 

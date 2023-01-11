@@ -21,7 +21,7 @@ import { Field, reduxForm } from 'redux-form';
 import { Form } from 'semantic-ui-react';
 
 import Input from '../FormFields/Input';
-import SemanticDropdown from '../FormFields/Dropdown';
+import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -48,12 +48,18 @@ const HistForm = (props) => {
     props: { style: '' },
   }));
 
-
   // input managers
   const [colorDisabled, setColorDisabled] = useState(
     !initialValues.colorAssignmentEnabled
   );
 
+  if(initialValues.targetColumns && initialValues.targetColumns.length > 0){
+    var hitCounter = 0;
+    for(var i = 0; i < initialValues.targetColumns.length; i++){
+      hitCounter += columns.some(e => e.value === initialValues.targetColumns[i]) ? 1 : 0;
+    }
+    if(hitCounter != initialValues.targetColumns.length){ initialValues.targetColumns = []; }
+  }
 
   // The form itself, as being displayed in the DOM
   return (
@@ -61,8 +67,8 @@ const HistForm = (props) => {
       <Form.Field>
         <label>Target columns</label>
         <Field
-          name="targetColumns[0]"
-          component={SemanticDropdown}
+          name="targetColumns"
+          component={MultiSelectDropdown}
           placeholder="Columns"
           search
           options={columns}

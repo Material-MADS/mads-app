@@ -14,6 +14,8 @@
 // References: None
 =================================================================================================*/
 
+import { A } from "@storybook/components";
+
 //-------------------------------------------------------------------------------------------------
 // Convert Extent Values
 // Takes the values (width and height) of the view component and make sure they are valid numbers
@@ -100,5 +102,17 @@ export const colorMapOptions = [
 // Get Dropdown Options
 // Takes an array and map it out to be used as a list of options for a Dropdown Field in a form
 //-------------------------------------------------------------------------------------------------
-export const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
+// export const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
+export const getDropdownOptions = function(list, noOptionEnabled){
+  var allOptions = [...list];
+  if(!(allOptions[0].key && allOptions[0].text && allOptions[0].value)){
+    allOptions = list.map((i) => ({ key: i, text: i, value: i }));
+  }
+  if(noOptionEnabled){
+    allOptions.unshift({ key: 'noneAtAll', text: 'Not Applicable', value: 'noneAtAll' });
+  }
+
+  return allOptions;
+}
+
 //-------------------------------------------------------------------------------------------------

@@ -1,0 +1,32 @@
+.nodeLabel {
+  position: absolute;
+  color: rgb(88, 12, 12);
+  font-size: 1.0em;
+  font-weight: bold;
+  text-shadow: 1px 1px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.linkLabel {
+  position: absolute;
+  color: rgb(35, 12, 88);
+  font-size: 0.6em;
+  font-weight: bold;
+  text-shadow: 1px 1px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.graph-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.graph-selection-indicator {
+  position: absolute;
+  background: transparent;
+  border: 1px solid orange;
+}

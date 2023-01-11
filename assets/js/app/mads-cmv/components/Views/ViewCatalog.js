@@ -35,6 +35,7 @@ import HeatMapView from './HeatMap';
 import ImageViewView from './ImageView';
 import PairwiseCorrelationView from './PairwiseCorrelation';
 import CustomView from './Custom';
+import NodeGraphView from './NodeGraphView';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -268,6 +269,36 @@ const config = [
   // ANALYSIS CATEGORY
   //==================
 
+  // Node Graph - A Customizable Node Graph Viewer
+  //------------------------------------------
+  {
+    type: 'nodeGraph',
+    name: 'NodeGraph',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: NodeGraphView,
+    customBtns: [
+      {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
+      {name: 'toggleNodeLabels', icon: 'square', text: 'Toggle Node Labels'},
+      {name: 'toggleLinkLabels', icon: 'connectdevelop', text: 'Toggle Link Labels'},
+    ],
+    settings: {
+      options: {
+        links: {},
+        graphLayout: {},
+        nodes: {},
+        extent: {
+          width: 700,
+          height: 600,
+        },
+        bkgCol: "#ffffff",
+        txtCol: "#000000",
+      },
+    },
+  },
+  //------------------------------------------
+
   // Pairwise Correlation - A Customizable Pairwise Correlation (heatmap) component
   //------------------------------------------
   {
@@ -292,10 +323,13 @@ const config = [
     type: 'histogram',
     name: 'Histogram',
     category: 'Analysis',
-    version: 0.95,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: HistView,
     settings: {
+      options: {
+        extent: { width: 300, height: 300 },
+      },
       bins: 10,
       mappings: {
         n: 'hist',

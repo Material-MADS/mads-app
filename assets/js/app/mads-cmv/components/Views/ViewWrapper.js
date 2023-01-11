@@ -234,6 +234,8 @@ export default function withCommandInterface(
               this.handleSelectionChange(indices)
             }
             showMessage={actions.showMessage}
+            isPropSheetOpen={propSheetOpen}
+            actions={actions}
           />
 
           <Modal open={propSheetOpen} onClose={this.close} onMouseDown={ e => e.stopPropagation() }> {/* FORTEST: [onMouseDown={ e => e.stopPropagation() }] */}
@@ -255,6 +257,7 @@ export default function withCommandInterface(
                 colorTags={colorTags}
                 onModelSave={this.handleModelSave}
                 isLoggedIn={isLoggedIn}
+                actions={actions}
               />
             </Modal.Content>
             <Modal.Actions>

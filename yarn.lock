@@ -3275,6 +3275,11 @@ acorn@^8.2.4, acorn@^8.4.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.4.1.tgz#56c36251fc7cabc7096adc18f05afe814321a28c"
   integrity sha512-asabaBSkEKosYKMITunzX177CXxQ4Q8BSSzMTKD+FefUhipQC70gfW5SiUDhYQ3vk8G+81HqQk7Fv9OXwwn9KA==
 
+add-event-listener@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/add-event-listener/-/add-event-listener-0.0.1.tgz#a76229ebc64c8aefae204a16273a2f255abea2d0"
+  integrity sha512-hjRmkeDqFUWEFcDHP/Lp0Pa4MhIJk/oQX8B7lFiNrjBKHjf0q+ivCJrucY8d8UI5d0QkZgV2jGdAGXxEZcm3nA==
+
 add-line-numbers@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/add-line-numbers/-/add-line-numbers-1.0.1.tgz#48dbbdea47dbd234deafeac6c93cea6f70b4b7e3"
@@ -5537,6 +5542,14 @@ cyclist@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
+
+cytoscape@^3.23.0:
+  version "3.23.0"
+  resolved "https://registry.yarnpkg.com/cytoscape/-/cytoscape-3.23.0.tgz#054ee05a6d0aa3b4f139382bbf2f4e5226df3c6d"
+  integrity sha512-gRZqJj/1kiAVPkrVFvz/GccxsXhF3Qwpptl32gKKypO4IlqnKBjTOu+HbXtEggSGzC5KCaHp3/F7GgENrtsFkA==
+  dependencies:
+    heap "^0.2.6"
+    lodash "^4.17.21"
 
 d3-array@1, d3-array@^1.2.0, d3-array@^1.2.1:
   version "1.2.4"
@@ -7965,6 +7978,11 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
+gintersect@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/gintersect/-/gintersect-0.1.0.tgz#9a8cb6a80b7d6e955ac33515495b1212627b1816"
+  integrity sha512-jps8Ckj6u8yLxOYzBVJbPqvRdeHOINQgRtufaLHkunwNQcSEdZU0ejPBapSimXJEQ9mdQW4hsEUN7DfJEcTvQQ==
+
 github-slugger@^1.0.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/github-slugger/-/github-slugger-1.3.0.tgz#9bd0a95c5efdfc46005e82a906ef8e2a059124c9"
@@ -8899,6 +8917,11 @@ he@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
+
+heap@^0.2.6:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/heap/-/heap-0.2.7.tgz#1e6adf711d3f27ce35a81fe3b7bd576c2260a8fc"
+  integrity sha512-2bsegYkkHO+h/9MGbn6KWcE45cHZgPANo5LXF7EvWdT0yT2EguSVO1nDgU5c8+ZOPwp2vMNa7YFsJhVcDR9Sdg==
 
 highlight.js@^10.1.1, highlight.js@~10.7.0:
   version "10.7.3"
@@ -11641,6 +11664,100 @@ nextafter@^1.0.0:
   integrity sha1-t9d7U1MQ4+CX5gJauwqQNHfsGjo=
   dependencies:
     double-bits "^1.1.0"
+
+ngraph.centrality@0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ngraph.centrality/-/ngraph.centrality-0.3.0.tgz#8cc0ec0319ef0a374357fc1044c16975b179d09d"
+  integrity sha512-Qmu9dDHJAx+GAW2AMqmhaub1rINS+fHZGZJ3zPI36ENAXmVNQ/Jkq79br1sg6NUHz/pRBT9MXMuwDyYKmMt8Mw==
+
+ngraph.events@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-0.0.3.tgz#38f55316f3d207ad631ff94f6622ca8f2c0e87d0"
+  integrity sha512-UrewofHOFk/05otBm9GD4DA3PTEY/yaElhCclmGC4IcmAYaSDRrC3lENQxJ00AzeBnz1GY2xH7Ct7AfIdhsdWA==
+
+ngraph.events@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/ngraph.events/-/ngraph.events-0.0.4.tgz#72cb364488dd0fd7f057458449f6a3b17a722d9a"
+  integrity sha512-SY7MdNQoy5KyaVxg03PYCnGF6J7l4p8lEdmYm/5oIqFAmLhg0BmzZzlRqobJ0nEPT6xZlonUQbvCcXtarPZNrg==
+
+ngraph.expose@0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/ngraph.expose/-/ngraph.expose-0.0.0.tgz#746c34903a3848c45d033b14bc64619ea85fe5aa"
+  integrity sha512-Hr88MuhgoSLVGf2aaaXcKl22Rn95duWsjRcoeJMP9PtFmYHGFw/3ctDqBf5phnIyktm0P/Quxs5EGg6xgJcZAQ==
+
+ngraph.forcelayout@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/ngraph.forcelayout/-/ngraph.forcelayout-0.5.0.tgz#51511c3e1db45d3d5436da75dfb1d6af097916f5"
+  integrity sha512-qOd1S9unFLw313+l0M/Dk1MePLDUSl4h9RyOtAbo0CyeefnN4PICiRz0LOewR5WuFmQD0/RmZLpjTKu0H7LTKQ==
+  dependencies:
+    ngraph.events "0.0.4"
+    ngraph.physics.simulator "^0.3.0"
+
+ngraph.fromjson@0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/ngraph.fromjson/-/ngraph.fromjson-0.1.9.tgz#66910b664c69fa3c50a1ce79dd1dfdd5bab46f6e"
+  integrity sha512-f3GLjbUq239wx4s5A0fDptj9dcNeaEIJU3gm74hWvYK7onD7sFtedP7jVHZA7UJ2FwkKgEhzbPeltv92ycuKZQ==
+  dependencies:
+    ngraph.graph "0.0.14"
+
+ngraph.generators@0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/ngraph.generators/-/ngraph.generators-0.0.19.tgz#552c0d087f942b9d0d2b0c6ca9aac436befa7659"
+  integrity sha512-P3XqB1sH4zrzM6bMGTtuT/6K76Rnhf1qE8Zu7PkAvhQVCQzdLYiL2/8DwhcPLsetRJHNJv0uwpW9TpntBAqKrw==
+  dependencies:
+    ngraph.graph "0.0.14"
+    ngraph.random "0.1.0"
+
+ngraph.graph@0.0.14:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/ngraph.graph/-/ngraph.graph-0.0.14.tgz#d47ac94967c920aaf76952d8a4e73346e1df2db7"
+  integrity sha512-ERTLng4KrsGbR7iLZFvg5H+zJ7V+SY8RDqZKYCnOZib5W8M5LCvcil9/8eiJcTRUIPPXW3j8hqPCdLnBvgsn/A==
+  dependencies:
+    ngraph.events "0.0.3"
+
+ngraph.merge@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ngraph.merge/-/ngraph.merge-0.0.1.tgz#e4e80ce37581a3c96b17d545e3a43c85434b9025"
+  integrity sha512-iXchI5xMjYzA96mee//O7I7gtd4cCakWaSTu11aMTxRDbvBK2qpDDytYg58jO3usAUkjFxBdy1gxYppKmBDuRQ==
+
+ngraph.physics.primitives@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/ngraph.physics.primitives/-/ngraph.physics.primitives-0.0.7.tgz#5dc9e179ba1f92e6dec774b01cd68914120b795b"
+  integrity sha512-7jPm14fYcuJ9kytOVNOKxFy6r/Uu9Dnj++uT3iR9XkBcsBahn2xcYJkV6vF1bIb1fQ5XrDCRjRIOcMwEum6jwQ==
+
+ngraph.physics.simulator@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ngraph.physics.simulator/-/ngraph.physics.simulator-0.3.0.tgz#7ca6fc3e3617c73e1080572eaa8e04dbb77e0102"
+  integrity sha512-ObW+HL+hQBIIdc6xG/+qrLe8qv+Sf0X3lq/l2hsjFrIwWtpRKLrSvUUoXiNIeFqRmY/C+PkGo3U+XY523lJ+Fw==
+  dependencies:
+    ngraph.events "0.0.3"
+    ngraph.expose "0.0.0"
+    ngraph.merge "0.0.1"
+    ngraph.physics.primitives "0.0.7"
+    ngraph.quadtreebh "0.0.4"
+    ngraph.random "0.0.1"
+
+ngraph.quadtreebh@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/ngraph.quadtreebh/-/ngraph.quadtreebh-0.0.4.tgz#c700d44e6e4af07b6d05001ba3987ff5e2dcd62c"
+  integrity sha512-xTIkWGXt5Ajnoq9VOr0xDOI9ZL+q4sPhD0Z7vxvn4MCa+l0wf43rg0C7qv0t+RIOgbQBAp0xDpn568hpXAckJA==
+  dependencies:
+    ngraph.random "0.0.1"
+
+ngraph.random@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ngraph.random/-/ngraph.random-0.0.1.tgz#c008e2ebbfdffaf17ed10e4bbc913e567166bcf8"
+  integrity sha512-QPKU7ChXF/VrvMQxVo9aWcvXCXp98VfL4nKUteTW/olDqeUqQ61t7m+jvFb8Dj7kKvlKlnsbDA1aWLJGmm17XA==
+
+ngraph.random@0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/ngraph.random/-/ngraph.random-0.1.0.tgz#1b6e9573529e080677da6ffa098790d76a0948a9"
+  integrity sha512-KXCfzk/ZB79BxQSWMvYPGayx3Mb+7n5GPnc8SW0rwysqRV/3QxEKrLU/UVC8eGjc2SYGofqX+uhUE6IXfqR5VA==
+
+ngraph.tojson@0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/ngraph.tojson/-/ngraph.tojson-0.1.4.tgz#39f0046588440ade622d58734d589d7974a0b3bc"
+  integrity sha512-Ii2BTqi8zBRMLH8vTc8pMUKQFJaqbgttG9DKUaazoPVpwC/ww4jyTOHe2ZKaGGZRepnGLqSZ27wZUm7n8MjIgA==
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -14657,6 +14774,13 @@ simple-get@^3.0.3:
     once "^1.3.1"
     simple-concat "^1.0.0"
 
+simplesvg@0.0.10:
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/simplesvg/-/simplesvg-0.0.10.tgz#37d2ec18de2c154dd9b69f79e8ad20bf1e1e5fdd"
+  integrity sha512-iCVx1A/kI4U3cGPRMRQaGLbIFNDXuB8rsaAsO2mM5wYFDs/MrfmHhrSCqNbOylgt9MhhZU3uMsSQnZM853kwXQ==
+  dependencies:
+    add-event-listener "0.0.1"
+
 simplicial-complex-boundary@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/simplicial-complex-boundary/-/simplicial-complex-boundary-1.0.1.tgz#72c9ff1e24deaa374c9bb2fa0cbf0c081ebef815"
@@ -16408,6 +16532,23 @@ vfile@^4.0.0:
     is-buffer "^2.0.0"
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
+
+vivagraphjs@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/vivagraphjs/-/vivagraphjs-0.12.0.tgz#6fd06ef6136aaeca5cffea86d6d6f8bfaff7f52b"
+  integrity sha512-Air+vUHXAWj8NTWUnbU800yKC7SiHpCVwpKIPfDtr5436YoMd7cpg8blt6Fn9xarx+sz1osRxGHBHTaHvcsR6Q==
+  dependencies:
+    gintersect "0.1.0"
+    ngraph.centrality "0.3.0"
+    ngraph.events "0.0.3"
+    ngraph.forcelayout "0.5.0"
+    ngraph.fromjson "0.1.9"
+    ngraph.generators "0.0.19"
+    ngraph.graph "0.0.14"
+    ngraph.merge "0.0.1"
+    ngraph.random "0.0.1"
+    ngraph.tojson "0.1.4"
+    simplesvg "0.0.10"
 
 vm-browserify@^1.0.1:
   version "1.1.2"
