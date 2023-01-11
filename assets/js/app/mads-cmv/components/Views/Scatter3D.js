@@ -89,8 +89,9 @@ export default class Scatter3DView extends withCommandInterface(Scatter3D, Scatt
       if (values.sizeAssignmentEnabled && newValues.mappings && newValues.mappings.size) {
         const sizeVals = (df.get(newValues.mappings.size)).values.toArray();
         const ratio = Math.max(...sizeVals) / 10;
-        newValues.options.marker.size = sizeVals.map(v => Math.round(v / ratio)*2);
+        newValues.options.marker['manySizes'] = sizeVals.map(v => Math.round(v / ratio)*2);
       }
+      else{ newValues.options.marker['manySizes'] = []; }
     }
 
     newValues = convertExtentValues(newValues);

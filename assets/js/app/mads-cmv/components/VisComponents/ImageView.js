@@ -21,7 +21,7 @@ import PropTypes from "prop-types";
 
 import $ from "jquery";
 
-import { create_UUID, fillObjectWithMissingKeys, getRGBAColorStrFromAnyColor } from './VisCompUtils';
+import { fillObjectWithMissingKeys, getRGBAColorStrFromAnyColor } from './VisCompUtils';
 
 import noImg from './images/noimage.jpg';
 
@@ -60,7 +60,6 @@ const defaultOptions = {
 };
 
 const annotationMemory = {};
-const isThisFirstTimeInit = {};
 //-------------------------------------------------------------------------------------------------
 
 
@@ -153,18 +152,16 @@ export default function ImageView({
 }) {
   // Initiation of the VizComp
   const rootNode = useRef(null);
-  const uid = id;
-  let internalData = data;
+  const uid = "id"+id;
   let internalOptions = {...defaultOptions, ...options};
 
   let annotationEnabled = false;
 
-  if(!isThisFirstTimeInit[uid]){
+  if(!annotationMemory[uid]){
     if(internalOptions.annotation && internalOptions.annotation.length > 0){
       annotationMemory[uid] = { uid: uid, lastMouse: {x: 0, y: 0}, imgData: [], lineData: {}, gco: "", toolType: 0, brushColor: "#ffff00", brushOpacity: 1, brushSize: 4 }
       annotationMemory[uid].imgData = internalOptions.annotation;
     }
-    isThisFirstTimeInit[uid] = uid;
   }
 
   // Make sure that older versions of imageView loads without any problem and that empty values will not cause any problems
@@ -173,15 +170,8 @@ export default function ImageView({
     fillObjectWithMissingKeys(originalOptions.cssFilters, internalOptions.cssFilters);
     if(!internalOptions.skImg) { internalOptions["skImg"] = {} }
     fillObjectWithMissingKeys(originalOptions.skImg, internalOptions.skImg);
-    if(!internalOptions.imgData && internalData.data){ internalOptions.imgData = internalData.data; }
+    if(!internalOptions.imgData && data.data){ internalOptions.imgData = data.data; }
   }
-
-  // Clear away all data if requested
-  useEffect(() => {
-    if(internalData.resetRequest){
-      delete internalData.resetRequest;
-    }
-  }, [internalData]);
 
   //=== BEGIN: ANNOTATION EVENT HANDLERS & METHODS ================================================================
   const onMouseDown = function(e){
@@ -273,18 +263,18 @@ export default function ImageView({
     let activeImgSrc = noImg64;
     let filenamePrefix = "";
     if(internalOptions.skImg.isEnabled){
-      if(internalData.origin){
-        if(internalData.manipVer != ""){
+      if(data.origin){
+        if(data.manipVer != ""){
           filenamePrefix = "(SciKit-Image Processed) ";
-          activeImgSrc = internalData.manipVer;
+          activeImgSrc = data.manipVer;
         }
         else{
-          activeImgSrc = internalData.origin;
+          activeImgSrc = data.origin;
         }
       }
     }
     else if(internalOptions.imgData){
-      internalData = {};
+      data = {};
       activeImgSrc = internalOptions.imgData;
     }
 
@@ -296,14 +286,14 @@ export default function ImageView({
     $(rootNode.current).append(`
       <div>
         <figure>
-          <label id="CadsWSUserImageTitle` + uid + `" style="font-weight: bold; font-size: 16px;"></label></br>
-          <div id="drawingContainer` + uid + `" style="
+          <label id="CadsWSUserImageTitle` + id + `" style="font-weight: bold; font-size: 16px;"></label></br>
+          <div id="drawingContainer` + id + `" style="
             position: relative;
             border: ` + internalOptions.border.style + ` ` + internalOptions.border.color + ` ` + internalOptions.border.size + `px;
             width: ` + internalOptions.extent.width + `;
             height: 280;
           ">
-            <img id="CadsWSUserImage` + uid + `"
+            <img id="CadsWSUserImage` + id + `"
               src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
               style="
                 position:absolute;
@@ -312,39 +302,39 @@ export default function ImageView({
               "
               width="` + internalOptions.extent.width + `"
             />
-            <canvas id="drawSurface` + uid + `" style="position: absolute;"></canvas>
+            <canvas id="drawSurface` + id + `" style="position: absolute;"></canvas>
           </div>
-          <figcaption id="CadsWSUserImageCaption` + uid + `"style="font-style: italic; font-size: 12px; font-weight: lighter; text-align: center;"></figcaption>
+          <figcaption id="CadsWSUserImageCaption` + id + `"style="font-style: italic; font-size: 12px; font-weight: lighter; text-align: center;"></figcaption>
         </figure>
       </div>`
     );
 
-    var thisImg = $(rootNode.current).find('#CadsWSUserImage' + uid).on('load', function () {
+    var thisImg = $(rootNode.current).find('#CadsWSUserImage' + id).on('load', function () {
       thisImg.off('load');
-      var drawingContainer = $(rootNode.current).find("#drawingContainer" + uid);
+      var drawingContainer = $(rootNode.current).find("#drawingContainer" + id);
       var borderSizeAddOn = internalOptions.border.size * 2;
       drawingContainer.css({'width': (thisImg.width() + borderSizeAddOn) + "px", 'height': (thisImg.height() + borderSizeAddOn) + "px"});
-      $(rootNode.current).find('#CadsWSUserImageTitle' + uid).text(internalOptions.title);
-      $(rootNode.current).find('#CadsWSUserImageCaption' + uid).width(thisImg.width()).text(internalOptions.caption);
+      $(rootNode.current).find('#CadsWSUserImageTitle' + id).text(internalOptions.title);
+      $(rootNode.current).find('#CadsWSUserImageCaption' + id).width(thisImg.width()).text(internalOptions.caption);
 
-      const viewWrapperCustomButton_SaveImg = $(rootNode.current).parent().parent().find('#saveImg' + uid);
+      const viewWrapperCustomButton_SaveImg = $(rootNode.current).parent().parent().find('#saveImg' + id);
       viewWrapperCustomButton_SaveImg.off('click');
-      const viewWrapperCustomButton_AnnotateImg = $(rootNode.current).parent().parent().find('#annotateImg' + uid);
+      const viewWrapperCustomButton_AnnotateImg = $(rootNode.current).parent().parent().find('#annotateImg' + id);
       viewWrapperCustomButton_AnnotateImg.off('click');
       viewWrapperCustomButton_AnnotateImg.css('margin-right', '20px;');
-      const viewWrapperCustomButton_AnnotationType = $(rootNode.current).parent().parent().find('#annotateBrushType' + uid);
+      const viewWrapperCustomButton_AnnotationType = $(rootNode.current).parent().parent().find('#annotateBrushType' + id);
       viewWrapperCustomButton_AnnotationType.off('change');
       viewWrapperCustomButton_AnnotationType.hide();
-      const viewWrapperCustomButton_AnnotationColor = $(rootNode.current).parent().parent().find('#annotationColor' + uid);
+      const viewWrapperCustomButton_AnnotationColor = $(rootNode.current).parent().parent().find('#annotationColor' + id);
       viewWrapperCustomButton_AnnotationColor.off('change');
       viewWrapperCustomButton_AnnotationColor.hide();
-      const viewWrapperCustomButton_AnnotationSize = $(rootNode.current).parent().parent().find('#annotationSize' + uid);
+      const viewWrapperCustomButton_AnnotationSize = $(rootNode.current).parent().parent().find('#annotationSize' + id);
       viewWrapperCustomButton_AnnotationSize.off('change');
       viewWrapperCustomButton_AnnotationSize.hide();
-      const viewWrapperCustomButton_AnnotationOpacity = $(rootNode.current).parent().parent().find('#annotationOpacity' + uid);
+      const viewWrapperCustomButton_AnnotationOpacity = $(rootNode.current).parent().parent().find('#annotationOpacity' + id);
       viewWrapperCustomButton_AnnotationOpacity.off('change');
       viewWrapperCustomButton_AnnotationOpacity.hide();
-      const viewWrapperCustomButton_AnnotationReset = $(rootNode.current).parent().parent().find('#annotateImgReset' + uid);
+      const viewWrapperCustomButton_AnnotationReset = $(rootNode.current).parent().parent().find('#annotateImgReset' + id);
       viewWrapperCustomButton_AnnotationReset.off('click');
       viewWrapperCustomButton_AnnotationReset.hide();
 
@@ -354,7 +344,7 @@ export default function ImageView({
         annotateData = annotationMemory[uid];
       }
 
-      var drawSurface = $(rootNode.current).find("#drawSurface" + uid);
+      var drawSurface = $(rootNode.current).find("#drawSurface" + id);
       drawSurface.off('mouseup');
       drawSurface[0].setAttribute("width", thisImg.width() + "px");
       drawSurface[0].setAttribute("height", thisImg.height() + "px");
@@ -406,7 +396,7 @@ export default function ImageView({
         const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
         annodata.imgData = [];
         drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-        options["annotation"] = annodata.imgData;
+        annotationMemory[uid].imgData = annodata.imgData;
       });
 
       drawSurface.on('mousedown', onMouseDown);
@@ -416,16 +406,21 @@ export default function ImageView({
     }).attr("src", activeImgSrc);
   };
 
-  // Clear away the VizComp
-  const clearChart = () => { };
+   // Clear away the VizComp
+   const clearChart = () => {
+    /* Called when component is deleted */
+    delete annotationMemory[uid];
+  };
+
+  // Only called at init and set our final exit function
+  useEffect(() => {
+    return () => { clearChart(); };
+  }, []);
 
   // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
+  }, [data, options]);
 
   // Add the VizComp to the DOM
   return (

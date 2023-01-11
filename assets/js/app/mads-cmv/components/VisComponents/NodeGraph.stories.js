@@ -5,48 +5,41 @@
 // Authors: Jun Fujima (Former Lead Developer) [2018-2021]
 //          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is a 'Form Field' React Component (used in data editing/displaying forms)
-//              of the 'InputTraditional' type
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'NodeGraph' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Form Fields' are component used inside all forms for editing and viewing connected data.
-//        'InputTraditional' is of classic Input type, look and feel.
-//        (that does not use semantic-ui-react)
+// Notes: 'NodeGraph' is a network visualization component that displays an interactive node - link
+//        graph.
 // ------------------------------------------------------------------------------------------------
-// References: React Lib
+// References: React & storybook Libs, 3rd party lodash lib, NodeGraph VizComp
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React from 'react';
+import { storiesOf } from '@storybook/react';
+
+import NodeGraph from './NodeGraph';
 
 //-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
-// The FormField Component
-//-------------------------------------------------------------------------------------------------
-const inputTrad = ({ input, label, type, min, max, step, disabled, style, meta: { touched, error, warning }, value }) => (
-  <div>
-    <label>{label}</label>
-    <div>{JSON.stringify(error)}</div>
-    <div>
-      <input
-        {...input}
-        placeholder={label}
-        type={type}
-        style={style}
-        min={min}
-        max={max}
-        step={step}
-        disabled={disabled}
-      />
-      {touched &&
-        ((error && <span><i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i></span>) ||
-          (warning && <span><i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i></span>))}
-    </div>
-  </div>
-);
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
 //-------------------------------------------------------------------------------------------------
 
-export default inputTrad;
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
+const stories = storiesOf('NodeGraph', module);
+stories
+  .add('...Super Simple Basic', () => (
+    <NodeGraph />
+  ));
+//-------------------------------------------------------------------------------------------------

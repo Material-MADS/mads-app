@@ -5,35 +5,26 @@
 // Authors: Jun Fujima (Former Lead Developer) [2018-2021]
 //          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'Hist' Chart View
+// Description: This is the Inner workings and Content Manager Controler of the 'NodeGraph' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Hist' is the Histogram manager of all current input that controls the final view of the
-//         this specific case of a 'QuadBarChart' visualization component.
+// Notes: 'NodeGraph' is a network visualization component that displays an interactive node - link
+//        graph.
 // ------------------------------------------------------------------------------------------------
-// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
-//             Internal QuadBarChart & HistForm libs,
+// References: 3rd party lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal NodeGraph & NodeGraphForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+import _ from 'lodash';
 import { DataFrame } from 'pandas-js';
 
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import QuadBarChart from '../VisComponents/QuadBarChart';
-import HistForm from './HistForm';
-
-//-------------------------------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------------------------------
-// Custom Settings to pass to the VisComp
-//-------------------------------------------------------------------------------------------------
-const settings = {
-  options: { title: 'Histogram' },
-};
+import NodeGraph from '../VisComponents/NodeGraph';
+import NodeGraphForm from './NodeGraphForm';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -41,11 +32,12 @@ const settings = {
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class HistView extends withCommandInterface(QuadBarChart, HistForm, settings) {
+export default class NodeGraphView extends withCommandInterface(NodeGraph, NodeGraphForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
+    if(dataset == undefined){ throw "No data to work with" }
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -57,21 +49,24 @@ export default class HistView extends withCommandInterface(QuadBarChart, HistFor
       newValues.filter = filteredFilters;
     }
 
-    if (!newValues.targetColumns[0] || !newValues.bins) {
-      return;
-    }
+    let internalData = dataset.main.data;
 
-    // extract data
-    const data = {};
-    const df = new DataFrame(dataset.main.data);
-    newValues.targetColumns.forEach((c) => {
-      const tc = df.get(c);
-      data[c] = tc.values.toArray();
-    });
 
+
+    let data = internalData.map( (v) => {
+      var newDataObj = {};
+      newDataObj['sn'] = v[newValues.sourceNodeColumn] == null ? "NULL" : String(v[newValues.sourceNodeColumn]);
+      newDataObj['tn'] = v[newValues.targetNodeColumn] == null ? "NULL" : String(v[newValues.targetNodeColumn]);
+      newDataObj['lw'] = parseInt(v[newValues.linkWeightColumn]);
+
+      return newDataObj
+    })
+
+    newValues["data"] = {linkList: data};
     newValues = convertExtentValues(newValues);
 
-    actions.sendRequestViewUpdate(view, newValues, data);
+    // actions.sendRequestViewUpdate(view, newValues,  newValues["data"]);
+    updateView(id, newValues);
   };
 
   // Manages data changes in the view
@@ -80,12 +75,7 @@ export default class HistView extends withCommandInterface(QuadBarChart, HistFor
     let data = {};
 
     if (dataset[id]) {
-      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumns[0])) {
-        data = dataset[id];
-      }
-      else{
-        data["resetRequest"] = true;
-      }
+      data = dataset[id];
     }
 
     return data;
