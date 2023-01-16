@@ -253,9 +253,9 @@ export default function Scatter3D({
     currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
   } catch (error) { /*Just ignore and move on*/ }
 
-  // Create the VizComp based on the incomming parameters
+  // Create the VizComp based on the incoming parameters
   const createChart = async () => {
-    actions.setLoadingState(true);
+    if(actions){ actions.setLoadingState(true); }
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(data, internalOptions, selectedIndices, colorTags);
     let layout = getChartLayout(data, internalOptions, currentDataSourceName);
@@ -267,7 +267,7 @@ export default function Scatter3D({
       })
       .finally(function() {
         internalOptions["camera"] = (rootNode.current).layout.scene.camera;
-        actions.setLoadingState(false);
+        if(actions){ actions.setLoadingState(false); }
       });
     });
   };

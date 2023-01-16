@@ -19,7 +19,7 @@
 #-------------------------------------------------------------------------------------------------
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
-from django.utils.html import mark_safe
+from django.utils.html import mark_safe, format_html
 from django import forms
 
 import django_tables2 as tables
@@ -41,7 +41,8 @@ class OwnedResourceModelTable(tables.Table):
 
     def render_name(self, value, record):
         url = record.get_absolute_url()
-        return mark_safe('<a href="%s">%s</a>' % (url, record))
+        return format_html("<a href='{}'>{}</a>", url, record, )
+        # return mark_safe('<a href="%s">%s</a>' % (url, record))
 
     class Meta:
         model = OwnedResourceModel
