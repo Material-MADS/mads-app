@@ -94,8 +94,8 @@ const config = [
     type: 'bar',
     name: 'Bar',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: BarView,
     settings: {
       options: {
@@ -186,8 +186,8 @@ const config = [
     type: 'imageView',
     name: 'ImageView',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: ImageViewView,
     customBtns: [
       {name: 'saveImg', icon: 'save', text: 'Save Image'},
@@ -275,8 +275,8 @@ const config = [
     type: 'nodeGraph',
     name: 'NodeGraph',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: NodeGraphView,
     customBtns: [
       {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
