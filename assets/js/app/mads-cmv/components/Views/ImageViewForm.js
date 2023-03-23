@@ -32,6 +32,38 @@ import _, { values } from 'lodash';
 import noImg from '../VisComponents/images/noimage.jpg';
 import blockedImg from '../VisComponents/images/blockedImg.png';
 
+// Info Help Images
+import info_grayscale from './images/ImageView/info_scikitimg_grayscale.png';
+import info_rotate1 from './images/ImageView/info_scikitimg_rotate1.png';
+import info_rotate2 from './images/ImageView/info_scikitimg_rotate2.png';
+import info_cannyedge1 from './images/ImageView/info_scikitimg_cannyedge1.png';
+import info_cannyedge2 from './images/ImageView/info_scikitimg_cannyedge2.png';
+import info_colortint from './images/ImageView/info_scikitimg_colortint.png';
+import info_invertcolor from './images/ImageView/info_scikitimg_invertcolor.png';
+import info_gamma1 from './images/ImageView/info_scikitimg_gamma1.png';
+import info_gamma2 from './images/ImageView/info_scikitimg_gamma2.png';
+import info_contrast from './images/ImageView/info_scikitimg_contrast.png';
+import info_sharpen from './images/ImageView/info_scikitimg_sharpen.png';
+import info_denoise from './images/ImageView/info_scikitimg_denoise.png';
+import info_erosion from './images/ImageView/info_scikitimg_erosion.png';
+import info_hsv from './images/ImageView/info_scikitimg_hsv.png';
+import info_regmaxfil from './images/ImageView/info_scikitimg_regmaxfil.png';
+import info_convexhull from './images/ImageView/info_scikitimg_convexhull.png';
+import info_ridgedetect1 from './images/ImageView/info_scikitimg_ridgedetect1.png';
+import info_ridgedetect2 from './images/ImageView/info_scikitimg_ridgedetect2.png';
+import info_swirl from './images/ImageView/info_scikitimg_twirl.png';
+import info_rag from './images/ImageView/info_scikitimg_rag.png';
+import info_thresholding from './images/ImageView/info_scikitimg_thresholding.png';
+import info_chanvesesegm from './images/ImageView/info_scikitimg_chanvesesegm.png';
+import info_switchcolor from './images/ImageView/info_scikitimg_switchcolor.png';
+import info_flip from './images/ImageView/info_scikitimg_flip.png';
+import info_circleframe from './images/ImageView/info_scikitimg_circleframe.png';
+import info_skeletonize from './images/ImageView/info_scikitimg_skeletonize.png';
+import info_objdetect from './images/ImageView/info_scikitimg_objdetect.png';
+import info_contourfinding from './images/ImageView/info_scikitimg_contourfinding.png';
+import info_florescent from './images/ImageView/info_scikitimg_florescent.png';
+
+
 //-------------------------------------------------------------------------------------------------
 
 
@@ -395,7 +427,19 @@ const ImageViewForm = (props) => {
 
       <Form.Group>
         <Form.Field width={4}>
-          <label>Enable SciKit Image Processing:</label>
+          <label>Enable SciKit Image Processing<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>SciKit Image Library Info</h4>
+                <p>
+                  When enabled it allows the user to use a wide range of available SciKit Image algorithms directly out of the box without any hassle or additional setup. Just apply one or many with a few clicks and discover the world of image maipulation.<br />
+                </p>
+                <img src="https://scikit-image.org/_static/img/logo.png" alt="SciKit Image Logo" style={{width: "220px"}} />
+              </Popup>
+              :
+            </label>
           <Field
             name="options.skImg.isEnabled"
             component={SemCheckbox}
@@ -405,7 +449,20 @@ const ImageViewForm = (props) => {
         </Form.Field>
         {skImgEnabled && <div>
           <Form.Field>
-            <label>Apply to current (and not original) <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This will not affect any duplicates made from this component. A duplicate will only apply the current settings.' size='small' />:</label>
+            <label>Apply to current (and not original)
+              <Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>}
+                size='small'
+                wide='very'
+              >
+                <h4>When Order Matters</h4>
+                <p>
+                  Sometimes the effects of each algorithm's order matter. Just applying them according to the order of the list below might be fine, but sometimes you want to have more control and change that order by enabling this option, reset the settings and apply a new set on the already manipulated image.<br />
+                  Just remember to save intermediate states of an image for later reference, since the workspace only saves the current form setting in total disregard of the image currently being affected in the work flow.
+                </p>
+              </Popup>
+              :
+            </label>
             <Field
               name="options.skImg.applyToCurrentEnable"
               component={SemCheckbox}
@@ -418,7 +475,21 @@ const ImageViewForm = (props) => {
       {skImgEnabled && <div>
         <Form.Group>
           <Form.Field width={3}>
-            <label>Grayscale:</label>
+            <label>Grayscale<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#skimage.color.rgb2gray" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.color.rgba2rgb</h4>
+                <p>
+                  This algorithm change all RGB colors into different levels of gray.<br />
+                  No Parameters Needed.
+                </p>
+                <img src={info_grayscale} alt="Grayscale Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Grayscale" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+            </label>
             <Field
               name="options.skImg.grayscaleEnabled"
               component={SemCheckbox}
@@ -427,7 +498,23 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Rotate:</label>
+            <label>Rotate<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#rotate" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.transform.rotate</h4>
+                <p>
+                  This algorithm rotates the image number of degrees (counter clockwise) with the option to make the size fit within the rotation area.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Angle:</b> Degrees of rotation<br />
+                  <b>Resize?:</b> original dimensions or not
+                </p>
+                <img src={info_rotate1} alt="Rotate 1 Example" style={{width: "220px"}} /><br />
+                <img src={info_rotate2} alt="Rotate 2 Example" style={{width: "220px"}} />
+              </Popup>
+              :
+            </label>
             <Field
               name="options.skImg.rotateEnabled"
               component={SemCheckbox}
@@ -457,7 +544,24 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Edge Detect <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Canny edge detection algorithm' size='small' />:</label>
+            <label>Edge Detection<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#canny" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.feature.canny</h4>
+                <p>
+                  The Canny Edge Detection algorithm tries to detect all edges of an image and keep only them in white, while remove all the rest (in black).<br />
+                  This edge detection algorithm, among many, is very popular due to its high accuracy.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Sigma:</b> Standard Deviation of the Gaussian filter. (0-∞, 1 is default. Lower Sigma have higher details while higher Sigma has less details.)
+                </p>
+                <img src={info_cannyedge1} alt="Canny Edge Detection 1 Example" style={{width: "220px"}} /><br />
+                <img src={info_cannyedge2} alt="Canny Edge Detection 2 Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Canny_edge_detector" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.edgeDetectEnabled"
               component={SemCheckbox}
@@ -473,12 +577,29 @@ const ImageViewForm = (props) => {
                   component={inputTrad}
                   type="number"
                   step={0.1}
+                  min={0}
                 />
               </Form.Field>
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Color Tint:</label>
+            <label>Color Tint<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_tinting_grayscale_images.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>Color Tinting</h4>
+                <p>
+                  Tinting images to one of a preset range of colors can only be done on images without an alpha (transparency) channel and images need to be gray. The grayness is applied automatically as long as the image is RGB without alpha.<br />
+                  If the image turns all black it is usally due to an illegal transparency channel. In those cases the image need to be pre-processed, either in this tool (apply grayscale in advance) or any other tool, to strip it of the alpha.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Color:</b> One of six different base colors
+                </p>
+                <img src={info_colortint} alt="Color Tint Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Tint,_shade_and_tone" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.colorTintEnabled"
               component={SemCheckbox}
@@ -496,7 +617,22 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Invert Colors:</label>
+            <label>Invert Colors<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.util.html#invert" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.util.invert</h4>
+                <p>
+                  Inverts the colors of an image.<br />
+                  Color inversion is an effect that flips all colors to their opposite hue on the color wheel.<br />
+                  No Parameters Needed
+                </p>
+                <img src={info_invertcolor} alt="Invert Color Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Color_wheel" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.invertEnabled"
               component={SemCheckbox}
@@ -507,7 +643,23 @@ const ImageViewForm = (props) => {
         </Form.Group>
         <Form.Group>
           <Form.Field width={3}>
-            <label>Gamma Change:</label>
+            <label>Gamma Change<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#adjust-gamma" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.exposure.adjust_gamma</h4>
+                <p>
+                  Gamma correction changes the illumination levels of an image and make it brighter or darker.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Gamma:</b> Lower than 1 = Lighter, Higher than 1 = Darker
+                </p>
+                <img src={info_gamma1} alt="Gamma Correction 1 Example" style={{width: "220px"}} /><br />
+                <img src={info_gamma2} alt="Gamma Correction 2 Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Gamma_correction" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.gammaChangeEnabled"
               component={SemCheckbox}
@@ -528,7 +680,22 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Enhance Contrast:</label>
+            <label>Enhance Contrast<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#equalize-adapthist" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.exposure.equalize_adapthist</h4>
+                <p>
+                  Change the contrast between lighter and darker colors in the image.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Clip Limit:</b> Value Between 0 and 1. The highet, the stronger contrast.
+                </p>
+                <img src={info_contrast} alt="Contrast Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Contrast_(vision)" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.enhanceContrastEnabled"
               component={SemCheckbox}
@@ -549,7 +716,23 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Sharpen:</label>
+            <label>Sharpen<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.filters.html#unsharp-mask" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.filters.unsharp_mask</h4>
+                <p>
+                  Sharpens blurry parts of an image and make it more crisp<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Radius:</b> Determines how many pixels should be included to enhance the contrast. (Below 1 basically makes no difference))<br />
+                  <b>Amount:</b> Details will be amplified with this factor. The factor could be 0 or negative. Typically, it is a small positive number, e.g. 1.0
+                </p>
+                <img src={info_sharpen} alt="Sharpen Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Unsharp_masking" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.sharpenEnabled"
               component={SemCheckbox}
@@ -581,7 +764,21 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Denoise:</label>
+            <label>Denoise<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.restoration.html#denoise-bilateral" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.restoration.denoise_bilateral</h4>
+                <p>
+                  Makes a default attempt at denoising the image and remove fireflies and similiar specs that makes the image looks noisy<br />
+                  No Parameters Needed
+                </p>
+                <img src={info_denoise} alt="Denoising Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Image_noise" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.denoiseEnabled"
               component={SemCheckbox}
@@ -590,7 +787,22 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={4}>
-            <label>Erosion, Holes & Peaks:</label>
+            <label>Erosion, Holes & Peaks<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#reconstruction" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.morphology.reconstruction</h4>
+                <p>
+                  Erosion reconstruction is trying to flattening out shadows and highlights in an image and make it less strong in contrasts. Holes and Peaks options enhances shadowy areas or highlighted areas correspondingly.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Type:</b> Select one of three different approaches, for highlighting either holes (shadows) or peaks (highlights) in the image, or just smoothing out both with erosion.
+                </p>
+                <img src={info_erosion} alt="Erosion Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Digital_image_processing" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.erosionEnabled"
               component={SemCheckbox}
@@ -609,7 +821,24 @@ const ImageViewForm = (props) => {
         </Form.Group>
         <Form.Group>
           <Form.Field width={3}>
-            <label>HSV:</label>
+            <label>HSV<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#rgb2hsv" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.color.rgb2hsv</h4>
+                <p>
+                  HSV stands for Hue, Saturation and Value, which is way an alternative way of describing colors from e.g. RGB. <br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Hue:</b> Hue is the pure pigment from the dominant color family, without tint or shade. The value goes from -1 to 1 and represents the whole scale of colors.<br />
+                  <b>Saturation:</b> The intensity of the color. The value goes from -1 to 1 where -1 is the brightest intensity and 1 is basically all gray.<br />
+                  <b>Value:</b> represents a lightness value and tells us how light or dark the image is. 0 is no change, while lower is lighter and higher is darker.
+                </p>
+                <img src={info_hsv} alt="HSV Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/HSL_and_HSV" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.hueSatValEnabled"
               component={SemCheckbox}
@@ -660,7 +889,20 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Regional Maxima Filter:</label>
+            <label>Regional Maxima<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_regional_maxima.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.morphology.reconstruction</h4>
+                <p>
+                  Regional maxima are connected components of pixels with a constant intensity value, surrounded by pixels with a lower value. This algorithm tries to find which areas and pixels are within the maxima and set all others to black.<br />
+                  No Parameters Needed
+                </p>
+                <img src={info_regmaxfil} alt="Regional Maxima Filter Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.regionMaxFilterEnabled"
               component={SemCheckbox}
@@ -669,7 +911,21 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Convex Hull <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The convex hull of a binary image is the set of pixels included in the smallest convex polygon that surround all white pixels in the input.' size='small' />:</label>
+            <label>Convex Hull<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#convex-hull-image" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.morphology.convex_hull_image</h4>
+                <p>
+                  he convex hull of a binary image is the set of pixels included in the smallest convex polygon that surround all white pixels in the input. It will basically replace the image foreground with a white polygon that would contain the foreground a replace the background with black.<br />
+                  No Parameters Needed
+                </p>
+                <img src={info_convexhull} alt="Convex Hull Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Convex_hull" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.convexHullEnabled"
               component={SemCheckbox}
@@ -678,7 +934,23 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Ridge Detection:</label>
+            <label>Ridge Detection<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/edges/plot_ridge_filter.html#sphx-glr-auto-examples-edges-plot-ridge-filter-py" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimagefilters.meijering</h4>
+                <p>
+                  The available ridge detection algorithms tries to find ridges and edges of an image and extract them, removing all else considered irrelevant.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Types:</b> Two types of edge detection algorithms, meijering and hessian. First return white ridges with black background the outher return black ridges with white background. Variants in details exists too.
+                </p>
+                <img src={info_ridgedetect1} alt="Ridge Detection meijering Example" style={{width: "220px"}} /><br />
+                <img src={info_ridgedetect2} alt="Ridge Detection hessian Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Ridge_detection" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.ridgeDetectionEnabled"
               component={SemCheckbox}
@@ -695,7 +967,22 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Swirl:</label>
+            <label>Swirl<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#swirl" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.transform.swirl</h4>
+                <p>
+                  Twists and swirls the image into a spiral pattern<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Strength:</b> A value from 0 and upward on how much power the swirl will have. 1 is usually very minor and 30 is often hard core extreme.<br />
+                  <b>Radius:</b> How much radius in pixels from the image center that the swirl will effect.
+                </p>
+                <img src={info_swirl} alt="Swirl Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.swirlEnabled"
               component={SemCheckbox}
@@ -730,7 +1017,21 @@ const ImageViewForm = (props) => {
         </Form.Group>
         <Form.Group>
           <Form.Field width={3}>
-            <label>RAG:</label>
+            <label>RAG<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_rag_mean_color.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.segmentation.slic<br />skimage.graph.rag_mean_color</h4>
+                <p>
+                  RAG stands for Region Adjacency Graph and merges regions which are similar in color. The algorithm construct a RAG and define edges as the difference in mean color and then join regions with similar mean color.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Types:</b> Three different types of RAG results to choose from.
+                </p>
+                <img src={info_rag} alt="RAG Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.ragThresholdEnabled"
               component={SemCheckbox}
@@ -747,7 +1048,22 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Thresholding:</label>
+            <label>Thresholding<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_thresholding.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.filters.threshold_multiotsu<br />skimage.filters.threshold_otsu</h4>
+                <p>
+                  In digital image processing, thresholding is the simplest method of segmenting images<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Types:</b> Either classis binary thresholding (black & white) or multi. either in plain black and white or in a few specific colors
+                </p>
+                <img src={info_thresholding} alt="Thresholding Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Thresholding_(image_processing)" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.thresholdingEnabled"
               component={SemCheckbox}
@@ -764,7 +1080,21 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Chan-Vese Segmentation:</label>
+            <label>Chan-Vese Segmentation<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.segmentation.html#chan-vese" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.segmentation.chan_vese</h4>
+                <p>
+                  The Chan-Vese algorithm is a very efficent way to segment images<br />
+                  No Parameters Needed
+                </p>
+                <img src={info_chanvesesegm} alt="Chan-Vese Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Image_segmentation" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.CVSegmentationEnabled"
               component={SemCheckbox}
@@ -773,7 +1103,23 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Switch Color:</label>
+            <label>Switch Color<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/transforming_image_data.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.color</h4>
+                <p>
+                  Allows for switching out all pixels with one exact color value into another.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>From Color:</b> The color (RGB) value to look for<br />
+                  <b>To Color:</b> The color (RGB) value we want to change into<br />
+                  <b>Extend Range Value:</b> If you want to affect nearby colors on the RGB scale (0-255) provide a number of how many colors above and below for each R, G and B. (ex. value = 2, affects max 125 colors).
+                </p>
+                <img src={info_switchcolor} alt="Color switch Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.switchColorEnabled"
               component={SemCheckbox}
@@ -814,7 +1160,22 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Flip:</label>
+            <label>Flip<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/numpy_images.html" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>Flipping</h4>
+                <p>
+                  This is just flipping the image vertically and/or horizontally<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Horizontally:</b> Flips the image horizontally<br />
+                  <b>Vertically:</b> Flips the image vertically
+                </p>
+                <img src={info_flip} alt="Flip Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.flipEnabled"
               component={SemCheckbox}
@@ -843,7 +1204,23 @@ const ImageViewForm = (props) => {
         </Form.Group>
         <Form.Group>
          <Form.Field width={3}>
-            <label>Circle Frame:</label>
+            <label>Circle Frame<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/numpy_operations/plot_camera_numpy.html#sphx-glr-auto-examples-numpy-operations-plot-camera-numpy-py" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>Black Frame Mask</h4>
+                <p>
+                  This feature calculates a circle overlay on the image and color everything outside the circle balck, creating a circular frame. Good for e.g. focusing on a particular part of an image.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>Center Horiz:</b> Where the center of the circle should be horizontally. default is at the center of the image.<br />
+                  <b>Center Vert:</b> Where the center of the circle should be vertically. default is at the center of the image.<br />
+                  <b>Radius:</b> The Radius of the circle. default is half of the shortest side of the original image.
+                </p>
+                <img src={info_circleframe} alt="Circle Frame Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.circleFrameEnabled"
               component={SemCheckbox}
@@ -892,7 +1269,21 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Skeletonize:</label>
+            <label>Skeletonize<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#skeletonize" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.morphology.skeletonize</h4>
+                <p>
+                  This algorithm calculates the 'skeleton' of the image foreground object and remove everything else<br />
+                  No Parameters needed
+                </p>
+                <img src={info_skeletonize} alt="Skeletonize Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Morphological_skeleton" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.skeletonizeEnabled"
               component={SemCheckbox}
@@ -901,7 +1292,21 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Object Detection:</label>
+            <label>Object Detection<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#hog" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.feature.hog</h4>
+                <p>
+                  Analyses the image and return an image that shows the identifaction of the main objects in the original image.<br />
+                  No Parameters needed
+                </p>
+                <img src={info_objdetect} alt="Object Detection Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Object_detection" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.objectDetectionEnabled"
               component={SemCheckbox}
@@ -910,7 +1315,23 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Contour Finding<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This feature works best when the original image is a JPEG, and works less as expected with a PNG. So make sure your original image is of the proper type.' size='small' />:</label>
+            <label>Contour Finding<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.measure.html#find-contours" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.measure.find_contours</h4>
+                <p>
+                  Find the contours of all shapes in an image. This feature works best when the original image is a JPEG, and works less as expected with a PNG. So make sure your original image is of the proper type. Complex images my take too long to calculate and the browser times out.<br />
+                  <b><u>Parameters:</u></b><br />
+                  <b>level:</b> Optional, and work often best by default setting, but feel free to play with value, changing it up or down to see if you get any improvements.<br />
+                  <b>Show Contours Only:</b> Remove the image and just keep the calculated contours.<br />
+                  <b>More Popping Style:</b> Makes the contours more popping in both colors and thickness.
+                </p>
+                <img src={info_contourfinding} alt="Contour finding Example" style={{width: "220px"}} />
+              </Popup>
+              :
+             </label>
             <Field
               name="options.skImg.contourFindingEnabled"
               component={SemCheckbox}
@@ -949,7 +1370,21 @@ const ImageViewForm = (props) => {
             </div>}
           </Form.Field>
           <Form.Field width={3}>
-            <label>Florescent Colors:</label>
+            <label>Florescent Colors<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#rescale-intensity" target="_blank">🛈</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.exposure.rescale_intensity</h4>
+                <p>
+                  This algorith changes the colors to more strong and florescent-feeling ones in order to highlight different parts of the imnage better.<br />
+                  No Parameters needed
+                </p>
+                <img src={info_florescent} alt="Florescent Example" style={{width: "220px"}} />
+              </Popup>
+              :
+              &nbsp;&nbsp;<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://en.wikipedia.org/wiki/Fluorescence" target="_blank"><img src="https://en.wikipedia.org/static/images/icons/wikipedia.png" alt="Wikipedia Link" style={{width: "20px"}} /></a></span>} content='Wikipedia Link' size='small' />
+             </label>
             <Field
               name="options.skImg.florescentColorsEnabled"
               component={SemCheckbox}
