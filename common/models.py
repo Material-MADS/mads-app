@@ -53,7 +53,7 @@ class OwnedResourceModel(IndexedTimeStampedModel):
     owner = models.ForeignKey(
         'users.User', on_delete=models.SET_NULL, null=True
     )
-    description = MarkdownxField(
+    description = models.TextField(
         max_length=1000, blank=True,
         help_text="Enter a brief description of the resource"
     )

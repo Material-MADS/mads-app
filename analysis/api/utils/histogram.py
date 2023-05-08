@@ -50,8 +50,8 @@ def get_histogram(data):
     for i in range(l - 1):
         left = bin_edges[i]
         right = bin_edges[i + 1]
-        logger.info(left)
-        logger.info(right)
+        # logger.info(left)
+        # logger.info(right)
         ids = []
         if i == l - 2:
             ids = list(np.where((left <= x_array) & (x_array <= right))[0])
@@ -80,7 +80,7 @@ def get_histograms(data):
                 target_data["data"] = df[i]
                 target_data["view"]["settings"]["bins"] = data["view"]["settings"]["bins"]
                 result["data"][count] = get_histogram(target_data)
-                logger.info(result["data"][count])
+                # logger.info(result["data"][count])
                 count += 1
     result["columns"] = selected_columns
 

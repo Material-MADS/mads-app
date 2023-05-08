@@ -36,7 +36,7 @@ def get_clusters(data):
     dataset = data['data']
     df = pd.DataFrame(dataset)
 
-    logger.info(df)
+    # logger.info(df)
 
     df_target = df[feature_columns]
 
@@ -50,7 +50,7 @@ def get_clusters(data):
     clf.fit(X)
     y = clf.predict(X)
 
-    logger.info(y)
+    # logger.info(y)
 
     result = {}
     result['cluster'] = y

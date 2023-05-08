@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 supported_file_types = [
     'text/plain',
     'application/csv',
+    'text/csv',
     # 'application/pdf',
     # 'image/png',
     # 'image/jpeg',

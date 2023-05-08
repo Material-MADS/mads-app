@@ -26,10 +26,13 @@ from .pairwise_correlation import get_pairwise_correlation
 from .pie import get_pie
 from .scatter3D import get_scatter3D
 from .heatmap import get_hm
+from .statistics import get_statistics
 from .custom import get_custom
 from .bar import get_bar
+from .line import get_line
 from .scikit_image_manip import get_scikit_image_manip
 from .node_graph import get_node_graph
+
 
 import logging
 
@@ -48,8 +51,10 @@ processor_map = {
     'pie': get_pie,
     'scatter3D': get_scatter3D,
     'heatmap': get_hm,
+    'statistics': get_statistics,
     'custom': get_custom,
     'bar': get_bar,
+    'line': get_line,
     'imageView': get_scikit_image_manip,
     'nodeGraph': get_node_graph,
 }
@@ -57,7 +62,7 @@ processor_map = {
 
 #-------------------------------------------------------------------------------------------------
 def process_view(data):
-    logger.info(data['view']['type'])
+    # logger.info(data['view']['type'])
 
     result = {'status': 'error: data is incorrect'}
 
@@ -73,7 +78,7 @@ def process_view(data):
 
 #-------------------------------------------------------------------------------------------------
 def get_model(data):
-    logger.info(data['view']['type'])
+    # logger.info(data['view']['type'])
 
     _, model = processor_map[data['view']['type']](data)
 

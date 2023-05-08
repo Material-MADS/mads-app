@@ -284,7 +284,7 @@ export default function Molecule3D({
       // Setup overlay info text based on data
       if(internalData.name){overlayDiv.find("[name='cd-overlayTxt1']").text(internalData.name); }
       if(internalData.smiles){
-        const scanLink = "http://133.87.242.94:3000/map-search?q=" + internalData.smiles + "&search-target=smiles&sort=id&order=asc&page=1";
+        const scanLink = "https://scan.sci.hokudai.ac.jp/map-search?q=" + internalData.smiles + "&search-target=smiles&sort=id&order=asc&page=1";
         overlayDiv.find("[name='cd-overlayLink0']").attr("href", scanLink); overlayDiv.find("[name='cd-overlayImg0']").show();
       }
       if(internalData.formula){ overlayDiv.find("[name='cd-overlayTxt2']").html(internalData.formula.replace(/(\d+)/g, '<sub>$1</sub>')); }

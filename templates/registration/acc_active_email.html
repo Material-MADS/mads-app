@@ -10,16 +10,22 @@
 #              page of the web application
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is the registration Account Creation Confirmation Email template file
+#         Former url config: {{request.scheme }}://{{ domain }}{% url 'activate' uidb64=uid token=token %}
 # ------------------------------------------------------------------------------------------------
 # References: none
 #=================================================================================================
+ALTERNATIVE CHECK: {% if '127.0.0.1' in domain %}
 {% endcomment %}
 
 {% autoescape off %}
 Hi {{ user.email }},
 Please click on the link to confirm your registration,
 
-{{ request.scheme }}://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% if domain == '127.0.0.1:8000' %}
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% else %}
+https://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+{% endif %}
 
 
 {% endautoescape %}

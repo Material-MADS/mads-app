@@ -28,7 +28,10 @@ from .models import OwnedResourceModel
 #-------------------------------------------------------------------------------------------------
 @rules.predicate
 def is_resource_owner(user, resource):
-    return resource.owner == user
+    if hasattr(resource, 'owner'):
+        return resource.owner == user
+    else:
+        return False
 
 
 @rules.predicate

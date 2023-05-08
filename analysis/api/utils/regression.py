@@ -53,8 +53,8 @@ def get_regression(data):
     cv_model = None
 
     if method == 'Linear':
-        reg = LinearRegression(fit_intercept=True, normalize=False)
-        cv_model = LinearRegression(fit_intercept=True, normalize=False)
+        reg = LinearRegression(fit_intercept=True)
+        cv_model = LinearRegression(fit_intercept=True)
     elif method == 'Lasso':
         reg = Lasso()
         cv_model = Lasso()
