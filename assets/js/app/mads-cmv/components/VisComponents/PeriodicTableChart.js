@@ -186,7 +186,7 @@ export default class PeriodicTable extends Component {
         v.remove();
       }
     }
-    if(this.props.data.resetRequest){
+    if(this.props && this.props.data && this.props.data.resetRequest){
       this.props.options.title = defaultOptions.title;
       delete this.props.data.resetRequest;
     }

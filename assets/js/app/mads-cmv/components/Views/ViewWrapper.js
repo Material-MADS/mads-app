@@ -46,6 +46,14 @@ export default function withCommandInterface(
           // No need to do something, just dont try again with this one
         }
       }
+
+      if(this.props.devStage != 'Stable Release'){
+        this.props.actions.showMessage({
+          header: 'STILL UNDER DEVELOPMENT',
+          content: 'This component (' + this.props.view.name + ') is still in development and might change a lot before it is released. It is only available in ' + this.props.devStage + ' state and should only be used for testing and not in production.',
+          type: 'warning',
+        });
+      }
     }
 
     state = {

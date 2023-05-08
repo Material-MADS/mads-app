@@ -2,8 +2,7 @@
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
 #              pie components
@@ -231,14 +230,14 @@ def get_scikit_image_manip(data):
                 graph.nodes[dst]['mean color'] = (graph.nodes[dst]['total color'] / graph.nodes[dst]['pixel count'])
             RAG_Img = np.empty_like(workingImg)
             RAG_Labels_1 = skimage.segmentation.slic(workingImg, compactness=30, n_segments=400, start_label=1)
-            RAG_Mean_Color = skimage.future.graph.rag_mean_color(workingImg, RAG_Labels_1)
+            RAG_Mean_Color = skimage.graph.rag_mean_color(workingImg, RAG_Labels_1)
             if imgOpts['skImg']['ragThresholdVersion'] == "Threshold 1":
                 RAG_Img = skimage.color.label2rgb(RAG_Labels_1, workingImg, kind='avg', bg_label=0)
             elif imgOpts['skImg']['ragThresholdVersion'] == "Threshold 2":
-                RAG_Labels_2 = skimage.future.graph.cut_threshold(RAG_Labels_1, RAG_Mean_Color, 29)
+                RAG_Labels_2 = skimage.graph.cut_threshold(RAG_Labels_1, RAG_Mean_Color, 29)
                 RAG_Img = skimage.color.label2rgb(RAG_Labels_2, workingImg, kind='avg', bg_label=0)
             elif imgOpts['skImg']['ragThresholdVersion'] == "Merging":
-                RAG_Labels_3 = skimage.future.graph.merge_hierarchical(RAG_Labels_1, RAG_Mean_Color, thresh=35, rag_copy=False, in_place_merge=True, merge_func=merge_mean_color, weight_func=_weight_mean_color)
+                RAG_Labels_3 = skimage.graph.merge_hierarchical(RAG_Labels_1, RAG_Mean_Color, thresh=35, rag_copy=False, in_place_merge=True, merge_func=merge_mean_color, weight_func=_weight_mean_color)
                 RAG_Img = skimage.color.label2rgb(RAG_Labels_3, workingImg, kind='avg', bg_label=0)
                 RAG_Img = skimage.segmentation.mark_boundaries(RAG_Img, RAG_Labels_3, (0, 0, 0))
             workingImg = RAG_Img
@@ -394,6 +393,7 @@ def get_scikit_image_manip(data):
             resultImg = img
         else:
             data['data']['manipVer'] = data['data']['origin']
+
 
         # Convert numpy image array to base64 image string
         if resultImg is not None:

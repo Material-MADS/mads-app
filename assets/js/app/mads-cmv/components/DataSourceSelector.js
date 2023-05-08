@@ -60,6 +60,7 @@ class DataSourceSelector extends React.Component {
         selectOnNavigation={false}
         placeholder="Select data source..."
         search
+        id="dataSourceSelector"
         options={items}
         onChange={(_, item) => onSelectionChange(item.value)}
         value={selectedDataSource}

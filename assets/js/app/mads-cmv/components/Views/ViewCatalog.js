@@ -18,24 +18,40 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+
+// Visualization
+import TableView from './Table';
 import ScatterView from './Scatter';
 import BarView from './Bar';
-import TableView from './Table';
+import PieView from './Pie';
+import Scatter3DView from './Scatter3D';
+import GapMinderView from './GapMinder';
+import LineView from './Line';
+
+// Data Processing
+import ImageViewView from './ImageView';
+
+// Analysis
 import ParCoordsView from './ParCoordsView';
 import HistView from './Hist';
 import RFFeatureView from './RFFeature';
 import ClusteringView from './Clustering';
+import HeatMapView from './HeatMap';
+import PairwiseCorrelationView from './PairwiseCorrelation';
+import NodeGraphView from './NodeGraphView';
+
+// Machine Learning
 import RegressionView from './Regression';
 import ClassificationView from './Classification';
+import TensorFlowView from './TensorFlow';
+
+// Static Data Visual Support
 import PeriodicTableView from './PeriodicTable';
-import PieView from './Pie';
-import Scatter3DView from './Scatter3D';
 import Molecule3DView from './Molecule3D';
-import HeatMapView from './HeatMap';
-import ImageViewView from './ImageView';
-import PairwiseCorrelationView from './PairwiseCorrelation';
+import StatisticsView from './Statistics';
+
+// Other
 import CustomView from './Custom';
-import NodeGraphView from './NodeGraphView';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -44,29 +60,30 @@ import NodeGraphView from './NodeGraphView';
 // The Catalog Config
 //-------------------------------------------------------------------------------------------------
 const config = [
-  // Custom - A collection of all VisComps that can be added via a smart 'Wizard'-form
-  // IT IS NOT YET FINISHED ANF FULLY IMPLEMENTED, THEREFORE IT IS COMMENTED OUT
-  //------------------------------------------
-  // {
-  //   type: 'custom',
-  //   name: 'Custom',
-  //   category: 'Custom',
-  //   version: 0.7,
-  //   devStage: "Beta",
-  //   component: CustomView,
-  //   settings: {
-  //     options: {
-  //       extent: {
-  //         width: 400,
-  //         height: 400,
-  //       },
-  //     },
-  //   },
-  // },
-  //------------------------------------------
 
   // VISUALIZATION CATEGORY
   //=======================
+
+  // Table - A Customizable Data Table
+  //------------------------------------------
+  {
+    type: 'table',
+    name: 'Table',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: TableView,
+    settings: {
+      columns: [],
+      options: {
+        extent: {
+          width: 800,
+          height: 400,
+        },
+      },
+    },
+  },
+  //------------------------------------------
 
   // Scatter - A Customizable Scatter Plot
   //------------------------------------------
@@ -94,8 +111,8 @@ const config = [
     type: 'bar',
     name: 'Bar',
     category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
+    version: 0.8,
+    devStage: "Beta",
     component: BarView,
     settings: {
       options: {
@@ -111,81 +128,117 @@ const config = [
   },
   //------------------------------------------
 
-  // Table - A Customizable Data Table
+  // Pie - A Customizable Pie Chart
   //------------------------------------------
   {
-    type: 'table',
-    name: 'Table',
-    category: 'Visualization',
-    version: 1.2,
-    devStage: "Stable Release",
-    component: TableView,
-    settings: {
-      columns: [],
-    },
-    rglRules : {isResizable: false},
-  },
-  //------------------------------------------
-
-  // Periodic Table - A Non-Customizable Chemical Elements Periodic Table
-  //------------------------------------------
-  {
-    type: 'periodic-table',
-    name: 'Periodic Table',
+    type: 'pie',
+    name: 'Pie',
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
-    component: PeriodicTableView,
+    component: PieView,
     settings: {
-      columns: [],
-    },
-    rglRules : {isResizable: false},
-  },
-  //------------------------------------------
-
-  // Parallel Coordinates - A Customizable Parallel Coordinate Component
-  //------------------------------------------
-  {
-    type: 'parcoords',
-    name: 'Parallel Coordinates',
-    category: 'Visualization',
-    version: 0.9,
-    devStage: "Beta",
-    component: ParCoordsView,
-    settings: {
-      axes: [],
-    },
-  },
-  //------------------------------------------
-
-  // Molecule 3D - A Customizable 3D Molecule Viewer
-  //------------------------------------------
-  {
-    type: 'molecule3D',
-    name: 'Molecule3D',
-    category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: Molecule3DView,
-    settings: {
+      bins: 7,
       options: {
+        colorMap: 'Category20c',
         extent: {
-          width: 500,
-          height: 400,
+          width: 0,
+          height: 0,
         },
-        bkgCol: "#ffffff",
-        txtCol: "#000000",
-      },
+      }
     },
   },
   //------------------------------------------
 
-  // Image View - A Customizable Image Viewer
+  // Scatter 3D - A 3-dimensional Scatter Plot
   //------------------------------------------
+  {
+    type: 'scatter3D',
+    name: 'Scatter3D',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: Scatter3DView,
+    settings: {
+      method: "Manual",
+      options: {
+        axisTitles: ['x', 'y', 'z'],
+        marker: {
+          size: 2,
+          color: 'red',
+          opacity: 0.8,
+        },
+        colorMap: 'Category20c',
+        extent: { width: 450, height: 450 },
+        camera: {
+          eye: {x: 1.25, y: 1.25, z: 1.25},
+          up: {x: 0, y: 0, z: 1},
+          center: {x: 0, y: 0, z: 0},
+        },
+      }
+    },
+  },
+  //------------------------------------------
+
+  // GapMinder - A Hans Rosling Inspiration
+  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  //------------------------------------------
+  // {
+  //   type: 'gapminder',
+  //   name: 'GapMinder',
+  //   category: 'Visualization',
+  //   version: 0.2,
+  //   devStage: "Alfa Draft",
+  //   component: GapMinderView,
+  //   settings: {
+  //     options: {
+  //       axisTitles: ['x', 'y'],
+  //       marker: {
+  //         size: 2,
+  //         color: 'red',
+  //         opacity: 0.8,
+  //       },
+  //       colorMap: 'Category20c',
+  //       extent: { width: 450, height: 450 },
+  //     }
+  //   },
+  // },
+  //------------------------------------------
+
+  // Line - A Customizable Line Chart
+  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  //------------------------------------------
+  // {
+  //   type: 'line',
+  //   name: 'Line',
+  //   category: 'Visualization',
+  //   version: 0.5,
+  //   devStage: "Beta",
+  //   component: LineView,
+  //   settings: {
+  //     options: {
+  //       extent: {
+  //         width: 400,
+  //         height: 400,
+  //       },
+  //       colorMap: 'Category10',
+  //       legendLocation: 'top_right',
+  //     },
+  //     mappings: {},
+  //   },
+  // },
+  //------------------------------------------
+
+
+  // DATA PROCESSING CATEGORY
+  //=========================
+
+  // Image View - A Customizable Image Viewer & Processer
+  //-----------------------------------------------------
   {
     type: 'imageView',
     name: 'ImageView',
-    category: 'Visualization',
+    category: 'Data Processing',
     version: 1.0,
     devStage: "Stable Release",
     component: ImageViewView,
@@ -262,57 +315,20 @@ const config = [
   //------------------------------------------
 
 
-  // DATA PROCESSING CATEGORY
-  //=========================
-
-
   // ANALYSIS CATEGORY
   //==================
 
-  // Node Graph - A Customizable Node Graph Viewer
+  // Parallel Coordinates - A Customizable Parallel Coordinate Component
   //------------------------------------------
   {
-    type: 'nodeGraph',
-    name: 'NodeGraph',
-    category: 'Visualization',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: NodeGraphView,
-    customBtns: [
-      {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
-      {name: 'toggleNodeLabels', icon: 'square', text: 'Toggle Node Labels'},
-      {name: 'toggleLinkLabels', icon: 'connectdevelop', text: 'Toggle Link Labels'},
-    ],
-    settings: {
-      options: {
-        links: {},
-        graphLayout: {},
-        nodes: {},
-        extent: {
-          width: 700,
-          height: 600,
-        },
-        bkgCol: "#ffffff",
-        txtCol: "#000000",
-      },
-    },
-  },
-  //------------------------------------------
-
-  // Pairwise Correlation - A Customizable Pairwise Correlation (heatmap) component
-  //------------------------------------------
-  {
-    type: 'pairwise-correlation',
-    name: 'PairwiseCorrelation',
+    type: 'parcoords',
+    name: 'Parallel Coordinates',
     category: 'Analysis',
-    version: 0.8,
+    version: 0.9,
     devStage: "Beta",
-    component: PairwiseCorrelationView,
+    component: ParCoordsView,
     settings: {
-      options: {
-        extent: { width: 600, height: 600 },
-        maskEnabled: true,
-      }
+      axes: [],
     },
   },
   //------------------------------------------
@@ -339,6 +355,26 @@ const config = [
   },
   //------------------------------------------
 
+  // Feature Importance (RF) - A Customizable Feature Importance Bart Chart
+  //------------------------------------------
+  {
+    type: 'feature-importance',
+    name: 'Feature Importance (RF)',
+    category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: RFFeatureView,
+    settings: {
+      featureColumns: [],
+      targetColumn: '',
+      mappings: {
+        dimension: 'features',
+        measures: ['importance'],
+      },
+    },
+  },
+  //------------------------------------------
+
   // Clustering - A Customizable Clustering Bar Chart
   //------------------------------------------
   {
@@ -360,78 +396,6 @@ const config = [
   },
   //------------------------------------------
 
-  // Feature Importance (RF) - A Customizable Feature Importance Bart Chart
-  //------------------------------------------
-  {
-    type: 'feature-importance',
-    name: 'Feature Importance (RF)',
-    category: 'Analysis',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: RFFeatureView,
-    settings: {
-      featureColumns: [],
-      targetColumn: '',
-      mappings: {
-        dimension: 'features',
-        measures: ['importance'],
-      },
-    },
-  },
-  //------------------------------------------
-
-  // Pie - A Customizable Pie Chart
-  //------------------------------------------
-  {
-    type: 'pie',
-    name: 'Pie',
-    category: 'Analysis',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: PieView,
-    settings: {
-      bins: 7,
-      options: {
-        colorMap: 'Category20c',
-        extent: {
-          width: 0,
-          height: 0,
-        },
-      }
-    },
-  },
-  //------------------------------------------
-
-  // Scatter 3D - A 3-dimensional Scatter Plot
-  //------------------------------------------
-  {
-    type: 'scatter3D',
-    name: 'Scatter3D',
-    category: 'Analysis',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: Scatter3DView,
-    settings: {
-      method: "Manual",
-      options: {
-        axisTitles: ['x', 'y', 'z'],
-        marker: {
-          size: 2,
-          color: 'red',
-          opacity: 0.8,
-        },
-        colorMap: 'Category20c',
-        extent: { width: 450, height: 450 },
-        camera: {
-          eye: {x: 1.25, y: 1.25, z: 1.25},
-          up: {x: 0, y: 0, z: 1},
-          center: {x: 0, y: 0, z: 0},
-        },
-      }
-    },
-  },
-  //------------------------------------------
-
   // Heatmap - A Customizable Heatmap View
   //------------------------------------------
   {
@@ -449,6 +413,54 @@ const config = [
           height: 0,
         },
       }
+    },
+  },
+  //------------------------------------------
+
+  // Pairwise Correlation - A Customizable Pairwise Correlation (heatmap) component
+  //------------------------------------------
+  {
+    type: 'pairwise-correlation',
+    name: 'PairwiseCorrelation',
+    category: 'Analysis',
+    version: 0.8,
+    devStage: "Beta",
+    component: PairwiseCorrelationView,
+    settings: {
+      options: {
+        extent: { width: 600, height: 600 },
+        maskEnabled: true,
+      }
+    },
+  },
+  //------------------------------------------
+
+  // Node Graph - A Customizable Node Graph Viewer
+  //------------------------------------------
+  {
+    type: 'nodeGraph',
+    name: 'NodeGraph',
+    category: 'Analysis',
+    version: 0.8,
+    devStage: "Beta",
+    component: NodeGraphView,
+    customBtns: [
+      {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
+      {name: 'toggleNodeLabels', icon: 'square', text: 'Toggle Node Labels'},
+      {name: 'toggleLinkLabels', icon: 'connectdevelop', text: 'Toggle Link Labels'},
+    ],
+    settings: {
+      options: {
+        links: {},
+        graphLayout: {},
+        nodes: {},
+        extent: {
+          width: 700,
+          height: 600,
+        },
+        bkgCol: "#ffffff",
+        txtCol: "#000000",
+      },
     },
   },
   //------------------------------------------
@@ -500,6 +512,125 @@ const config = [
       mappings: {},
     },
   },
+  //------------------------------------------
+
+  // TensorFlow View - A Customizable TensorFlow ML Component
+  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  //------------------------------------------
+  // {
+  //   type: 'tensorflow',
+  //   name: 'TensorFlow',
+  //   category: 'Machine Learning',
+  //   version: 0.2,
+  //   devStage: "Alfa Draft",
+  //   component: TensorFlowView,
+  //   // customBtns: [
+  //   //   {name: 'saveImg', icon: 'save', text: 'Save Image'},
+  //   //   {name: 'annotateImg', icon: 'edit', text: 'Enable Annotate Image'},
+  //   //   {name: 'annotateBrushType', type: 'list', text: 'Pen or Eraser?', options: [{key: "Pen0", text:"Pen", value: 0}, {key: "Eraser1", text:"Eraser", value: 1}]},
+  //   //   {name: 'annotationColor', type: 'color', text: 'Annotation Color'},
+  //   //   {name: 'annotationSize', type: 'number', step: 1, defVal: 2, text: 'Annotation Brush Size'},
+  //   //   {name: 'annotationOpacity', type: 'number', step: 0.1, min: 0.1, max: 1.0, defVal: 1.0, text: 'Annotation Brush Opacity'},
+  //   //   {name: 'annotateImgReset', icon: 'trash', text: 'Reset All Annotations'},
+  //   // ],
+  //   settings: {
+  //     options: {
+  //       title: "",
+  //       extent: {
+  //         width: 400,
+  //         height: 300,
+  //       },
+  //       border: {
+  //         color: "black",
+  //         style: "solid",
+  //         size: 2,
+  //       },
+  //     },
+  //   },
+  // },
+  //------------------------------------------
+
+
+  // STATIC DATA VISUAL SUPPORT CATEGORY
+  //====================================
+
+  // Periodic Table - A Non-Customizable Chemical Elements Periodic Table
+  //------------------------------------------
+  {
+    type: 'periodic-table',
+    name: 'Periodic Table',
+    category: 'Static Data Visual Support',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: PeriodicTableView,
+    settings: {
+      columns: [],
+    },
+    rglRules : {isResizable: false},
+  },
+  //------------------------------------------
+
+  // Molecule 3D - A Customizable 3D Molecule Viewer
+  //------------------------------------------
+  {
+    type: 'molecule3D',
+    name: 'Molecule3D',
+    category: 'Static Data Visual Support',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: Molecule3DView,
+    settings: {
+      options: {
+        extent: {
+          width: 500,
+          height: 400,
+        },
+        bkgCol: "#ffffff",
+        txtCol: "#000000",
+      },
+    },
+  },
+  //------------------------------------------
+
+  // Statistics - A Customizable Statistics View
+  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  //-----------------------------------------------
+  // {
+  //   type: 'statistics',
+  //   name: 'Statistics',
+  //   category: 'Static Data Visual Support',
+  //   version: 0.5,
+  //   devStage: "Beta",
+  //   component: StatisticsView,
+  //   settings: {
+  //     featureColumns: [],
+  //   },
+  // },
+
+
+  // OTHER CATEGORY
+  //===============
+
+  //------------------------------------------
+  // Custom - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED, THEREFORE IT IS COMMENTED OUT
+  //------------------------------------------
+  // {
+  //   type: 'custom',
+  //   name: 'Custom',
+  //   category: 'Other',
+  //   version: 0.1,
+  //   devStage: "Draft",
+  //   component: CustomView,
+  //   settings: {
+  //     options: {
+  //       extent: {
+  //         width: 400,
+  //         height: 400,
+  //       },
+  //     },
+  //   },
+  // },
   //------------------------------------------
 ];
 //-------------------------------------------------------------------------------------------------

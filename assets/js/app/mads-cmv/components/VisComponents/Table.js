@@ -35,7 +35,10 @@ Bokeh.logger.set_level("error");
 //-------------------------------------------------------------------------------------------------
 // Initiation Consts and Vars
 //-------------------------------------------------------------------------------------------------
-const INITIAL_WIDTH = 800;
+// const INITIAL_WIDTH = 800;
+const defaultOptions = {
+  extent: { width: 800, height: 400 },
+};
 //-------------------------------------------------------------------------------------------------
 
 
@@ -87,6 +90,7 @@ class BokehTable extends Component {
       data,
       columns,
       colorTags,
+      options,
       selectedIndices,
       filteredIndices,
     } = this.props;
@@ -110,6 +114,12 @@ class BokehTable extends Component {
     }
 
     if (!deepEqual(prevProps.data, data)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.options, options)) {
       this.clearChart();
       this.createChart();
       return;
@@ -218,7 +228,8 @@ class BokehTable extends Component {
     const dataTable = new Bokeh.Tables.DataTable({
       source: this.cds,
       columns: displayColumns,
-      width: options.extent.width || INITIAL_WIDTH,
+      width: options.extent.width || defaultOptions.extent.width,//INITIAL_WIDTH,
+      height: options.extent.height || defaultOptions.extent.height,
       selection_color: 'red',
     });
 
@@ -285,7 +296,7 @@ BokehTable.defaultProps = {
   colorTags: [],
   selectedIndices: [],
   filteredIndices: [],
-  options: { extent: { width: 800, height: 400 } },
+  options: defaultOptions,
   onSelectedIndicesChange: undefined,
 };
 //-------------------------------------------------------------------------------------------------

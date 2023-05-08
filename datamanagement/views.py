@@ -126,14 +126,25 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
                 accessibility=DataSource.ACCESSIBILITY_PUBLIC
             )
 
-        queryset = queryset.filter(
-            Q(owner=u)
-            | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
-            | (
-                Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
-                & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
-            )
-        ).distinct()
+        if u.is_superuser or u.is_staff:
+            queryset = queryset.filter(
+                Q(owner=u)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PRIVATE)
+                | (
+                    Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
+                    & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+                )
+            ).distinct()
+        else:
+            queryset = queryset.filter(
+                Q(owner=u)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
+                | (
+                    Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
+                    & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+                )
+            ).distinct()
 
         return queryset
 

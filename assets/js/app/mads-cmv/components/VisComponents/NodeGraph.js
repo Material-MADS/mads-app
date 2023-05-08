@@ -38,6 +38,11 @@ import { Turbo256 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 //-------------------------------------------------------------------------------------------------
 
 
+
+//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+let selectedPath = {};
+
+
 //-------------------------------------------------------------------------------------------------
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
@@ -463,6 +468,114 @@ const generateDOMLabels = function (graph, container, isLabelsEnabled, graphics)
 }
 //-------------------------------------------------------------------------------------------------
 
+//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+
+//------------------------------------------------------------------------------------------------
+// Reset Path Selection
+// This will reset the selections of nodes and paths
+//------------------------------------------------------------------------------------------------
+const resetPathSelection = async (graphics, container, ngd, forceReset) => {
+  if(spEdgeMem.length !== 0){
+    spEdgeMem.forEach((l) => {
+      var linkUI = graphics.current.getLinkUI(l);
+      if (linkUI) {
+        linkUI.color = Viva.Graph.View._webglUtil.parseColor("#999999");
+      }
+    });
+    spEdgeMem = [];
+  }
+
+  if(spMemData.length !== 0){
+    spMemData.forEach((n) => {
+      var nUI = graphics.current.getNodeUI(n[0]);
+      nUI.color = n[1]
+      nUI.size = n[2];
+      try {
+        container.removeChild(domLabels[n[0]]);
+      } catch (error) {
+        // Do nothing
+      }
+    });
+    spMemData = [];
+    domLabels = {};
+  }
+
+  if(selectedPath[ngd] != undefined && selectedPath[ngd].length == 2 || forceReset){
+    selectedPath[ngd].forEach((n) => {
+      var nUI = graphics.current.getNodeUI(n[0]);
+      nUI.color = n[1]
+      nUI.size = n[2];
+    });
+    selectedPath[ngd] = [];
+  }
+};
+//------------------------------------------------------------------------------------------------
+
+
+//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+
+//------------------------------------------------------------------------------------------------
+// Get Shortest Path
+// This will contact the server for calculating the shortest path between two nodes and return it
+//------------------------------------------------------------------------------------------------
+const getShortestPath = async (ctx, graphics, graph, container, sm) => {
+  const url = encodeURI(`${apiRoot}/shortest_path/${ctx[0]}/${ctx[1]}/${ctx[2]}`);
+
+  const response = await fetch(url);
+  const spData = await response.json();
+
+  if(spData == "FAIL"){
+    resetPathSelection(graphics, container, true);
+    sm[0]("Invalid Nodes Selected");
+    sm[1]("An exception occurred, probably because one of the nodes were not connected to anything");
+    sm[2](true);
+  }
+  else{
+    domLabels = generateDOMLabels(
+      graph.current,
+      container.current,
+      spData
+    );
+
+    spEdgeMem = [];
+    var indexLabelTxt = 1;
+    spData.forEach((n, index) => {
+      var nUI = graphics.current.getNodeUI(n);
+      spMemData.push([n, nUI.color, nUI.size, index+1])
+      nUI.color = Viva.Graph.View._webglUtil.parseColor("#FF00FF");
+      nUI.size = 20;
+      domLabels[n].innerText = indexLabelTxt++;
+
+      var thisNode = graph.current.getNode(n);
+      for (let i = 0; i < thisNode.links.length; i++) {
+        for (let j = 0; j < spData.length; j++) {
+          if((n == thisNode.links[i].fromId && spData[j] == thisNode.links[i].toId) || (n == thisNode.links[i].toId && spData[j] == thisNode.links[i].fromId)){
+            var alreadyExist = false;
+            for(let k = 0; k < spEdgeMem.length; k++){
+              if(spEdgeMem[k] == thisNode.links[i].id){
+                alreadyExist = true;
+                break;
+              }
+            }
+            if(!alreadyExist){
+              spEdgeMem.push(thisNode.links[i].id);
+            }
+          }
+        }
+      }
+    });
+    spEdgeMem.forEach((l, index) => {
+      var linkUI = graphics.current.getLinkUI(l);
+      if (linkUI) {
+        linkUI.color = Viva.Graph.View._webglUtil.parseColor("#ff00ff");
+      }
+    });
+  }
+
+  return;
+};
+//------------------------------------------------------------------------------------------------
+
 
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
@@ -533,7 +646,25 @@ export default function NodeGraph({
   };
 
   const handleNodeSnglClick = (node, e) => {
-    if(e.ctrlKey){
+
+    //++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+    if(e.ctrlKey && e.altKey){
+      e.preventDefault();
+
+      resetPathSelection(gs, $(rootNode.current).find('#'+ngd)[0], ngd);
+      resetSelection();
+
+      var nodeUI = graphics.current.getNodeUI(node.id);
+      var thisNode = [node.id, nodeUI.color, nodeUI.size];
+      selectedPath[ngd].push(thisNode);
+      nodeUI.color = graphStyles.selectedNodeColor
+      nodeUI.size = 20;
+
+      if(selectedPath[ngd].length == 2){
+        getShortestPath(([mapId]).concat([selectedPath[ngd][0][0], selectedPath[ngd][1][0]]), gs, g, $(rootNode.current).find('#'+ngd)[0], [setModalTitle, setModalBody, setOpenModal]);
+      }
+    }
+    else if(e.ctrlKey){
       var uri = 'https://www.google.com/search?q=' + node.id;
       window.open(uri, '_blank');
     }
@@ -721,6 +852,10 @@ export default function NodeGraph({
     g.current = graph;
     l.current = layout;
     gs.current = graphics;
+
+
+    //++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+    selectedPath[ngd] = [];
 
     // Create Event handlers
     const events = Viva.Graph.webglInputEvents(graphics, graph);

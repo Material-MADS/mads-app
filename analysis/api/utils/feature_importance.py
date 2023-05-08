@@ -37,7 +37,7 @@ def get_feature_importance(data):
     dataset = data['data']
     df = pd.DataFrame(dataset)
 
-    logger.info(df)
+    # logger.info(df)
 
     df_train = df[train_columns]
     X = df_train.values
@@ -68,7 +68,7 @@ def get_feature_importance(data):
     result['features'] = features
     result['importance'] = importance
 
-    logger.info(result)
+    # logger.info(result)
 
     return result
 #-------------------------------------------------------------------------------------------------

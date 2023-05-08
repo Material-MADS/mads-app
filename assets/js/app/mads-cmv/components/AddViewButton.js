@@ -39,17 +39,20 @@ for(var i = 0; i < allAvaialableViews.length; i++){
 }
 
 const startId = 1;
+const catStr = "Category: ";
+const catColors = ["MediumBlue", "OrangeRed", "HotPink", "DarkGreen", "DarkMagenta", "DarkRed", "GoldenRod", "Black", "Olive", "Sienna"];
 
 let key = 0;
 const options = [];
 for(let i = 0; i < uniqueCategories.length; i++){
   if (allAvaialableViews[i].length > 0) {
     key += 1;
-    options.push({ children: <i>{uniqueCategories[i]}</i>, disabled: true, key });
+    options.push({ children: <i>{catStr + uniqueCategories[i]}</i>, disabled: true, key, style: {backgroundColor: catColors[i], color: "White", fontWeight: "bold", textDecoration: "underline", fontSize: "18px"} });
     const list = allAvaialableViews[i].map((v) => ({
       text: v.name + ((v.devStage != undefined && v.devStage != "" && v.devStage != "Stable Release") ? " (** " + v.devStage + " **)" : "") + ((v.version != undefined && v.version != 1) ? " [v." + v.version + "]" : ""),
       value: v.type,
       key: v.type,
+      style: {color: catColors[i]},
     }));
     Array.prototype.push.apply(options, list);
   }
@@ -78,6 +81,8 @@ class AddViewButton extends React.Component {
     const { selected } = this.state;
     const { actions, views } = this.props;
 
+    this.setState({ selected: null });
+
     // create new id
     const id = createNewId(views, startId);
     const view = createView(selected, id);
@@ -105,6 +110,7 @@ class AddViewButton extends React.Component {
         <Header content="Select View" />
         <Modal.Content>
           <Dropdown
+            onKeyDown={(e) => {if(e.keyCode==13 && this.state.selected != null){this.onOk();}}}
             fluid
             selection
             search
