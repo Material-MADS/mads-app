@@ -44,6 +44,7 @@ import NodeGraphView from './NodeGraphView';
 import RegressionView from './Regression';
 import ClassificationView from './Classification';
 import TensorFlowView from './TensorFlow';
+import GaussianProcessView from './GaussianProcess';
 
 // Static Data Visual Support
 import PeriodicTableView from './PeriodicTable';
@@ -101,6 +102,31 @@ const config = [
           height: 400,
         },
       },
+    },
+  },
+  //------------------------------------------
+
+  // Gaussian Process - A 3-dimensional Scatter Plot
+  //------------------------------------------
+  {
+    type: 'gaussianProcess',
+    name: 'Gaussian Process',
+    category: 'Machine Learning',
+    version: 0.8,
+    devStage: "Beta",
+    component: GaussianProcessView,
+    settings: {
+      featureColumns: [],
+      targetColumn: '',
+      options: {
+        colorMap: 'Category20c',
+        extent: { width: 450, height: 450 },
+        camera: {
+          eye: {x: 1.25, y: 1.25, z: 1.25},
+          up: {x: 0, y: 0, z: 1},
+          center: {x: 0, y: 0, z: 0},
+        },
+      }
     },
   },
   //------------------------------------------
