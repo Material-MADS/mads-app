@@ -53,6 +53,7 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
 
+
     // filter out non-existing columns & colorTags
     if (values.filter) {
       const colorTagIds = colorTags.map((c) => c.id);
