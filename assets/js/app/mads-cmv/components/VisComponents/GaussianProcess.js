@@ -21,6 +21,7 @@
 //-------------------------------------------------------------------------------------------------
 import React, { useEffect, useRef } from "react";
 import { useSelector } from 'react-redux'
+import { Card } from 'semantic-ui-react';
 import PropTypes from "prop-types";
 
 import _ from 'lodash';
@@ -71,35 +72,55 @@ function getChartData(data, options, information, featureColumns, targetColumn) 
       z: [[0.1, 0.2]],  
     },];
   } else {
-    if (featureColumns.length === 1) {
-      const x = featureColumns[0].column;
+    if (information === 'Proposed experimental conditions') {
       var cData = [{
-        type: 'scatter',
-        x: data.feature_columns[x],
-        y: data[targetColumn][information],
-        mode: 'lines'
+        type: 'table',
+        header: {
+          values: data.bayesian_optimization.header_values,
+          align: "center",
+          line: {width: 1, color: 'black'},
+          fill: {color: "grey"},
+          font: {family: "Arial", size: 13, color: "white"}
+        },
+        cells: {
+          values: data.bayesian_optimization.values,
+          align: "center",
+          line: {color: "black", width: 1},
+          font: {family: "Arial", size: 12, color: ["black"]},
+          
+        }
       }]
-    }
-    else if (featureColumns.length === 2){
-      const x = featureColumns[0].column;
-      const y = featureColumns[1].column;
-      var cData = [{
-        type: 'surface',
-        x: data.feature_columns[x],
-        y: data.feature_columns[y],
-        z: data[targetColumn][information],
-      }]
-    }
-    else {
-      let dimensions = [];
-      Object.keys(data.feature_columns).forEach(key => {
-        dimensions.push({label: key, values: data.feature_columns[key]});
-      })
-      dimensions.push({label: information, values: data[targetColumn][information]});
-      var cData = [{
-        type: 'parcoords',
-        dimensions: dimensions,
-      }];
+    } else {
+      if (featureColumns.length === 1) {
+        const x = featureColumns[0].column;
+        var cData = [{
+          type: 'scatter',
+          x: data.feature_columns[x],
+          y: data[targetColumn][information],
+          mode: 'lines'
+        }]
+      }
+      else if (featureColumns.length === 2){
+        const x = featureColumns[0].column;
+        const y = featureColumns[1].column;
+        var cData = [{
+          type: 'surface',
+          x: data.feature_columns[x],
+          y: data.feature_columns[y],
+          z: data[targetColumn][information],
+        }]
+      }
+      else {
+        let dimensions = [];
+        Object.keys(data.feature_columns).forEach(key => {
+          dimensions.push({label: key, values: data.feature_columns[key]});
+        })
+        dimensions.push({label: information, values: data[targetColumn][information]});
+        var cData = [{
+          type: 'parcoords',
+          dimensions: dimensions,
+        }];
+      }
     }
   }
   return cData;
@@ -135,71 +156,82 @@ function getChartLayout(data, options, currentDataSourceName, information, featu
       margin: margin,
     }
   } else {
-    if (featureColumns.length === 1) {
+    if (information === 'Proposed experimental conditions') {
       var cLayout = {
         autosize: true,
+        title: "The top 10% percentile of Expected Improvement",
         width: params.extent.width,
         height: params.extent.height,
-        title: {
-          text: params.title + " <br> " + information,
-        },
-        xaxis: {
-          title: featureColumns[0].column,
-          nticks: 10
-        },
-        yaxis: {
-          title: targetColumn,
-          nticks: 10,
-        },
-        modebar: modebar,
-      }
-    } else if (featureColumns.length === 2) {
-      var cLayout = {
-        autosize: true,
-        width: params.extent.width,
-        height: params.extent.height,
-        title: {
-          text: params.title + " <br> " + information,
-        },
-        scene: {
-          xaxis: {
-            title: 'x:' + featureColumns[0].column,
-            nticks: 10,
-          },
-          yaxis: {
-            title: 'y:' + featureColumns[1].column,
-            nticks: 10,
-          },
-          zaxis: {
-            title: 'z:' + targetColumn,
-            nticks: 10,
-          },
-          camera: {
-            eye: params.camera.eye,
-            up: params.camera.up,
-            center: params.camera.center,
-          },
-        },
         modebar: modebar,
         margin: margin,
-      };
+
+      }
     } else {
-      var cLayout = {
-        autosize: true,
-        width: 750,
-        height: params.extent.height,
-        title: {
-          text: params.title + " <br> " + targetColumn,
-        },
-        modebar: modebar,
-      };
+      if (featureColumns.length === 1) {
+        var cLayout = {
+          autosize: true,
+          width: params.extent.width,
+          height: params.extent.height,
+          title: {
+            text: params.title + " <br> " + information,
+          },
+          xaxis: {
+            title: featureColumns[0].column,
+            nticks: 10
+          },
+          yaxis: {
+            title: targetColumn,
+            nticks: 10,
+          },
+          modebar: modebar,
+        }
+      } else if (featureColumns.length === 2) {
+        var cLayout = {
+          autosize: true,
+          width: params.extent.width,
+          height: params.extent.height,
+          title: {
+            text: params.title + " <br> " + information,
+          },
+          scene: {
+            xaxis: {
+              title: 'x:' + featureColumns[0].column,
+              nticks: 10,
+            },
+            yaxis: {
+              title: 'y:' + featureColumns[1].column,
+              nticks: 10,
+            },
+            zaxis: {
+              title: 'z:' + targetColumn,
+              nticks: 10,
+            },
+            camera: {
+              eye: params.camera.eye,
+              up: params.camera.up,
+              center: params.camera.center,
+            },
+          },
+          modebar: modebar,
+          margin: margin,
+        };
+      } else {
+        var cLayout = {
+          autosize: true,
+          width: params.extent.width,
+          height: params.extent.height,
+          title: {
+            text: params.title + " <br> " + targetColumn,
+          },
+          modebar: modebar,
+        };
+      }
+
     }
   }
 
   return cLayout;
 }
-//-------------------------------------------------------------------------------------------------
-
 
 //-------------------------------------------------------------------------------------------------
 // Get Chart Configuration
@@ -238,10 +270,13 @@ export default function GaussianProcess({
 
   // Initiation of the VizComp
   const rootNode = useRef(null);
+  let internalData = data
   let internalOptions = options;
   let internalInformation = information;
   let internalFeatureColumns = featureColumns;
   let internalTargetColumn = targetColumn;
+
+
 
   let currentDataSourceName = "";
   try {
@@ -253,9 +288,9 @@ export default function GaussianProcess({
   // Create the VizComp based on the incoming parameters
   const createChart = async () => {
     if(actions){ actions.setLoadingState(true); }
-    let sData = getChartData(data, internalOptions, internalInformation, internalFeatureColumns, internalTargetColumn);
-    let layout = getChartLayout(data, internalOptions, currentDataSourceName, internalInformation, internalFeatureColumns, internalTargetColumn);
-    let config = getChartConfig(internalOptions);
+    let sData = getChartData(internalData, internalOptions, internalInformation, internalFeatureColumns, internalTargetColumn);
+    let layout = getChartLayout(internalData, internalOptions, currentDataSourceName, internalInformation, internalFeatureColumns, internalTargetColumn);
+    let config = getChartConfig(internalOptions)
 
     loadingActions.setLoadingState(true);
     $(function(){
@@ -266,7 +301,7 @@ export default function GaussianProcess({
         if(actions){ actions.setLoadingState(false); }
       });
     });
-  };
+    };
 
   // Clear away the VizComp
   const clearChart = () => { /* Called when component is deleted */ };
@@ -307,9 +342,7 @@ export default function GaussianProcess({
 
   // Add the VizComp to the DOM
   return (
-    <div>
-      <div ref={rootNode} />
-    </div>
+    <div ref={rootNode} />
   );
 }
 //-------------------------------------------------------------------------------------------------

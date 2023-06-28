@@ -5,6 +5,7 @@
 // ________________________________________________________________________________________________
 // Authors: Jun Fujima (Former Lead Developer) [2018-2021]
 //          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+//          Yoshiki Hasukawa
 // ________________________________________________________________________________________________
 // Description: This is the Storybook test displays for the React Component for the Visualization
 //              View of the 'GaussianProcess' module

@@ -39,7 +39,6 @@ export default class GaussianProcessView extends withCommandInterface(GaussianPr
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
-
     // filter out non-existing columns & colorTags
     if (values.filter) {
       const colorTagIds = colorTags.map((c) => c.id);
@@ -79,6 +78,7 @@ export default class GaussianProcessView extends withCommandInterface(GaussianPr
     let data = {};
 
     if (dataset[id]) {
+
       if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn)) {
         data = dataset[id];
       }
