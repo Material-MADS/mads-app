@@ -31,7 +31,7 @@ import _, { values } from 'lodash';
 import noImg from '../VisComponents/images/noimage.jpg';
 import blockedImg from '../VisComponents/images/blockedImg.png';
 
-// Info Help Images 
+// Info Help Images
 import info_grayscale from './images/ImageView/info_scikitimg_grayscale.png';
 import info_rotate1 from './images/ImageView/info_scikitimg_rotate1.png';
 import info_rotate2 from './images/ImageView/info_scikitimg_rotate2.png';
@@ -41,26 +41,26 @@ import info_colortint from './images/ImageView/info_scikitimg_colortint.png';
 import info_invertcolor from './images/ImageView/info_scikitimg_invertcolor.png';
 import info_gamma1 from './images/ImageView/info_scikitimg_gamma1.png';
 import info_gamma2 from './images/ImageView/info_scikitimg_gamma2.png';
-import info_contrast from '../VisComponents/images/noimage.jpg'
-import info_sharpen from '../VisComponents/images/noimage.jpg'
-import info_denoise from '../VisComponents/images/noimage.jpg'
-import info_erosion from '../VisComponents/images/noimage.jpg'
-import info_hsv from '../VisComponents/images/noimage.jpg'
-import info_regmaxfil from '../VisComponents/images/noimage.jpg'
-import info_convexhull from '../VisComponents/images/noimage.jpg'
-import info_ridgedetect1 from '../VisComponents/images/noimage.jpg'
-import info_ridgedetect2 from '../VisComponents/images/noimage.jpg'
-import info_swirl from '../VisComponents/images/noimage.jpg'
-import info_rag from '../VisComponents/images/noimage.jpg'
-import info_thresholding from '../VisComponents/images/noimage.jpg'
-import info_chanvesesegm from '../VisComponents/images/noimage.jpg'
-import info_switchcolor from '../VisComponents/images/noimage.jpg'
-import info_flip from '../VisComponents/images/noimage.jpg'
-import info_circleframe from '../VisComponents/images/noimage.jpg'
-import info_skeletonize from '../VisComponents/images/noimage.jpg'
-import info_objdetect from '../VisComponents/images/noimage.jpg'
-import info_contourfinding from '../VisComponents/images/noimage.jpg'
-import info_florescent from '../VisComponents/images/noimage.jpg'
+import info_contrast from './images/ImageView/info_scikitimg_contrast.png';
+import info_sharpen from './images/ImageView/info_scikitimg_sharpen.png';
+import info_denoise from './images/ImageView/info_scikitimg_denoise.png';
+import info_erosion from './images/ImageView/info_scikitimg_erosion.png';
+import info_hsv from './images/ImageView/info_scikitimg_hsv.png';
+import info_regmaxfil from './images/ImageView/info_scikitimg_regmaxfil.png';
+import info_convexhull from './images/ImageView/info_scikitimg_convexhull.png';
+import info_ridgedetect1 from './images/ImageView/info_scikitimg_ridgedetect1.png';
+import info_ridgedetect2 from './images/ImageView/info_scikitimg_ridgedetect2.png';
+import info_swirl from './images/ImageView/info_scikitimg_twirl.png';
+import info_rag from './images/ImageView/info_scikitimg_rag.png';
+import info_thresholding from './images/ImageView/info_scikitimg_thresholding.png';
+import info_chanvesesegm from './images/ImageView/info_scikitimg_chanvesesegm.png';
+import info_switchcolor from './images/ImageView/info_scikitimg_switchcolor.png';
+import info_flip from './images/ImageView/info_scikitimg_flip.png';
+import info_circleframe from './images/ImageView/info_scikitimg_circleframe.png';
+import info_skeletonize from './images/ImageView/info_scikitimg_skeletonize.png';
+import info_objdetect from './images/ImageView/info_scikitimg_objdetect.png';
+import info_contourfinding from './images/ImageView/info_scikitimg_contourfinding.png';
+import info_florescent from './images/ImageView/info_scikitimg_florescent.png';
 
 
 //-------------------------------------------------------------------------------------------------
