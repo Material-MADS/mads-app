@@ -31,7 +31,7 @@ import _, { values } from 'lodash';
 import noImg from '../VisComponents/images/noimage.jpg';
 import blockedImg from '../VisComponents/images/blockedImg.png';
 
-// Info Help Images
+// Info Help Images 
 import info_grayscale from './images/ImageView/info_scikitimg_grayscale.png';
 import info_rotate1 from './images/ImageView/info_scikitimg_rotate1.png';
 import info_rotate2 from './images/ImageView/info_scikitimg_rotate2.png';
