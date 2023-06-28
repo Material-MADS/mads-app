@@ -32,6 +32,7 @@ from .bar import get_bar
 from .line import get_line
 from .scikit_image_manip import get_scikit_image_manip
 from .node_graph import get_node_graph
+from .gaussian_process import get_gaussian_process
 
 
 import logging
@@ -57,6 +58,7 @@ processor_map = {
     'line': get_line,
     'imageView': get_scikit_image_manip,
     'nodeGraph': get_node_graph,
+    'gaussianProcess': get_gaussian_process,
 }
 
 
