@@ -74,6 +74,7 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
     const df = new DataFrame(dataset.main.data);
     const tc = df.get(newValues.targetColumn);
     data[newValues.targetColumn] = tc.values.toArray();
+
     newValues.featureColumns.forEach((c) => {
       const fc = df.get(c);
       data[c] = fc.values.toArray();
