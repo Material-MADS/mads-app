@@ -66,7 +66,7 @@ export default class RegressionView extends withCommandInterface( RegressionVis,
       const filteredColumns = values.featureColumns.filter((f) =>
         columns.includes(f)
       );
-      newValues.featureColumns = filteredColumns;    
+      newValues.featureColumns = filteredColumns;
     }
 
     // extract data
