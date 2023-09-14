@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'HeatMap' module
 // ------------------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ import { cmMax } from '../Views/FormUtils';
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Heat Map",
-  extent: { width: undefined, height: 400 },
+  extent: { width: 500, height: 400 },
   x_range: [-1.0, 1.0],
   y_range: [-1.0, 1.0],
   colorMap: 'Category10',
@@ -51,7 +51,7 @@ const defaultOptions = {
 //-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  const tools = "save,pan,box_zoom,reset,wheel_zoom";
+  const tools = "save,pan,tap,box_select,box_zoom,reset,wheel_zoom";
 
   const fig = Bokeh.Plotting.figure({
     tools,

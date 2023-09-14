@@ -1,24 +1,21 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'Clustering' View
+// Description: This is the Inner workings and Content Manager Controler of the
+//              'K-Means Clustering' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Clustering' is the manager of all current input that controls the final view of the
+// Notes: 'K-Means Clustering' is the manager of all current input that controls the final view of the
 //         this specific case of a 'BarChart' visualization component.
 // ------------------------------------------------------------------------------------------------
 // References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
 //             Internal PieChart & PieForm libs,
 =================================================================================================*/
 
-//*** TODO: Could this be deleted, and just leave the BarChart with some new settings to replace them
-
-// Manages data selection changes in the view
-  // Manages config settings changes (passed by the connected form) in the view
-  // Manages data changes in the view
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
@@ -28,27 +25,16 @@ import { DataFrame } from 'pandas-js';
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import BarChart from '../VisComponents/BarChart';
+import ClusteringVis from '../VisComponents/ClusteringVis';
 import ClusteringForm from './ClusteringForm';
 
 //-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
-// Custom Settings to pass to the VisComp
-//-------------------------------------------------------------------------------------------------
-const settings = {
-  options: {
-    title: 'Clustering',
-  },
-};
-//-------------------------------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ClusteringView extends withCommandInterface( BarChart, ClusteringForm, settings ) {
+export default class ClusteringView extends withCommandInterface( ClusteringVis, ClusteringForm ) {
 
   // Manages data selection changes in the view
   handleSelectionChange = (indices) => {
@@ -85,27 +71,32 @@ export default class ClusteringView extends withCommandInterface( BarChart, Clus
       newValues.filter = filteredFilters;
     }
 
-    // filter out featureColumns
-    const columns = this.getColumnOptionArray();
-    if (values.featureColumns) {
-      const filteredColumns = values.featureColumns.filter((f) =>
-        columns.includes(f)
-      );
-      newValues.featureColumns = filteredColumns;
-    }
+    var data = {};
+    if(newValues.visType == "Bar Chart"){
+      // filter out featureColumns
+      const columns = this.getColumnOptionArray();
+      if (values.featureColumns) {
+        const filteredColumns = values.featureColumns.filter((f) =>
+          columns.includes(f)
+        );
+        newValues.featureColumns = filteredColumns;
+      }
 
-    // extract data
-    const data = {};
-    const df = new DataFrame(dataset.main.data);
-    newValues.featureColumns.forEach((c) => {
-      const fc = df.get(c);
-      data[c] = fc.values.toArray();
-    });
+      // extract data
+      const df = new DataFrame(dataset.main.data);
+      newValues.featureColumns.forEach((c) => {
+        const fc = df.get(c);
+        data[c] = fc.values.toArray();
+      });
+    }
+    else{
+      if (!values.colorAssignmentEnabled) { newValues.mappings.color = ''; }
+      data = [...dataset.main.data];
+    }
 
     newValues = convertExtentValues(newValues);
 
     actions.sendRequestViewUpdate(view, newValues, data);
-    // updateView(id, newValues);
   };
 
   // Manages data changes in the view
@@ -115,17 +106,33 @@ export default class ClusteringView extends withCommandInterface( BarChart, Clus
     const counts = [];
 
     if (dataset[id]) {
-      const cids = dataset[id].cluster;
-      const cidsStr = [];
-      const noc = view.settings.numberOfClusters;
-      for (let i = 0; i < noc; i++) {
-        const c = cids.filter((x) => x === i).length;
-        counts.push(c);
-        cidsStr.push(i.toString());
+      var testValue = this.props.view.settings.featureColumns[0]
+      if (dataset.main.schema.fields.some(e => e.name === testValue)) {
+        data.visType = dataset[id].vis_type
+
+        if(data.visType == "Bar Chart"){
+          const cids = dataset[id].cluster;
+          const cidsStr = [];
+          const noc = view.settings.numberOfClusters;
+          for (let i = 0; i < noc; i++) {
+            const c = cids.filter((x) => x === i).length;
+            counts.push(c);
+            cidsStr.push(i.toString());
+          }
+
+          data.cids = cidsStr;
+          data.counts = counts;
+        }
+        else{
+          data.cluster = dataset[id].cluster;
+          data.data = dataset[id].data;
+        }
+      }
+      else{
+        data["resetRequest"] = true;
       }
 
-      data.cids = cidsStr;
-      data.counts = counts;
+
     }
 
     return data;

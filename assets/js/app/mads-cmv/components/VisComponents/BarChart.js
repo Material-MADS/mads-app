@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'BarChart' module
 // ------------------------------------------------------------------------------------------------
@@ -23,15 +24,8 @@ import { getRGBAColorStrFromAnyColor, RGB_Linear_Blend } from './VisCompUtils';
 
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from '@bokeh/bokehjs';
-// import { DataFrame } from 'pandas-js';
-// import _ from 'lodash';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
-import gPalette from 'google-palette';
-// import * as gPalette from 'google-palette';
-// import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-// import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-// const Category10_10 = Category10.Category10_10;
 
 //-------------------------------------------------------------------------------------------------
 

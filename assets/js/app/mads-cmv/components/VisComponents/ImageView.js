@@ -1,8 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'ImageView' module
 // ------------------------------------------------------------------------------------------------

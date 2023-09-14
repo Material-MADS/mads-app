@@ -2,9 +2,10 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
 # ________________________________________________________________________________________________
 # Description: (Django) the base part template of every page of the web application
 # ------------------------------------------------------------------------------------------------
@@ -113,7 +114,11 @@
     <a class="item {% if request.resolver_match.namespace == 'prediction' %}active{% endif %}"
       href="{% url 'prediction:index' %}" href="{% url 'prediction:index' %}">Prediction</a>
     <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}" href="{% url 'docs:index' %}"
-      href="{% url 'docs:index' %}" target="_blank">Docs</a>
+      href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
+    <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}" href="{% url 'more:index' %}"
+      href="{% url 'more:index' %}">Download & More</a>
+
+
 
     {% block sidebar %}{% endblock %}
 
@@ -148,7 +153,9 @@
       <a class="item {% if request.resolver_match.namespace == 'prediction' %}active{% endif %}"
         href="{% url 'prediction:index' %}">Prediction</a>
       <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
-        href="{% url 'docs:index' %}" target="_blank">Docs</a>
+        href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
+      <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
+        href="{% url 'more:index' %}">Download & More</a>
 
 
       <div class="right item">

@@ -1,8 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'ImageView' View, driven by
 //              ReduxForm
@@ -1291,7 +1292,7 @@ const ImageViewForm = (props) => {
             />
           </Form.Field>
           <Form.Field width={3}>
-            <label>Object Detection<Popup
+            <label>HOG - Object Detect<Popup
                 trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#hog" target="_blank">🛈</a></span>}
                 size='small'
                 wide='very'

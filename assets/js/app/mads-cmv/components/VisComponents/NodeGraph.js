@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'NodeGraph' module
 // ------------------------------------------------------------------------------------------------
@@ -22,8 +22,8 @@ import { useSelector } from 'react-redux'
 import { Popup, Button } from 'semantic-ui-react';
 
 import Viva from 'vivagraphjs';
-// import cytoscape from "cytoscape";
-// import * as d3 from 'd3';
+import ngraphPath from 'ngraph.path';
+
 import PropTypes from "prop-types";
 
 import './NodeGraphStyles.css';
@@ -35,12 +35,9 @@ import isSelectedImg from './images/isSelectedImg.png';
 
 import { Turbo256 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 
+
+
 //-------------------------------------------------------------------------------------------------
-
-
-
-//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
-let selectedPath = {};
 
 
 //-------------------------------------------------------------------------------------------------
@@ -55,6 +52,18 @@ const defaultOptions = {
   // bkgGradientEnabled: false,
   // bkgGradientCols: ["white", "red", "orange", "yellow"],
 };
+
+const graphStyles = {
+  nodeDefault: 10,
+  nodeSelected: 20,
+  selectedNodeColor: Viva.Graph.View._webglUtil.parseColor("#39FF14"),
+  lineDefaultColor: Viva.Graph.View._webglUtil.parseColor("#999999")
+};
+
+let spMemData = [];
+var spEdgeMem = [];
+let selectedPath = {};
+let domLabels = {};
 //-------------------------------------------------------------------------------------------------
 
 
@@ -468,13 +477,45 @@ const generateDOMLabels = function (graph, container, isLabelsEnabled, graphics)
 }
 //-------------------------------------------------------------------------------------------------
 
-//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
+
+//-------------------------------------------------------------------------------------------------
+// Generate Labels for each Node and Link in the graph if requested
+//-------------------------------------------------------------------------------------------------
+const generateDOMLabelsForShortestPath = function (graph, container, graphics, pathNodes) {
+  var labels = Object.create(null);
+  $(container).find('span').not("#networkTitle").remove();
+
+  graph.forEachNode(function(node) {
+    if (pathNodes.includes(node.id)) {
+      var index = pathNodes.indexOf(node.id);
+      var label = document.createElement('span');
+      label.classList.add('nodeLabel');
+      label.innerText = index+1;
+      labels[node.id] = label;
+      container.appendChild(label);
+    }
+  });
+
+  graphics.placeNode(function(ui, pos) {
+    if (pathNodes.includes(ui.node.id)) {
+      var nodeSize = ui.size;
+      var domPos = { x: pos.x - (nodeSize/4), y: pos.y - (nodeSize/2) };
+      graphics.transformGraphToClientCoordinates(domPos);
+      var nodeId = ui.node.id;
+      var labelStyle = labels[nodeId].style;
+      labelStyle.left = domPos.x + 'px';
+      labelStyle.top = domPos.y + 'px';
+    }
+  });
+}
+//-------------------------------------------------------------------------------------------------
+
 
 //------------------------------------------------------------------------------------------------
 // Reset Path Selection
 // This will reset the selections of nodes and paths
 //------------------------------------------------------------------------------------------------
-const resetPathSelection = async (graphics, container, ngd, forceReset) => {
+const resetPathSelection = async (graphics, container, ngd) => {
   if(spEdgeMem.length !== 0){
     spEdgeMem.forEach((l) => {
       var linkUI = graphics.current.getLinkUI(l);
@@ -490,17 +531,13 @@ const resetPathSelection = async (graphics, container, ngd, forceReset) => {
       var nUI = graphics.current.getNodeUI(n[0]);
       nUI.color = n[1]
       nUI.size = n[2];
-      try {
-        container.removeChild(domLabels[n[0]]);
-      } catch (error) {
-        // Do nothing
-      }
     });
+    $(container).find('span').not("#networkTitle").remove();
     spMemData = [];
     domLabels = {};
   }
 
-  if(selectedPath[ngd] != undefined && selectedPath[ngd].length == 2 || forceReset){
+  if(selectedPath[ngd] != undefined && selectedPath[ngd].length == 2){
     selectedPath[ngd].forEach((n) => {
       var nUI = graphics.current.getNodeUI(n[0]);
       nUI.color = n[1]
@@ -512,67 +549,49 @@ const resetPathSelection = async (graphics, container, ngd, forceReset) => {
 //------------------------------------------------------------------------------------------------
 
 
-//++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
-
 //------------------------------------------------------------------------------------------------
 // Get Shortest Path
 // This will contact the server for calculating the shortest path between two nodes and return it
 //------------------------------------------------------------------------------------------------
-const getShortestPath = async (ctx, graphics, graph, container, sm) => {
-  const url = encodeURI(`${apiRoot}/shortest_path/${ctx[0]}/${ctx[1]}/${ctx[2]}`);
+const getShortestPath = async (fromNodeId, toNodeId, graphics, graph, container, renderer) => {
+  let pathFinder = ngraphPath.aStar(graph);
+  let foundPath = pathFinder.find(fromNodeId, toNodeId);
 
-  const response = await fetch(url);
-  const spData = await response.json();
+  spEdgeMem = [];
+  var indexLabelTxt = 1;
+  foundPath.forEach((n, index) => {
+    spMemData.push([n.id, n.data.color, n.data.size, index+1]);
+    var nUI = graphics.getNodeUI(n.id);
+    nUI.color = Viva.Graph.View._webglUtil.parseColor("#FF00FF");
+    nUI.size = 20;
 
-  if(spData == "FAIL"){
-    resetPathSelection(graphics, container, true);
-    sm[0]("Invalid Nodes Selected");
-    sm[1]("An exception occurred, probably because one of the nodes were not connected to anything");
-    sm[2](true);
-  }
-  else{
-    domLabels = generateDOMLabels(
-      graph.current,
-      container.current,
-      spData
-    );
-
-    spEdgeMem = [];
-    var indexLabelTxt = 1;
-    spData.forEach((n, index) => {
-      var nUI = graphics.current.getNodeUI(n);
-      spMemData.push([n, nUI.color, nUI.size, index+1])
-      nUI.color = Viva.Graph.View._webglUtil.parseColor("#FF00FF");
-      nUI.size = 20;
-      domLabels[n].innerText = indexLabelTxt++;
-
-      var thisNode = graph.current.getNode(n);
-      for (let i = 0; i < thisNode.links.length; i++) {
-        for (let j = 0; j < spData.length; j++) {
-          if((n == thisNode.links[i].fromId && spData[j] == thisNode.links[i].toId) || (n == thisNode.links[i].toId && spData[j] == thisNode.links[i].fromId)){
-            var alreadyExist = false;
-            for(let k = 0; k < spEdgeMem.length; k++){
-              if(spEdgeMem[k] == thisNode.links[i].id){
-                alreadyExist = true;
-                break;
-              }
+    var thisNode = graph.getNode(n.id);
+    for (let i = 0; i < thisNode.links.length; i++) {
+      for (let j = 0; j < foundPath.length; j++) {
+        if((n.id == thisNode.links[i].fromId && foundPath[j].id == thisNode.links[i].toId) || (n.id == thisNode.links[i].toId && foundPath[j].id == thisNode.links[i].fromId)){
+          var alreadyExist = false;
+          for(let k = 0; k < spEdgeMem.length; k++){
+            if(spEdgeMem[k] == thisNode.links[i].id){
+              alreadyExist = true;
+              break;
             }
-            if(!alreadyExist){
-              spEdgeMem.push(thisNode.links[i].id);
-            }
+          }
+          if(!alreadyExist){
+            spEdgeMem.push(thisNode.links[i].id);
           }
         }
       }
-    });
-    spEdgeMem.forEach((l, index) => {
-      var linkUI = graphics.current.getLinkUI(l);
-      if (linkUI) {
-        linkUI.color = Viva.Graph.View._webglUtil.parseColor("#ff00ff");
-      }
-    });
-  }
+    }
+  });
+  spEdgeMem.forEach((l, index) => {
+    var linkUI = graphics.getLinkUI(l);
+    if (linkUI) {
+      linkUI.color = Viva.Graph.View._webglUtil.parseColor("#ff00ff");
+    }
+  });
 
-  return;
+  generateDOMLabelsForShortestPath(graph, container, graphics, (foundPath.map(item => item.id)).reverse());
+  renderer.rerender();
 };
 //------------------------------------------------------------------------------------------------
 
@@ -646,29 +665,24 @@ export default function NodeGraph({
   };
 
   const handleNodeSnglClick = (node, e) => {
-
-    //++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
     if(e.ctrlKey && e.altKey){
       e.preventDefault();
+      const cntnr = $(rootNode.current).find('#'+ngd)[0];
 
-      resetPathSelection(gs, $(rootNode.current).find('#'+ngd)[0], ngd);
+      resetPathSelection(gs, cntnr, ngd);
       resetSelection();
 
-      var nodeUI = graphics.current.getNodeUI(node.id);
+      var nodeUI = gs.current.getNodeUI(node.id);
       var thisNode = [node.id, nodeUI.color, nodeUI.size];
       selectedPath[ngd].push(thisNode);
       nodeUI.color = graphStyles.selectedNodeColor
-      nodeUI.size = 20;
+      nodeUI.size = 15;
 
       if(selectedPath[ngd].length == 2){
-        getShortestPath(([mapId]).concat([selectedPath[ngd][0][0], selectedPath[ngd][1][0]]), gs, g, $(rootNode.current).find('#'+ngd)[0], [setModalTitle, setModalBody, setOpenModal]);
+        getShortestPath(selectedPath[ngd][0][0], selectedPath[ngd][1][0], gs.current, g.current, cntnr, r.current);
       }
     }
     else if(e.ctrlKey){
-      var uri = 'https://www.google.com/search?q=' + node.id;
-      window.open(uri, '_blank');
-    }
-    else{
       resetSelection();
       selectedNodes.push(node.id);
       var nodeUI = gs.current.getNodeUI(node.id);
@@ -679,6 +693,13 @@ export default function NodeGraph({
         var relNodeUI = gs.current.getNodeUI(relatedNodeId);
         relNodeUI.color = 0xffbb00ff;
       }
+    }
+  };
+
+  const handleNodeDblClick = (node, e) => {
+    if(e.altKey){
+      var uri = 'https://www.google.com/search?q=' + node.id;
+      window.open(uri, '_blank');
     }
   };
 
@@ -712,7 +733,17 @@ export default function NodeGraph({
         <span id="networkTitle" style="position: absolute; font-weight: bold; font-family: Times New Roman; margin-left: 2px; margin-top: 2px; background-color: transparent;">${internalOptions.title}</span>
         <div class="graph-overlay"></div>
       </div>
-      <span style='font-size: 10px; font-weight: bold;'>Node click selects clicked node and directly related nodes. Unselect by clicking while holding the ALT-key<br>Hold CTRL-key while clicking on node to find out more about it.<br>Hold SHIFT-key while click drag the mouse to select multiple nodes. Unselect multi-select by doing the same outside the graph.</span>
+      <div name='instCont' style='width: ` + (parseInt(internalOptions.extent.width)-20) + `px; text-align: left; margin-top: -2px; line-height: 1.0; cursor: pointer;'>
+        <span name='molViewInstrHdr' style='font-size: 14px; font-weight: bold;'>
+          Click to show Full Instructions:</br>
+        </span>
+        <span name='instr' style='font-size: 10px; font-weight: normal; display: none;'>
+          Node click while holding CTRL-key selects clicked node and directly related nodes. Unselect by clicking while holding the ALT-key
+          <br>Hold SHIFT-key while click drag the mouse to select multiple nodes. Unselect multi-select by doing the same outside the graph.
+          <br>To find the shortest path between two nodes, click them, one after the other, while at the same time holding CTRL-key + ALT-key.
+          <br>Hold ALT-key while double-clicking on node to find out more about it.
+        </span>
+      </div>
     `);
 
     // --- VIVA GRAPH JS ---
@@ -853,8 +884,6 @@ export default function NodeGraph({
     l.current = layout;
     gs.current = graphics;
 
-
-    //++++++ GET THE SHORTEST PATH - UNDER DEV +++++++
     selectedPath[ngd] = [];
 
     // Create Event handlers
@@ -863,12 +892,13 @@ export default function NodeGraph({
     events.mouseLeave(handleMouseLeave);
     events.click(handleNodeSnglClick);
     // events.mouseMove(handleMouseMove);
-    // events.dblClick(handleNodeDblClick);
+    events.dblClick(handleNodeDblClick);
 
     const componentBackground = $(rootNode.current).parent().find("#"+ngd);
     componentBackground.off('click');
     componentBackground.on( "click", function (e) {
-      if(e.altKey){
+      if(e.altKey && !e.ctrlKey){
+        resetPathSelection(gs, $(rootNode.current).find('#'+ngd)[0], ngd);
         resetSelection();
       }
     });
@@ -888,6 +918,15 @@ export default function NodeGraph({
     viewWrapperCustomButton_ToggleLinkLabels.on( "click", function () { setLinkLabelEnabled((linkLabelEnabled) => !linkLabelEnabled); });
     setLinkLabelEnabled(false);
 
+
+    const toggleInstructions = $(rootNode.current).parent().parent().find("[name='instCont']");
+    toggleInstructions.off('click');
+    toggleInstructions.on( "click", function () {
+      var inst = $(rootNode.current).parent().parent().find("[name='instr']");
+      if(inst.is(":visible")){ $(rootNode.current).parent().parent().find("[name='instr']").hide(); }
+      else{ $(rootNode.current).parent().parent().find("[name='instr']").show(); }
+    });
+
     var multiSelectOverlay;
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Shift' && !multiSelectOverlay) { // shift key
@@ -900,7 +939,6 @@ export default function NodeGraph({
         multiSelectOverlay = null;
       }
     });
-
 
     // Multi Select Nodes
     //--------------------------------

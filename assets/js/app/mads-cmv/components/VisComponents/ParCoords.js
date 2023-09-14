@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'ParCoords' module
 // ------------------------------------------------------------------------------------------------
@@ -70,14 +71,7 @@ const headerStyle = {
 };
 //----------------------
 
-//----------------------
-const testData = [
-  [0, -0, 0, 0, 0, 1],
-  [1, -1, 1, 2, 1, 1],
-  [2, -2, 4, 4, 0.5, 1],
-  [3, -3, 9, 6, 0.33, 1],
-  [4, -4, 16, 8, 0.25, 1],
-];
+const pcMemory = {};
 //-------------------------------------------------------------------------------------------------
 
 
@@ -91,14 +85,24 @@ export default function ParCoordsPlot({
   colorTags,
   selectedIndices,
   onSelectedIndicesChange,
+  id,
+  tellWSSomething,
 }) {
 
   // Initiation of the VizComp
   const rootNode = useRef(null);
   const pcRef = useRef(null);
-  let selectedIndicesInternal = null;
+  let selectedIndicesInternal = [];
+  const uid = "pc_id_"+id;
 
   const color = `#${Category10_10[0].toString(16)}`;
+
+  if(!pcMemory[uid]){
+    pcMemory[uid] = options.extent.height | defaultStyle.height;
+  }
+
+  // style settings
+  const style = { ...defaultStyle};
 
   // Create the VizComp based on the incomming parameters
   const createChart = () => {
@@ -134,6 +138,8 @@ export default function ParCoordsPlot({
     pc.data();
 
     pc.data(modData)
+      .height(parseInt(options.extent.height) - 20)
+      .width(options.extent.width)
       .mode('queue')
       .hideAxis(['[index]'])
       .composite('darker')
@@ -162,7 +168,7 @@ export default function ParCoordsPlot({
 
       let selectedIndices = [];
       if (brushed.length == modData.length) {
-        selectedIndices = null;
+        selectedIndices = [];
       } else if (brushed.length == 0) {
         selectedIndices = [];
       } else {
@@ -171,14 +177,16 @@ export default function ParCoordsPlot({
           .to_json({ orient: 'records' });
       }
 
-      if (
-        onSelectedIndicesChange &&
-        !deepEqual(selectedIndices, selectedIndicesInternal)
-      ) {
+      if (onSelectedIndicesChange && !deepEqual(selectedIndices, selectedIndicesInternal)) {
         selectedIndicesInternal = selectedIndices;
         onSelectedIndicesChange(selectedIndices);
       }
     });
+
+    if(pcMemory[uid] != options.extent.height){
+      pcMemory[uid] = options.extent.height;
+      tellWSSomething({reloadWS: true});
+    }
   };
 
   // Create the chart when first mounted
@@ -192,7 +200,7 @@ export default function ParCoordsPlot({
   // Recreate the chart if the data and settings change
   useEffect(() => {
     updateChart();
-  }, [data, axes, colorTags]);
+  }, [data, axes, colorTags, options]);
 
   // Manage Color Tags
   useEffect(() => {
@@ -218,8 +226,6 @@ export default function ParCoordsPlot({
     }
   }, [colorTags]);
 
-  // style settings
-  const style = { ...defaultStyle };
   if (options.extent.width) {
     style.width = options.extent.width;
   }

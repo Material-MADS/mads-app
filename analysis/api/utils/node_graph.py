@@ -1,15 +1,15 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              node graph components
+#              'node graph' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
-#         allows serverside work for the 'bar' component.
+#         allows serverside work for the 'node graph' component.
 # ------------------------------------------------------------------------------------------------
 # References: logging libs
 #=================================================================================================
@@ -29,6 +29,11 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_node_graph(data):
+
+    #-------------------------------------------------------------------------------------------------
+    # THIS IS NOT USED AND CAN BE DELETED, BUT IN CASE WE NEED IT IN THE FUTURE, WE JUST LEAVE IT HERE
+    #-------------------------------------------------------------------------------------------------
+
     # logger.info(data['data'])
 
     # links = data['data']['linkList']

@@ -5,10 +5,10 @@
 # Authors: Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              pie components
+#              'ImageView' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
-#         allows serverside work for the 'pie' component.
+#         allows serverside work for the 'ImageView' component.
 # ------------------------------------------------------------------------------------------------
 # References: logging, numpy libs
 #=================================================================================================

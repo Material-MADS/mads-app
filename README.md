@@ -104,4 +104,4 @@ https://doi.org/10.1039/D0RE00098A
 
 [MIT License](LICENSE.txt)
 
-Copyright (c) 2023 MADS/CADS development team
+Copyright (c) 2018-present MADS/CADS development team

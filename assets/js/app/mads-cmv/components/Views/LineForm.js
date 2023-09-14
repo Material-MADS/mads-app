@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'Line' View,
 //              driven by ReduxForm
@@ -51,27 +51,42 @@ const setSubmitButtonDisable = (disableState) => {
 //=======================
 
 //=======================
-const validate = (values) => {
+const validate = (values, props) => {
+  if (values.mappings) {
+    if (values.mappings.xData) {
+      const testColumn = values.mappings.xData;
+      if(testColumn && !props.columns.some(e => e.value === testColumn)){
+        values.mappings.xData = undefined;
+        values.mappings.yData = undefined;
+        values.options.axisLabels = undefined;
+        values.options.XAxisLabel = undefined;
+        values.options.YAxisLabel = undefined;
+        values.options.legendLabel = undefined;
+        values.options.title = undefined;
+      }
+    }
+  }
+
   const errors = {
     mappings: {},
   };
   if (values.mappings) {
-    if (!values.mappings.measures) {
-      errors.mappings["measures"] = 'Required';
+    if (!values.mappings.yData) {
+      errors.mappings["yData"] = 'Required';
     }
-    if (values.mappings.measures && values.mappings.measures.length === 0) {
-      errors.mappings["measures"] = 'Required';
+    if (values.mappings.yData && values.mappings.yData.length === 0) {
+      errors.mappings["yData"] = 'Required';
     }
-    if (!values.mappings.dimension) {
-      errors.mappings["dimension"] = 'Required';
+    if (!values.mappings.xData) {
+      errors.mappings["xData"] = 'Required';
     }
   }
   else {
-    errors.mappings["measures"] = 'Required';
-    errors.mappings["dimension"] = 'Required';
+    errors.mappings["yData"] = 'Required';
+    errors.mappings["xData"] = 'Required';
   }
 
-  setSubmitButtonDisable( errors.mappings.measures || errors.mappings.dimension );
+  setSubmitButtonDisable( errors.mappings.yData || errors.mappings.xData );
 
   return errors;
 };
@@ -85,52 +100,6 @@ const tooBig = (value, values) => {
   return;
 }
 //=======================
-
-//=======================
-const barTypeOptions = ['Vertical', 'Horizontal'];
-const measureCalcMethodOpts = ['Total', 'Mean', 'Median', 'Max', 'Min'];
-const legendPosOpts = ['top_left', 'top_center', 'top_right', 'left', 'center', 'right', 'bottom_left', 'bottom_center', 'bottom_right'];
-
-const getCurrentlyAvailableColumns = function(type, columns, tvEnabled, tvGrLabel, tvGrMembers, tvSplCol, dataset){
-  var dimList = [...columns];
-
-  if(tvEnabled){
-    if(type == "D"){
-      if(tvGrMembers && tvGrMembers.length > 0){
-        dimList = dimList.filter(c => !tvGrMembers.includes(c.key));
-        const tvGrNameStr = (tvGrLabel && tvGrLabel != "") ? tvGrLabel : "Unnamed Transpose Group containing (" + tvGrMembers.map(c => `${c.key},`).join('') + ")"
-        dimList.push({key: tvGrNameStr, text: tvGrNameStr, value: tvGrNameStr})
-        if(tvSplCol && tvSplCol != ""){
-          dimList = dimList.filter(c => c.key != tvSplCol);
-        }
-      }
-    }
-    else if(type == "M"){
-      if(tvGrMembers && tvGrMembers.length > 0){
-        dimList = dimList.filter(c => !tvGrMembers.includes(c.key));
-        if(tvSplCol && tvSplCol != ""){
-          dimList = dimList.filter(c => c.key != tvSplCol);
-          const tvColSplit = dataset.main.data.map(a => ({key: a[tvSplCol].toString(), text: a[tvSplCol].toString(), value: a[tvSplCol].toString()}));
-          dimList = [...dimList, ...tvColSplit];
-        }
-      }
-    }
-    else if (type == "S"){
-      if(tvGrMembers && tvGrMembers.length > 0){
-        dimList = dimList.filter(c => !tvGrMembers.includes(c.key));
-      }
-    }
-  }
-
-  let seen = new Set();
-  var hasDuplicates = dimList.some(function(currentObject) { return seen.size === seen.add(currentObject.name).size; });
-  if(hasDuplicates){ dimList = ([...new Set(dimList.map(r => r.key))]).map(v => ({key: v, text: v, value: v}))}
-
-  return dimList;
-}
-//=======================
-
-//-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
@@ -157,6 +126,9 @@ const LineForm = (props) => {
     props: { style: '' },
   }));
 
+  initialValues.options.XAxisLabel = (initialValues.options.axisLabels && initialValues.options.axisLabels.length == 2) ? initialValues.options.axisLabels[0] : initialValues.options.XAxisLabel;
+  initialValues.options.YAxisLabel = (initialValues.options.axisLabels && initialValues.options.axisLabels.length == 2) ? initialValues.options.axisLabels[1] : initialValues.options.YAxisLabel;
+
   // input managers
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
@@ -166,133 +138,75 @@ const LineForm = (props) => {
     setValue(newVal);
   };
 
-  const [tvEnabled, toggleTVEnabled] = useState( initialValues.options.transposeEnabled );
-  const [tvGrMembers, setTVGrMembers] = useState( initialValues.options.transposeGroup );
-  const onTVGrChange = (newVal) => {  setTVGrMembers(newVal); };
-  const [tvGrLabel, settvGrLabel] = useState( initialValues.options.transposeGroupLabel );
-  const onTVGrLabelChange = (newVal) => { settvGrLabel(newVal); };
-  const [tvSplCol, setTVSplCol] = useState( initialValues.options.transposeSplitColumn );
-  const onTVSplChange = (newVal) => { setTVSplCol(newVal); };
-
-  const [dimensionHasDuplicates, setDHDValue] = useState( initialValues.options.dimHasDupli );
-  if(!initialValues.options.valCalcMethod){ initialValues.options.valCalcMethod = false };
-  if(!initialValues.options.dimHasDupli){ initialValues.options.dimHasDupli = false };
-  const onDimChange = (newVal) => {
-    let dimData = [];
-    if(tvEnabled && newVal == tvGrLabel){
-      dimData = [...tvGrMembers];
-    }
-    else{
-      dimData = dataset.main.data.map(a => a[newVal]);
-    }
-    const hasDupli = ((new Set(dimData)).size !== dimData.length);
-    setDHDValue(hasDupli);
-    props.change('options.dimHasDupli', hasDupli);
-    props.change('options.valCalcMethod', hasDupli ? "Mean" : false);
-  };
-
-  if(!initialValues.options.barType){ initialValues.options.barType = "Vertical" };
-
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
 
-      <Form.Field width={4}>
-        <label>Enable Transpose View  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This allows to engage with the data in a custom transposed state for better control of how to visualize the data.' size='small' />:</label>
-        <Field
-          name="options.transposeEnabled"
-          component={SemCheckbox}
-          toggle
-          onChange={(e, data) => { toggleTVEnabled(data); props.change('mappings.measures', []);}}
-        />
-      </Form.Field>
-      {tvEnabled && <div>
-        <Form.Field>
-          <label>Transpose Group Members <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Select Columns from the original data and group them for a transposed view.' size='small' />:</label>
-          <Field
-            name="options.transposeGroup"
-            component={MultiSelectDropdown}
-            placeholder="Transpose Group"
-            search
-            options={columns}
-            onChange={onTVGrChange}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Transpose Group Label <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='A collective name for the columns chosen above for the Transpose view (e.g. "Years", "Names" etc.' size='small' />:</label>
-          <Field
-            fluid
-            name="options.transposeGroupLabel"
-            component={Input}
-            placeholder="Transpose Group Label"
-            onChange={onTVGrLabelChange}
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Transpose Split Column <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The column that will be split up into Transpose "rows" in the new view and available as measure columns. If this column contains duplicate values, the measuremnts will need to be calculated accordingly.' size='small' /></label>
-          <Field
-            name="options.transposeSplitColumn"
-            component={SemanticDropdown}
-            placeholder="Transpose Split Column"
-            search
-            onChange={onTVSplChange}
-            options={getCurrentlyAvailableColumns("S", columns, tvEnabled, tvGrLabel, tvGrMembers, tvSplCol, dataset)}
-          />
-        </Form.Field>
-      </div>}
-
-      <hr />
       <Form.Field>
-        <label>Dimension <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This has to be a list of unique categorical values of string type (if numerical in nature it will be treated as strings) (If not unique, then some form of average of the measurements will be calculated in order to get one measurement per dimension)' size='small' /></label>
+        <label>X-Axis:</label>
         <Field
-          name="mappings.dimension"
+          name="mappings.xData"
           component={SemanticDropdown}
-          placeholder="Dimension"
+          placeholder="X-Axis"
           search
-          options={getCurrentlyAvailableColumns("D", columns, tvEnabled, tvGrLabel, tvGrMembers, tvSplCol, dataset)}
-          onChange={onDimChange}
+          options={columns}
         />
       </Form.Field>
-      {dimensionHasDuplicates && <div>
-        <Form.Field>
-        <label>Value Calculation Method <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Since your Dimension category value is not unique we need to do some calculations on those measurements which fall into the same category. Pick the one you prefer.' size='small' /></label>
-        <Field
-          name="options.valCalcMethod"
-          component={SemanticDropdown}
-          options={getDropdownOptions(measureCalcMethodOpts)}
-        />
-        </Form.Field>
-      </div>}
-
-      <input
-        type="hidden"
-        name="options.dimHasDupli"
-      />
 
       <Form.Field>
-        <label>Mesures  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='One or many lists of numerical measurements for the selected dimension' size='small' /></label>
+        <label>Y-Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='One column, or many (if data is of same type), of numerical data' size='small' />:</label>
         <Field
-          name="mappings.measures"
+          name="mappings.yData"
           component={MultiSelectDropdown}
-          placeholder="Mesures"
+          placeholder="Y-Axis"
           search
           warn={[ tooBig ]}
-          options={getCurrentlyAvailableColumns("M", columns, tvEnabled, tvGrLabel, tvGrMembers, tvSplCol, dataset)}
+          options={columns}
         />
       </Form.Field>
 
       <hr />
       <Form.Field>
-        <label>Filter</label>
+        <label>Title <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The Chart title. If none is provided, one will be created from the data information' size='small' />:</label>
         <Field
-          name="filter"
-          component={MultiSelectDropdown}
-          placeholder="ColorTags"
-          search
-          // trigger={<Label color={data.color}/>}
-          options={cTags}
+          fluid
+          name="options.title"
+          component={Input}
+          placeholder="Chart Title"
         />
       </Form.Field>
+      <Form.Group widths="equal">
+        <label>Labels:</label>
+        <Form.Field>
+          <label>X Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The X Axis Label. If none is provided, the x-axis column name will be used' size='small' />:</label>
+          <Field
+            fluid
+            name="options.XAxisLabel"
+            component={Input}
+            placeholder="X Axis Label"
+          />
+        </Form.Field>
+
+        <Form.Field>
+        <label>Y Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The Y Axis Label. If none is provided, the first y-axis column name will be used' size='small' />:</label>
+          <Field
+            fluid
+            name="options.YAxisLabel"
+            component={Input}
+            placeholder="Y Axis Label"
+          />
+        </Form.Field>
+
+        <Form.Field>
+          <label>Legend <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='If multiple lines are displayed, what will be the collective Label for them? (Time, Temp, Value, Price, Day etc?)' size='small' />:</label>
+          <Field
+            fluid
+            name="options.legendLabel"
+            component={Input}
+            placeholder="Legend Label"
+          />
+        </Form.Field>
+      </Form.Group>
 
       <hr />
       <Form.Group widths="equal">
@@ -315,25 +229,6 @@ const LineForm = (props) => {
       </Form.Group>
 
       <Form.Field>
-        <label>Line Direction:</label>
-        <Field
-          name="options.barType"
-          component={SemanticDropdown}
-          options={getDropdownOptions(barTypeOptions)}
-        />
-      </Form.Field>
-
-      <Form.Field>
-        <label>Legend Location:</label>
-        <Field
-          name="options.legendLocation"
-          component={SemanticDropdown}
-          placeholder="top_right"
-          options={getDropdownOptions(legendPosOpts)}
-        />
-      </Form.Field>
-
-      <Form.Field>
         <label>Color Palette (if number of bins exceed number of colors available in the palette, default palette will be used)</label>
         <Field
           name="options.colorMap"
@@ -351,6 +246,30 @@ const LineForm = (props) => {
         ))}
         <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
       </div>
+
+      <hr />
+      <Form.Group widths="equal">
+        <label>Styles:</label>
+        <Form.Field>
+          <label>Enable Different Line Styles <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Such as Solid, Dotted, Dashed etc.' size='small' />:</label>
+          <Field
+            name="options.lineStylesEnabled"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+
+        <Form.Field>
+          <label>Enable Data point Markers <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Draw a circle at each data point in the line.' size='small' />:</label>
+          <Field
+            name="options.lineMarkersEnabled"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+      </Form.Group>
+
+
     </Form>
   );
 };

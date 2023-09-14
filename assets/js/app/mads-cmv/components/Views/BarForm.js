@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'Bar' View,
 //              driven by ReduxForm
@@ -278,19 +279,6 @@ const BarForm = (props) => {
           search
           warn={[ tooBig ]}
           options={getCurrentlyAvailableColumns("M", columns, tvEnabled, tvGrLabel, tvGrMembers, tvSplCol, dataset)}
-        />
-      </Form.Field>
-
-      <hr />
-      <Form.Field>
-        <label>Filter</label>
-        <Field
-          name="filter"
-          component={MultiSelectDropdown}
-          placeholder="ColorTags"
-          search
-          // trigger={<Label color={data.color}/>}
-          options={cTags}
         />
       </Form.Field>
 
