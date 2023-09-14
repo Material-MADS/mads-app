@@ -1,14 +1,14 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Storybook test displays for the React Component for the Visualization
-//              View of the 'ImageView' module
+//              View of the 'TensorFlow' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ImageView' is a visualization component that displays any basic image file based on a
+// Notes: 'TensorFlow' is a visualization component that displays TensorFlow ML results based on a
 //        range of available properties.
 // ------------------------------------------------------------------------------------------------
 // References: React & storybook Libs, image test data, ImageView VizComp

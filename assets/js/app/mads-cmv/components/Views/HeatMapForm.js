@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'HeatMap' View, driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
@@ -17,9 +17,9 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Field, reduxForm } from 'redux-form';
-import { Form } from 'semantic-ui-react';
+import { Button, Form } from 'semantic-ui-react';
 
 import Input from '../FormFields/Input';
 import SemanticDropdown from '../FormFields/Dropdown';
@@ -87,6 +87,7 @@ const HeatMapForm = (props) => {
   const onCMChange = (event) => {
     setValue(event);
   };
+
 
   // The form itself, as being displayed in the DOM
   return (
@@ -163,6 +164,7 @@ const HeatMapForm = (props) => {
         ))}
         <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
       </div>
+
     </Form>
   );
 };

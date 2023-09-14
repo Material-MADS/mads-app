@@ -2,9 +2,10 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
 # ________________________________________________________________________________________________
 # Description: (Django) the template for the main Home entry page of the web application
 # ------------------------------------------------------------------------------------------------
@@ -175,7 +176,8 @@
         <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
         <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
         <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-        <a class="item" href="{% url 'docs:index' %}">Docs</a>
+        <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
+        <a class="item" href="{% url 'more:index' %}">Download & More</a>
         <div class="right menu">
           {% if user.is_authenticated %}
             <div class="item">{{ user.get_username }}</div>
@@ -202,7 +204,8 @@
       <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
       <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
       <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-      <a class="item" href="{% url 'docs:index' %}" target="_blank">Docs</a>
+      <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
+      <a class="item" href="{% url 'more:index' %}">Download & More</a>
 
       {% if user.is_authenticated %}
         <div class="item">{{ user.get_username }}</div>
@@ -227,7 +230,8 @@
             <a class="item" href="{% url 'datamanagement:index' %}">Data Management</a>
             <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
             <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
-            <a class="item" href="{% url 'docs:index' %}" target="_blank">Docs</a>
+            <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
+            <a class="item" href="{% url 'more:index' %}">Download & More</a>
             <div class="right item">
               {% if user.is_authenticated %}
                 <div class="ui inverted">{{ user.get_username }}</div>
@@ -275,12 +279,19 @@
         </div>
 
         <div class="ui padded text container segment">
-          <h4>Publication:</h4>
+          <h4>Publications:</h4>
           <div>
             Jun Fujima, Yuzuru Tanaka, Itsuki Miyazato, Lauren Takahashi, Keisuke Takahashi<br/>
             &#8216;Catalyst Acquisition by Data Science (CADS): a web-based catalyst informatics platform for discovering catalysts&#8217;<br/>
             React. Chem. Eng. (2020) 5 (5), 903-911.<br/>
-            <a href="https://doi.org/10.1039/D0RE00098A">https://doi.org/10.1039/D0RE00098A</a>
+            <a href="https://doi.org/10.1039/D0RE00098A" target="_blank">https://doi.org/10.1039/D0RE00098A</a>
+          </div>
+          <br/>
+          <div>
+            Mikael Kuwahara, Jun Fujima, Keisuke Takahashi, Lauren Takahashi<br/>
+            &#8216;Improving scientific image processing accessibility through development of graphical user interfaces for scikit-image&#8217;<br/>
+            Journal: Digital Discovery, The Royal Society of Chemistry, (2023 Apr 21).<br/>
+            <a href="https://doi.org/10.1039/D3DD00061C" target="_blank">https://doi.org/10.1039/D3DD00061C</a>
           </div>
         </div>
       </div>

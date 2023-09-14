@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the Catalog of all available Views and their initial default settings.
 // ------------------------------------------------------------------------------------------------
@@ -92,8 +93,8 @@ const config = [
     type: 'scatter',
     name: 'Scatter',
     category: 'Visualization',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: ScatterView,
     settings: {
       options: {
@@ -112,8 +113,8 @@ const config = [
     type: 'bar',
     name: 'Bar',
     category: 'Visualization',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: BarView,
     settings: {
       options: {
@@ -181,6 +182,31 @@ const config = [
   },
   //------------------------------------------
 
+  // Line - A Customizable Line Chart
+  //------------------------------------------
+  {
+    type: 'line',
+    name: 'Line',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: LineView,
+    settings: {
+      options: {
+        extent: {
+          width: 700,
+          height: 400,
+        },
+        XAxisLabel: "",
+        YAxisLabel: "",
+        legendLabel: "",
+        colorMap: 'Category10',
+      },
+      mappings: {},
+    },
+  },
+  //------------------------------------------
+
   // GapMinder - A Hans Rosling Inspiration
   // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
   //------------------------------------------
@@ -202,30 +228,6 @@ const config = [
   //       colorMap: 'Category20c',
   //       extent: { width: 450, height: 450 },
   //     }
-  //   },
-  // },
-  //------------------------------------------
-
-  // Line - A Customizable Line Chart
-  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
-  //------------------------------------------
-  // {
-  //   type: 'line',
-  //   name: 'Line',
-  //   category: 'Visualization',
-  //   version: 0.5,
-  //   devStage: "Beta",
-  //   component: LineView,
-  //   settings: {
-  //     options: {
-  //       extent: {
-  //         width: 400,
-  //         height: 400,
-  //       },
-  //       colorMap: 'Category10',
-  //       legendLocation: 'top_right',
-  //     },
-  //     mappings: {},
   //   },
   // },
   //------------------------------------------
@@ -325,11 +327,14 @@ const config = [
     type: 'parcoords',
     name: 'Parallel Coordinates',
     category: 'Analysis',
-    version: 0.9,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: ParCoordsView,
     settings: {
       axes: [],
+      options: {
+        extent: { width: 500, height: 300 },
+      },
     },
   },
   //------------------------------------------
@@ -376,42 +381,21 @@ const config = [
   },
   //------------------------------------------
 
-  // Clustering - A Customizable Clustering Bar Chart
-  //------------------------------------------
-  {
-    type: 'clustering',
-    name: 'Clustering',
-    category: 'Analysis',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: ClusteringView,
-    settings: {
-      method: 'KMeans',
-      numberOfClusters: 3,
-      featureColumns: [],
-      mappings: {
-        dimension: 'cids',
-        measures: ['counts'],
-      },
-    },
-  },
-  //------------------------------------------
-
   // Heatmap - A Customizable Heatmap View
   //------------------------------------------
   {
     type: 'heatmap',
     name: 'HeatMap',
     category: 'Analysis',
-    version: 0.9,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: HeatMapView,
     settings: {
       options: {
-        colorMap: 'Category10',
+        colorMap: 'Magma',
         extent: {
-          width: undefined,
-          height: 0,
+          width: 500,
+          height: 400,
         },
       }
     },
@@ -424,11 +408,12 @@ const config = [
     type: 'pairwise-correlation',
     name: 'PairwiseCorrelation',
     category: 'Analysis',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: PairwiseCorrelationView,
     settings: {
       options: {
+        title: "Pairwise Correlation",
         extent: { width: 600, height: 600 },
         maskEnabled: true,
       }
@@ -442,8 +427,8 @@ const config = [
     type: 'nodeGraph',
     name: 'NodeGraph',
     category: 'Analysis',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: NodeGraphView,
     customBtns: [
       {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
@@ -515,14 +500,35 @@ const config = [
   },
   //------------------------------------------
 
+  // Clustering - A Customizable Clustering Bar Chart
+  //------------------------------------------
+  {
+    type: 'clustering',
+    name: 'K-Means Clustering',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: ClusteringView,
+    settings: {
+      method: 'KMeans',
+      numberOfClusters: 3,
+      featureColumns: [],
+      mappings: {
+        dimension: 'cids',
+        measures: ['counts'],
+      },
+    },
+  },
+  //------------------------------------------
+
   // Gaussian Process - A 3-dimensional Scatter Plot
   //------------------------------------------
   {
     type: 'gaussianProcess',
     name: 'Gaussian Process',
     category: 'Machine Learning',
-    version: 0.8,
-    devStage: "Beta",
+    version: 1.0,
+    devStage: "Stable Release",
     component: GaussianProcessView,
     settings: {
       featureColumns: [],
@@ -540,6 +546,26 @@ const config = [
     },
   },
   //------------------------------------------
+
+  // Statistics - A Customizable Statistics View
+  //-----------------------------------------------
+  {
+    type: 'statistics',
+    name: 'Statistics',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: StatisticsView,
+    settings: {
+      featureColumns: [],
+      options: {
+        extent: {
+          width: 800,
+          height: 230,
+        },
+      },
+    },
+  },
 
   // TensorFlow View - A Customizable TensorFlow ML Component
   // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
@@ -618,21 +644,6 @@ const config = [
     },
   },
   //------------------------------------------
-
-  // Statistics - A Customizable Statistics View
-  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
-  //-----------------------------------------------
-  // {
-  //   type: 'statistics',
-  //   name: 'Statistics',
-  //   category: 'Static Data Visual Support',
-  //   version: 0.5,
-  //   devStage: "Beta",
-  //   component: StatisticsView,
-  //   settings: {
-  //     featureColumns: [],
-  //   },
-  // },
 
 
   // OTHER CATEGORY

@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: A set of Support Utility Functions and constants that helps with configuring the
 //              various forms of this application
@@ -104,6 +105,8 @@ export const colorMapOptions = [
 //-------------------------------------------------------------------------------------------------
 // export const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
 export const getDropdownOptions = function(list, noOptionEnabled){
+  if(list.length == 0){ return []; }
+
   var allOptions = [...list];
   if(!(allOptions[0].key && allOptions[0].text && allOptions[0].value)){
     allOptions = list.map((i) => ({ key: i, text: i, value: i }));

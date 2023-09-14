@@ -1,13 +1,13 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
-#          Yoshiki Hasukawa
+# Authors: Yoshiki Hasukawa (Student Developer and Component Design) [2023]
+#          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              gaussian_process components
+#              'gaussian_process' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
 #         allows serverside work for the 'GaussianProcess' component.
@@ -102,7 +102,7 @@ def get_gaussian_process(data):
             step.append( len(d1[i['column']]) )
 
         #--------------------------------------------------------------------------------------------
-        #prediction        
+        #prediction
         number_variables = len(d1)
         if number_variables == 1 :
             pred_values = pd.DataFrame(d1).values
@@ -120,7 +120,7 @@ def get_gaussian_process(data):
             pred, std = model.predict(pred_values,return_std=True)
             d2['Prediction'] = np.reshape(pred, (step[1], step[0]))
             d2['Standard Deviation'] = np.reshape(std, (step[1], step[0]))
-        
+
         else :
             mesh_values = [d1[keys] for keys in d1]
             meshgrid = []
@@ -138,7 +138,7 @@ def get_gaussian_process(data):
         Xi = y_std * 0.01
         EI = np.zeros(len(pred))
         ind = np.where(std != 0)[0]
-        pred = pred[ind] 
+        pred = pred[ind]
         std = std[ind]
         if target_EI == 'Maximization':
             y_max = np.max(y)
@@ -163,7 +163,7 @@ def get_gaussian_process(data):
         header_values = [["<b>rank</b>"], ["<b>EI</b>"]]
         for i in feature_columns:
             header_values.append(["<b>" + i['column'] + "</b>"])
-        
+
         values = []
         rank = [ i + 1 for i in range(top_ten_percent)]
         values.append(rank)

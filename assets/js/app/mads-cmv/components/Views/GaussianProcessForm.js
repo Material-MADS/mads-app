@@ -1,10 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
-//          Yoshiki Hasukawa
+// Authors: Yoshiki Hasukawa (Student Developer and Component Design) [2023]
+//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'GaussianProcess' View, driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ const validate = (values, props) => {
   if (!values.targetColumn) {
     errors.targetColumn = 'Required'
   }
-  
+
   if (!values.targetEI) {
     errors.targetEI = 'Required'
   }
@@ -96,15 +96,11 @@ const validate = (values, props) => {
         featureErrors.max = 'Required';
         featureArrayErrors[featureIndex] = featureErrors;
       }
-      // if (!feature || !feature.step) {
-      //   featureErrors.step = 'Required';
-      //   featureArrayErrors[featureIndex] = featureErrors;
-      // }
     })
     if(featureArrayErrors.length) {
       errors.featureColumns = featureArrayErrors
     }
-    
+
   }
   setSubmitButtonDisable(errors.information || errors.targetColumn || errors.featureColumns || errors.kernel || errors.numberOfElements)
   return errors
@@ -131,7 +127,7 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
           component={Input}
           type="number"
           placeholder="minimum"
-          label="min"          
+          label="min"
         />
         <Field
           fluid
@@ -150,7 +146,7 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
           placeholder="step"
           label="step"
         /> */}
-        
+
       </Form.Group>
     )}
     <Form.Field>
@@ -159,7 +155,7 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
     </Form.Field>
       {true &&
         ((error && <i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i>) ||
-          (warning && <i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i>))} 
+          (warning && <i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i>))}
   </>
 )
 //-------------------------------------------------------------------------------------------------
@@ -225,7 +221,7 @@ const GaussianProcessForm = (props) => {
       const fc = df.get(c);
       data[c] = fc.values.toArray();
     });
-        
+
     const res = await api.views.sendRequestViewUpdate({settings: settings, id: null,
     type: 'gaussianProcess'}, data);
     const retres = res.data;
@@ -237,7 +233,6 @@ const GaussianProcessForm = (props) => {
   }
 
 
-
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit} >
@@ -246,7 +241,7 @@ const GaussianProcessForm = (props) => {
         <label>Feature Columns:</label>
         <Form.Field width={7}>
           <label>Number of elements</label>
-          <Field 
+          <Field
             name="numberOfElements"
             component={Input}
             type="number"
@@ -256,7 +251,7 @@ const GaussianProcessForm = (props) => {
           />
         </Form.Field>
 
-        <FieldArray 
+        <FieldArray
           name="featureColumns"
           component={renderFeature}
           column={columns}
@@ -275,16 +270,15 @@ const GaussianProcessForm = (props) => {
           options={columns}
           onChange={(e, data) => setTargetName(data)}
         />
-        <Field 
+        <Field
           name="targetEI"
           component={SemanticDropdown}
           placeholder="Maximize or Minimize"
           options={getDropdownOptions(targetEI)}
         />
       </Form.Field>
-      
-      <hr />
 
+      <hr />
 
       <Form.Field>
         <label>Kernel</label>
@@ -321,7 +315,7 @@ const GaussianProcessForm = (props) => {
       </Form.Field>
 
       <hr />
-      
+
       <Form.Group widths="four">
         <label>Extent:</label>
 

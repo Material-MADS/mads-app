@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the Storybook test displays for the React Component for the Visualization
 //              View of the 'BarChart' module
@@ -77,17 +78,6 @@ stories
       />
     );
   })
-  // .add('with data', () => (
-  //   <Scatter
-  //     data={data}
-
-  //     mappings={{
-  //       x: 'Formation Energy (eV)',
-  //       y: 'Band Gap (eV)',
-  //     }}
-  //     onSelectedIndicesChange={action('selected_change')}
-  //   />
-  // ))
   .add('with bigger data', () => (
     <Scatter
       data = { SDPack.data }

@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'LineChart' module
 // ------------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ const defaultOptions = {
 //-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
+  const tools = "pan,crosshair,wheel_zoom,reset,save";
 
   const fig = Bokeh.Plotting.figure({
     tools,
@@ -126,7 +126,9 @@ export default function LineChart({
   let cds = null;
   let selectedIndicesInternal = [];
   let internalData = data;
-  let internalOptions = Object.assign({}, defaultOptions, options);;
+  let internalOptions = Object.assign({}, defaultOptions, options);
+  let internalMappings = Object.assign({}, mappings);
+  if(Array.isArray(internalMappings.yData)) { internalMappings.yData = internalMappings.yData[0]; }
 
   // Clear away all data if requested
   useEffect(() => {
@@ -138,7 +140,7 @@ export default function LineChart({
 
   // Create the VizComp based on the incomming parameters
   const createChart = async () => {
-    const { xData, yData } = mappings;
+    const { xData, yData } = internalMappings;
     if(internalData[xData]){ internalOptions.x_range = getRange(internalData[xData]); }
     if(internalData[yData]){ internalOptions.y_range = getRange(internalData[yData]); }
 
@@ -146,8 +148,14 @@ export default function LineChart({
     setMainFigure(fig);
 
     if(internalData[xData]){
-      let colors = internalOptions.colors;
-      if(!colors){
+      let colors = [];
+      const noOfMeasures = Object.keys(internalData).length - 1;
+      if(parseInt(cmMax[internalOptions.colorMap]) == 256){
+        const step = Math.floor(256/noOfMeasures);
+        const cm = allPal[internalOptions.colorMap+cmMax[internalOptions.colorMap]];
+        for(let i = 0; i < noOfMeasures; i++) { colors.push(cm[i*step]); };
+      }
+      else{
         colors = (cmMax[internalOptions.colorMap] != undefined) ? allPal[internalOptions.colorMap+cmMax[internalOptions.colorMap]] : allPal[defaultOptions.colorMap+cmMax[defaultOptions.colorMap]];
       }
 
@@ -181,13 +189,11 @@ export default function LineChart({
       var dataKeys = Object.keys(internalData);
       dataKeys.splice(dataKeys.indexOf(xData), 1);
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: 'Data point @' + xData + ' has the value @' + yData + '' }));
-
       for(var i = 0; i < dataKeys.length; i++){
         if(dataKeys[i] != xData){
-          var legendLabel = internalOptions.legendLabel == undefined ? dataKeys[i] + ' ' : (Array.isArray(internalOptions.legendLabel) ? internalOptions.legendLabel[i] : (internalOptions.legendLabel + (dataKeys.length == 1 ? "" : (" " + (i + 1)))));
-          var lineDash = internalOptions.lineDash == undefined ? undefined : (Array.isArray(internalOptions.lineDash) ? internalOptions.lineDash[i] : internalOptions.lineDash);
-          fig.line({
+          var legendLabel = internalOptions.legendLabel == undefined ? 'Line ' + (i+1) + ' ' : (Array.isArray(internalOptions.legendLabel) ? internalOptions.legendLabel[i] + '.' : (internalOptions.legendLabel + (dataKeys.length == 1 ? "." : (" " + (i + 1)))));
+          var lineDash = internalOptions.lineDash == undefined ? undefined : (Array.isArray(internalOptions.lineDash) ? internalOptions.lineDash[i%internalOptions.lineDash.length] : internalOptions.lineDash);
+          const renderer = fig.line({
             x: { field: xData },
             y: { field: dataKeys[i] },
             line_color: colors[i],
@@ -196,6 +202,20 @@ export default function LineChart({
             line_width: internalOptions.lineWidth,
             source: bData,
           });
+          const tooltip = [
+            [xData, '@{'+xData+'}'],
+            [dataKeys[i], '@{'+ dataKeys[i] + '}'],
+          ]
+          fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+          if(internalOptions.lineMarkersEnabled){
+            fig.circle({
+              x: { field: xData },
+              y: { field: dataKeys[i] },
+              fill_color: 'white',
+              size: 8,
+              source: bData,
+            })
+          }
         }
       }
     }

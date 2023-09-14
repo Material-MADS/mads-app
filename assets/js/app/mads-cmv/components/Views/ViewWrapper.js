@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
+//          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-//          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
 // Description: This is the Wrapper Container for all Views that holds the different VisComps
 // ------------------------------------------------------------------------------------------------
@@ -171,6 +172,10 @@ export default function withCommandInterface(
       const data = this.mapData(dataset);
       const selectionInternal = this.getSelection(selection);
 
+      const tellWSSomething = (msg) => {
+        this.props.tellWSSomething(msg);
+      };
+
       // compose filtered indices
       let filteredIndices = [];
       if (view.settings.filter) {
@@ -244,11 +249,18 @@ export default function withCommandInterface(
             showMessage={actions.showMessage}
             isPropSheetOpen={propSheetOpen}
             actions={actions}
+            tellWSSomething={tellWSSomething}
           />
 
           <Modal open={propSheetOpen} onClose={this.close} onMouseDown={ e => e.stopPropagation() }> {/* FORTEST: [onMouseDown={ e => e.stopPropagation() }] */}
             <Modal.Header>
               {view.name} {`[${view.id}]`}
+              {/* <label><Popup trigger={<span style={{fontSize: "14px", color: "blue"}}>🛈</span>} size='small' wide='very'>
+                <p>
+                  Designed and Developed by XXX.<br />
+                  Under the Guidance and Supervision of YYY.
+                </p>
+              </Popup></label> */}
             </Modal.Header>
             <Modal.Content>
               <SettingForm

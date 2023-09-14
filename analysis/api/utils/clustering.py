@@ -1,12 +1,13 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              clustering components
+#              'clustering' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
 #         allows serverside work for the 'clustering' component.
@@ -29,31 +30,42 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_clusters(data):
-    feature_columns  = data['view']['settings']['featureColumns']
-    method = data['view']['settings']['method']
-    num_of_clusters = data['view']['settings']['numberOfClusters']
+    vis_type = data['view']['settings']['visType']
+
+    result = {}
+    result['vis_type'] = vis_type
+
+    feature_columns = data['view']['settings']['featureColumns']
+    num_of_clusters = int(data['view']['settings']['numberOfClusters'])
+    if num_of_clusters > 10:
+        num_of_clusters = 10
 
     dataset = data['data']
     df = pd.DataFrame(dataset)
-
-    # logger.info(df)
-
     df_target = df[feature_columns]
-
     X = df_target.values
-    cif = None
-    if (method == 'KMeans'):
-        clf = KMeans(n_clusters=int(num_of_clusters))
+
+    if(vis_type == "Bar Chart"):
+        method = data['view']['settings']['method']
+
+        cif = None
+        if (method == 'KMeans'):
+            clf = KMeans(n_clusters=num_of_clusters)
+        else:
+            clf = GaussianMixture(n_components=num_of_clusters)
+
+        clf.fit(X)
+        y = clf.predict(X)
+
+        result['cluster'] = y
     else:
-        clf = GaussianMixture(n_components=int(num_of_clusters))
+        kmean = KMeans(n_clusters=num_of_clusters)
+        kmean.fit(X)
+        y = kmean.predict(X)
 
-    clf.fit(X)
-    y = clf.predict(X)
+        result['cluster'] = y
+        result['data'] = data['data']
 
-    # logger.info(y)
-
-    result = {}
-    result['cluster'] = y
 
     return result
 #-------------------------------------------------------------------------------------------------

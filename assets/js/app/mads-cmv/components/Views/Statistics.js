@@ -1,21 +1,35 @@
-// import { connect } from 'react-redux';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Statistics' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Statistics' is the manager of all current input that controls the final view of the
+//         'Statistics' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: Internal ViewWrapper & Form Utility Support,
+//             Internal Table & TableForm libs,
+=================================================================================================*/
 
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
-
 import withCommandInterface from './ViewWrapper';
-// import QuadBarChart from '../VisComponents/QuadBarChart';
 import StatisticsVis from '../VisComponents/StatisticsVis';
 import StatisticsForm from './StatisticsForm';
-
 import convertExtentValues from './FormUtils';
 
-const settings = {
-  options: {
-    title: 'Statistics',
-  },
-};
+//-------------------------------------------------------------------------------------------------
 
-class StatisticsView extends withCommandInterface(StatisticsVis, StatisticsForm, settings) {
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class StatisticsView extends withCommandInterface(StatisticsVis, StatisticsForm) {
 
   handleSubmit = (values) => {
     if(values.featureColumns.length == 0){ throw "No data to work with" }
@@ -67,5 +81,4 @@ class StatisticsView extends withCommandInterface(StatisticsVis, StatisticsForm,
     return data;
   };
 }
-
-export default StatisticsView;
+//-------------------------------------------------------------------------------------------------

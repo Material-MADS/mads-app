@@ -1,9 +1,10 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
+#          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors: Jun Fujima (Former Lead Developer) [2018-2021]
-#          Mikael Nicander Kuwahara (Current Lead Developer) [2021-]
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) WSGI config for madsapp project.
 # ------------------------------------------------------------------------------------------------
@@ -67,6 +68,7 @@ urlpatterns += [
     url(r'^prediction/', include(('prediction.urls', 'prediction'))),
     url(r'^docs-static/', include(('docs.urls', 'docs'))),
     url(r'^docs/', include_docs_urls(title='MADS APIs')),
+    url(r'^more/', include(('more.urls', 'more'))),
     # url(r'^docs/', include(('docs.urls', 'docs'))),
 ]
 #-------------------------------------------------------------------------------------------------
