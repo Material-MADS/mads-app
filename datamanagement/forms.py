@@ -36,13 +36,10 @@ supported_file_types = [
     'text/plain',
     'application/csv',
     'text/csv',
-    # 'application/pdf',
-    # 'image/png',
-    # 'image/jpeg',
+    'application/vnd.ms-excel',
     # 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     # 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     # 'application/msword',
-    # 'application/vnd.ms-excel',
 ]
 #-------------------------------------------------------------------------------------------------
 
