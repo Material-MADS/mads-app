@@ -66,6 +66,22 @@ function createEmptyChart(options, dataIsEmpty) {
 
 
 //-------------------------------------------------------------------------------------------------
+// Save the image file to the local computer
+//-------------------------------------------------------------------------------------------------
+function downloadCSV(csvStr, fileName) {
+  const link = document.createElement("a");
+  link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvStr));
+  link.setAttribute("target", "_blank");
+  link.setAttribute("download", fileName);
+  link.click();
+  try {
+    document.body.removeChild(link)
+  } catch (error) {}
+}
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
 // This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
 class StatisticsVis extends Component {
@@ -122,6 +138,7 @@ class StatisticsVis extends Component {
     const {
       data,
       options,
+      id,
       colorTags,
       selectedIndices,
       onSelectedIndicesChange,
@@ -129,8 +146,15 @@ class StatisticsVis extends Component {
 
     $(this.rootNode.current).empty();
 
+    var tableDataString = "empty";
+
     const columns = data && data.columns?data.columns:[];
     const dataContents = data && data.data?data.data:[];
+
+    // Custom Download CSV button
+    const viewWrapperCustomButton_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData' + id);
+    viewWrapperCustomButton_DLCSV.off('click');
+    viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
 
     let fig = createEmptyChart(options, !(dataContents.length > 0));
     if (dataContents.length > 0) {
@@ -140,6 +164,8 @@ class StatisticsVis extends Component {
         tmpData[v] = df.get(v).to_json({ orient: 'records' });
         return true;
       });
+
+      tableDataString = df.to_csv('stats_data.csv');
 
       const ds = new Bokeh.ColumnDataSource({ data: tmpData });
 

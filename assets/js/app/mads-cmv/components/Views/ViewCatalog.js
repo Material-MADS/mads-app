@@ -556,6 +556,9 @@ const config = [
     version: 1.0,
     devStage: "Stable Release",
     component: StatisticsView,
+    customBtns: [
+      {name: 'saveCSVData', icon: 'download', text: 'Download Data as CSV'},
+    ],
     settings: {
       featureColumns: [],
       options: {
