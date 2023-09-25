@@ -130,12 +130,12 @@
         href="{% url 'docs:index' %}" target="_blank"
         >Online Docs</a
       >
-      <a
+      {% comment %} <a
         class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
         href="{% url 'more:index' %}"
         href="{% url 'more:index' %}"
         >Download & More</a
-      >
+      > {% endcomment %}
 
       {% block sidebar %}{% endblock %} {% if user.is_authenticated %}
       <div class="item">{{ user.get_username }}</div>
@@ -184,11 +184,11 @@
           href="{% url 'docs:index' %}" target="_blank"
           >Online Docs</a
         >
-        <a
+        {% comment %} <a
           class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
           href="{% url 'more:index' %}"
           >Download & More</a
-        >
+        > {% endcomment %}
 
         <div class="right item">
           {% if user.is_authenticated %}

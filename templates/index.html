@@ -177,7 +177,7 @@
         <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
         <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
         <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-        <a class="item" href="{% url 'more:index' %}">Download & More</a>
+        {% comment %} <a class="item" href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
         <div class="right menu">
           {% if user.is_authenticated %}
             <div class="item">{{ user.get_username }}</div>
@@ -205,7 +205,7 @@
       <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
       <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
       <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-      <a class="item" href="{% url 'more:index' %}">Download & More</a>
+      {% comment %} <a class="item" href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
 
       {% if user.is_authenticated %}
         <div class="item">{{ user.get_username }}</div>
@@ -231,7 +231,7 @@
             <a class="item" href="{% url 'analysis:index' %}">Analysis</a>
             <a class="item" href="{% url 'prediction:index' %}">Prediction</a>
             <a class="item" href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-            <a class="item" href="{% url 'more:index' %}">Download & More</a>
+            {% comment %} <a class="item" href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
             <div class="right item">
               {% if user.is_authenticated %}
                 <div class="ui inverted">{{ user.get_username }}</div>

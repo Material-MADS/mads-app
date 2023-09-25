@@ -115,8 +115,8 @@
       href="{% url 'prediction:index' %}" href="{% url 'prediction:index' %}">Prediction</a>
     <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}" href="{% url 'docs:index' %}"
       href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-    <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}" href="{% url 'more:index' %}"
-      href="{% url 'more:index' %}">Download & More</a>
+    {% comment %} <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}" href="{% url 'more:index' %}"
+      href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
 
 
 
@@ -154,8 +154,8 @@
         href="{% url 'prediction:index' %}">Prediction</a>
       <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
         href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-      <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
-        href="{% url 'more:index' %}">Download & More</a>
+      {% comment %} <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
+        href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
 
 
       <div class="right item">
