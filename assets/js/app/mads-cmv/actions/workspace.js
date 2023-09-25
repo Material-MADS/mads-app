@@ -76,10 +76,13 @@ const fetchCurrentWorkspaceInfo = () => (dispatch) => {
         dispatch(loadingActions.setLoadingState(true));
         dispatch(receiveWorkspaceInfo(res.data));
         dispatch(resetWorkspace(res.data));
-        dispatch(loadingActions.setLoadingState(false));
+        // dispatch(loadingActions.setLoadingState(false));
       })
       .catch((err) => {
         dispatch(getWorkspaceInfoFailure(err));
+        // dispatch(loadingActions.setLoadingState(false));
+      })
+      .finally(() => {
         dispatch(loadingActions.setLoadingState(false));
       });
   }

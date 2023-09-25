@@ -21,20 +21,23 @@
 import React, { useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, FieldArray, getFormValues, getFormInitialValues } from 'redux-form';
-import { Form, Button, Modal } from 'semantic-ui-react';
+import { Form, Button, Modal, Popup } from 'semantic-ui-react';
 
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
 
 import { DataFrame } from 'pandas-js'
-import _ from 'lodash';
+import _, { forEach } from 'lodash';
 import inputTrad from '../FormFields/inputTraditional';
+import $ from 'jquery'
 
 import api from '../../api';
+import { html } from 'd3';
 
 
 //-------------------------------------------------------------------------------------------------
 
+var datasetInfo = {}
 
 //-------------------------------------------------------------------------------------------------
 // Form Support Methods that manages various individual form fields that requires some form of
@@ -121,6 +124,9 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
           options={column}
           onChange={(e, data) => handleFeatureName(index, data)}
         />
+        <Popup style={{whiteSpace: 'pre-wrap'}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
+            <>Min and Max represent the range in which the user wants the machine to make predictions. <br />-----------------<br />{datasetInfo}</>
+          } size='small' wide />
         <Field
           fluid
           name={`${feature}.min`}
@@ -182,6 +188,17 @@ const GaussianProcessForm = (props) => {
     props: { style: '' },
   }));
 
+
+  datasetInfo = "";
+  const df = new DataFrame(dataset.main.data);
+  for(var i = 0; i < columns.length; i++){
+    const pandaCol = df.get(columns[i].key);
+    const jsCol = pandaCol.values.toArray();
+    datasetInfo += columns[i].key + ":   Min = " + Math.min(...jsCol) + ",   Max = " + Math.max(...jsCol) + "\n";
+  }
+
+
+
   if(!initialValues.numberOfElements){ initialValues.numberOfElements = 100 };
 
   const informaion = ['Prediction', 'Standard Deviation', 'Expected Improvement', 'Proposed experimental conditions'];
@@ -211,6 +228,7 @@ const GaussianProcessForm = (props) => {
     setFeatureName(updatedFeatureName);
   };
   const onGetServerInfoClick = async (e, value) => {
+    setServerInfo("Score: Stand by, being calculated (might take some time) ...");
     const data = {};
     const settings = {route: "query", featureColumns: featureName, targetColumn: targetName, kernel: kernelType}
     const df = new DataFrame(value.value.main.data);
@@ -240,7 +258,7 @@ const GaussianProcessForm = (props) => {
       <Form.Field>
         <label>Feature Columns:</label>
         <Form.Field width={7}>
-          <label>Number of elements</label>
+          <label>Number of elements <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This represents how many elements the machine divides that range into, thereby allowing the user to control how detailed or accurate the predictions may be. Maximum value is 500.' size='small' />:</label>
           <Field
             name="numberOfElements"
             component={Input}
@@ -270,6 +288,9 @@ const GaussianProcessForm = (props) => {
           options={columns}
           onChange={(e, data) => setTargetName(data)}
         />
+      </Form.Field>
+      <Form.Field>
+      <label>Target EI <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='To maximize or minimize depends on how the acquisition function is defined. If using Expected Improvement acquisition function, then you should maximize.' size='small' />:</label>
         <Field
           name="targetEI"
           component={SemanticDropdown}
@@ -281,7 +302,7 @@ const GaussianProcessForm = (props) => {
       <hr />
 
       <Form.Field>
-        <label>Kernel</label>
+        <label>Kernel <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The kernel function essentially tells the model how similar two data points (xₙ, xₘ) are. Several kernel functions are available for use with different types of data.' size='small' />:</label>
         <Field
           name="kernel"
           component={SemanticDropdown}
@@ -289,6 +310,8 @@ const GaussianProcessForm = (props) => {
           options={getDropdownOptions(kernels)}
           onChange={(e, data) => setKernelType(data)}
         />
+      </Form.Field>
+      <Form.Field>
         <Button
         color="blue"
         onClick={onGetServerInfoClick}
@@ -297,6 +320,9 @@ const GaussianProcessForm = (props) => {
         >
           Get Score
         </Button>
+        <Popup style={{whiteSpace: 'pre-wrap'}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
+            <>Returns R² score from cross validation, where data set is randomly split to 20% test and 80% train data. <br />(This calculations might take more then a minute with a large data set.)</>
+          } size='small' wide />
 
         <br></br>
         <label>{currentServerInfo}</label>
@@ -305,7 +331,7 @@ const GaussianProcessForm = (props) => {
       <hr/>
 
       <Form.Field>
-        <label>Information:</label>
+        <label>Information <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Select what you want to visualize.' size='small' />:</label>
         <Field
           name="information"
           component={SemanticDropdown}
