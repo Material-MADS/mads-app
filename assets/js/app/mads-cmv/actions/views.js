@@ -101,7 +101,7 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
     .then((res) => {
       dispatch(receiveViewUpdateRemote(res.data));
       dispatch(datasetActions.addDatasetView(view.id, res.data));
-      dispatch(loadingActions.setLoadingState(false));
+      // dispatch(loadingActions.setLoadingState(false));
     })
     .catch((err) => {
       console.dir(err);
@@ -113,6 +113,9 @@ export const sendRequestViewUpdate = (view, values, data) => (dispatch) => {
           type: 'error',
         })
       );
+      // dispatch(loadingActions.setLoadingState(false));
+    })
+    .finally(() => {
       dispatch(loadingActions.setLoadingState(false));
     });
 };

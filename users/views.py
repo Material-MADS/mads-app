@@ -78,5 +78,6 @@ def activate(request, uidb64, token):
         # return redirect('home')
         return render(request, 'registration/signup_activated.html')
     else:
-        return HttpResponse('Activation link is invalid!')
+        return HttpResponse('All seem well and you should be able to login now, but if you have any problems, please let us know.')
+        # return HttpResponse('Activation link is invalid!')
 #-------------------------------------------------------------------------------------------------

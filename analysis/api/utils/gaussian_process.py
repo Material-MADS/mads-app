@@ -76,6 +76,11 @@ def get_gaussian_process(data):
             total_score += score
         mean_score = total_score / num_validation
 
+        if(math.isnan(mean_score)):
+            mean_score = "Score Calculation Failed - The data set is too small (<=5)."
+
+        logger.info(mean_score)
+
         result = {'serverReply': mean_score}
     else:
         target_EI = data['view']['settings']['targetEI']
