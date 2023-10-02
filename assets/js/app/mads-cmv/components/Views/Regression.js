@@ -1,29 +1,55 @@
-// import { connect } from 'react-redux';
-import React from 'react';
+
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Regression' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Regression' is the manager of all current input that controls the final view of the
+//         'RegressionVis' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PieChart & PieForm libs,
+=================================================================================================*/
+
+//*** TODO: This is not structured the same way as other Views, should probably be adjusted to do that
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
-import { Button, Modal, Card } from 'semantic-ui-react';
 import _ from 'lodash';
 
 import withCommandInterface from './ViewWrapper';
-import RegressionVis from '../VisComponents/RegressionVis';
-import RegressionForm from './RegressionForm';
-// import { withReducer } from 'recompose';
-
 import convertExtentValues from './FormUtils';
 
+import RegressionVis from '../VisComponents/RegressionVis';
+import RegressionForm from './RegressionForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
 const settings = {
   options: { title: 'Regression' },
 };
+//-------------------------------------------------------------------------------------------------
 
-class RegressionView extends withCommandInterface(
-  RegressionVis,
-  RegressionForm,
-  settings
-) {
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class RegressionView extends withCommandInterface( RegressionVis, RegressionForm, settings ) {
+
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    // console.log(values)
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -37,7 +63,6 @@ class RegressionView extends withCommandInterface(
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
-    // console.log(columns);
     if (values.featureColumns) {
       const filteredColumns = values.featureColumns.filter((f) =>
         columns.includes(f)
@@ -50,6 +75,7 @@ class RegressionView extends withCommandInterface(
     const df = new DataFrame(dataset.main.data);
     const tc = df.get(newValues.targetColumn);
     data[newValues.targetColumn] = tc.values.toArray();
+
     newValues.featureColumns.forEach((c) => {
       const fc = df.get(c);
       data[c] = fc.values.toArray();
@@ -58,191 +84,82 @@ class RegressionView extends withCommandInterface(
     // set mapping
     newValues.mappings = {
       x: values.targetColumn,
-      y: `${values.targetColumn}--predicted`,
+      y: `${values.targetColumn}--Predicted`,
     };
-    console.warn(newValues.mappings);
 
     newValues = convertExtentValues(newValues);
-
-    console.log(newValues);
-    // TODO: apply filters
-    // updateView(id, newValues);
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
+  // Manages Save Model Requests
   handleModelSave = (name, overwrite, id) => {
     // Note: override this if necessary
-    console.log('model saving...');
     const { actions } = this.props;
 
     // submit setting form
-    // this.onSubmitClick();
     this.formReference.submit();
-    console.log(this.tmpViewParams);
     actions.saveModel(name, this.tmpViewParams, overwrite, id);
-    // this.close();
   };
 
   composeSubmittingData = (values) => {};
 
+  // Manages data changes in the view
   mapData = (dataset) => {
-    console.log(dataset);
     const { id, view, actions } = this.props;
-
-    const data = [];
+    const data = {d1: {data: []}, d2: {data: []}};
 
     if (dataset[id]) {
       const targetName = view.settings.targetColumn;
-      const pName = `${targetName}--predicted`;
-      const xx = dataset[id][targetName];
-      const yy = dataset[id][pName];
+      const pName = `${targetName}--Predicted`;
+      let xx, yy, xx2, yy2;
 
-      if (!xx && !yy) {
-        return [];
+      // Make sure backwards compability is implemented so old regression components will still work
+      if(dataset[id]['d1']){
+        xx = dataset[id]['d1'][targetName];
+        yy = dataset[id]['d1'][pName];
+        xx2 = dataset[id]['d2'][targetName];
+        yy2 = dataset[id]['d2'][pName];
+      }
+      else if(dataset[id][targetName]){
+        xx = dataset[id][targetName];
+        yy = dataset[id][pName];
+        xx2 = [];
+        yy2 = [];
+      }
+
+      if (xx == undefined || !Array.isArray(xx) || yy == undefined || !Array.isArray(yy)) {
+        return  {};
       }
 
       xx.forEach((x, i) => {
         const item = {};
         item[targetName] = x;
         item[pName] = yy[i];
-        data.push(item);
-      });
-    }
-    console.log(data);
-    // actions.update
-    return data;
-  };
-
-  render() {
-    const {
-      dataset,
-      removeView,
-      view,
-      id,
-      selection,
-      colorTags,
-      isLoggedIn,
-      showMessage,
-      actions,
-    } = this.props;
-
-    console.log(this.props);
-
-    const { main } = dataset;
-
-    const { propSheetOpen } = this.state;
-
-    const columnOptions = this.getColumnOptions();
-
-    // console.log(colorTags);
-    // let { data } = main;
-    // // TODO: compose data...
-    const data = this.mapData(dataset);
-    console.log(dataset);
-    const selectionInternal = this.getSelection(selection);
-
-    // compose filtered indices
-    let filteredIndices = [];
-    if (view.settings.filter) {
-      view.settings.filter.forEach((f) => {
-        const cTag = colorTags.find((c) => c.id === f);
-        if (!cTag) {
-          return;
-        }
-        filteredIndices = filteredIndices.concat(cTag.itemIndices);
+        data.d1.data.push(item);
       });
 
-      const s = new Set(filteredIndices);
-      filteredIndices = Array.from(s);
-      // console.log(filteredIndices);
-    }
+      xx2.forEach((x, i) => {
+        const item = {};
+        item[targetName] = x;
+        item[pName] = yy2[i];
+        data.d2.data.push(item);
+      });
 
-    // extract scores
-    const scores = {};
-    if (dataset[id]) {
+      if (!(dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn))) {
+        data.d1 = {data: []};
+        data.d2 = {data: []};
+        data["resetRequest"] = true;
+        data["resetTitle"] = "Regression";
+      }
+
       if (dataset[id].scores) {
-        const ss = dataset[id].scores;
-        console.log(dataset[id].scores);
-        if (ss['test_r2']) {
-          scores.meanR2 = _.mean(ss['test_r2']);
-        }
-        if (ss['test_mae']) {
-          scores.meanMAE = _.mean(ss['test_mae']);
-        }
+        data["scores"] = dataset[id].scores;
       }
     }
 
-    return (
-      <div className="view-container">
-        <Button
-          size="mini"
-          icon="remove"
-          onClick={() => this.onDeleteClick(id)}
-        />
-        <Button size="mini" icon="configure" onClick={() => this.show()} />
-
-        <div className="view-contents">
-          <RegressionVis
-            data={data || []}
-            {...settings}
-            {...view.settings}
-            properties={view.properties}
-            // mappings={mappings}
-            selectedIndices={selectionInternal}
-            colorTags={colorTags}
-            filteredIndices={filteredIndices}
-            onSelectedIndicesChange={(indices) =>
-              this.handleSelectionChange(indices)
-            }
-            showMessage={actions.showMessage}
-          />
-
-          <div style={{ marginRight: '5px' }}>
-            <Card>
-              <Card.Content>
-                <h3>CV scores:</h3>
-                <ul>
-                  <li>mean r2: {scores.meanR2}</li>
-                  <li>mean MAE: {scores.meanMAE}</li>
-                </ul>
-              </Card.Content>
-            </Card>
-          </div>
-        </div>
-
-        <Modal open={propSheetOpen} onClose={this.close}>
-          <Modal.Header>
-            {view.name} {`[${view.id}]`}
-          </Modal.Header>
-          <Modal.Content>
-            <RegressionForm
-              initialValues={view.settings}
-              enableReinitialize
-              ref={(form) => {
-                this.formReference = form;
-              }}
-              onSubmit={this.handleSubmit}
-              columns={columnOptions}
-              targetId={id}
-              colorTags={colorTags}
-              onModelSave={this.handleModelSave}
-              isLoggedIn={isLoggedIn}
-            />
-          </Modal.Content>
-          <Modal.Actions>
-            <Button negative onClick={() => this.close()}>
-              Cancel
-            </Button>
-            <Button positive content="Submit" onClick={this.onSubmitClick} />
-            {/* <Button positive content="Submit" onClick={this.onSubmitClick} /> */}
-          </Modal.Actions>
-        </Modal>
-      </div>
-    );
-  }
+    return data;
+  };
 }
-
-// export default connect(mapStateToProps)(ScatterView);
-export default RegressionView;
+//-------------------------------------------------------------------------------------------------

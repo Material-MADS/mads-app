@@ -1,10 +1,40 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'HeatMap' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HeatMap' is a visualization component that displays a classic heat map based on a range
+//        of available properties, and is rendered with the help of the Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, 3rd party jeezy and Chroma libs, HeatMap VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
+import * as jz from 'jeezy';
+import * as chroma from 'chroma-js';
+
 import HeatMap from './HeatMap';
 
-// Simple Test Data - SETUP BEGIN
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// Simple Test Data
 //=========================================
 const originalTestData = {
   data: [
@@ -51,9 +81,8 @@ const osOptions = {
   fontSize: '10px',
 };
 //=========================================
-// Simple Test Data - SETUP END
 
-// Small File Sample Data - SETUP BEGIN
+// Small File Sample Data
 //=========================================
 import sampleFileData from './testdata/unemployment';
 export function getHeatMapDataPack(){
@@ -86,11 +115,11 @@ export function getHeatMapDataPack(){
 }
 const SFSDPack = getHeatMapDataPack(sampleFileData);
 //=========================================
-// Small File Sample Data - SETUP END
 
-// Chemical File Sample Data - SETUP BEGIN
+// Chemical File Sample Data
 //=========================================
 import chemData from './testdata/chem';
+import { check } from 'prettier';
 const cData = { xData: [], yData: [], heatVal: [] };
 chemData.data.forEach(item => {
   cData.xData.push(item.Temperature + '');
@@ -110,10 +139,73 @@ const cOptions = {
   title: `C2 Yield for for various reactions with  specific temperature and preparation methods`,
 };
 //=========================================
-// Chemical File Sample Data - SETUP END
 
+// Pairwise Correlation Matrix
+//=========================================
+var pcData = { xData: [], yData: [], heatVal: [] };
+var cols = chemData.schema.fields.map(f => f.name);
+cols.shift(); // remove index
+var mask = [];
+const colsSorted = cols.sort();
+const colsSortedR = cols.sort().reverse();
+var isVisible = 1;
+for(var i = 0; i < colsSorted.length; i++){
+  for(var k = 0; k < colsSortedR.length; k++){
+    if(isVisible == 1){
+      if(colsSorted[i] == colsSortedR[k]){
+        isVisible = 0;
+      }
+    }
+    mask.push([colsSorted[i]+"-"+colsSortedR[k], isVisible]);
+  }
+  isVisible = 1;
+}
+var corr = jz.arr.correlationMatrix(chemData.data, cols);
+var allX = [], allY = [];
+corr.forEach(item => {
+  var testStr = item.column_x +"-"+item.column_y;
+  var corrVal = 0;
+  for(var i = 0; i < mask.length; i++){
+    if(testStr == mask[i][0]){
+      if(mask[i][1] != 0){
+        corrVal = item.correlation;
+      }
+      break;
+    }
+  }
+  if(corrVal != 0){
+    pcData.xData.push(item.column_x);
+    pcData.yData.push(item.column_y);
+    pcData.heatVal.push(corrVal);
+  }
+  allX.push(item.column_x);
+  allY.push(item.column_y);
+});
+const pcXRange = (allX.filter((v, i, a) => a.indexOf(v) === i)).sort();
+const pcYRange = (allY.filter((v, i, a) => a.indexOf(v) === i)).sort().reverse();
+
+var c = chroma.scale(["#3B4CC0", "white", "#B40426"]).domain([-1, 0, 1]).colors(100);
+
+const pcOptions = {
+  x_range: pcXRange,
+  y_range: pcYRange,
+  toolTipTitles: ['X', 'Y', 'Correlation'],
+  colors: c,
+  colorMapperMinMax: [-1,1],
+  heatValUnit: '',
+  extent: { width: 800, height: 800 },
+  x_axis_location: 'below',
+  title: `Pairwise Correlation Values for the ChemData Data`,
+};
+//=========================================
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('HeatMap', module);
-
 stories
   .add('...empty', () => <HeatMap />)
   .add('...with small data', () => (
@@ -134,4 +226,11 @@ stories
        data = {cData}
        options = { cOptions }
     />
+  ))
+  .add('...Pairwise Correlation Matrix', () => (
+    <HeatMap
+       data = {pcData}
+       options = { pcOptions }
+    />
   ));
+  //-------------------------------------------------------------------------------------------------

@@ -1,4 +1,22 @@
 {% extends "base.html" %}
+
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: (Django) Frontside template for the 'Analysis' page involving index start
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the template files for the 'analysis' interface of the website.
+# ------------------------------------------------------------------------------------------------
+# References: extends 'base.html' from the main templates folder of the application
+#=================================================================================================
+{% endcomment %}
+
 {% load render_table from django_tables2 %}
 {% load static %}
 
@@ -25,6 +43,17 @@ Analysis - {{PROJECT_NAME_ABBR}}
 
 <h2>Analysis</h2>
 
+{% comment %} <h3 style="color: red; font-weight: bold;">Important Note:</h3>
+  <p style="color: blue; font-weight: normal; font-size:15px">
+    Older Workspaces (created before major feature updates) may sometimes not longer look exactly like they did or fully work as they used too.
+    <br/>This is usually becuase of major upgraded and improved components, as well as changes in internal data structures and overall interaface features.
+    <br/>(But can also be due to missing public data resources that have been removed by its owner).
+    <br/>We try as hard as we can to avoid these changes to affect old workspaces, but sometimes it is unavoidable.
+    <br/>If your old workspace is affected somehow and creating a new and fresh one is not a viable option, then just rearrange your components to your liking and replace those few who demands it with newer versions of the same component instead. And then resave the workspace.
+    <br/><br/>Sorry for any inconvenience this may cause.
+    <br/><br/>/The CADS Team
+  </p>
+</h3> {% endcomment %}
 
 <p>You have access to the following workspaces:</p>
 <ul>
@@ -38,7 +67,6 @@ Analysis - {{PROJECT_NAME_ABBR}}
         <form action="" method="get" class="form form-inline">
             <div class="ui action input">
                 {{ filter.form.name }}
-                {% comment %} {{ filter.form.owner }} {% endcomment %}
                 <button class="ui button">Apply Filter</button>
             </div>
         </form>
@@ -47,13 +75,10 @@ Analysis - {{PROJECT_NAME_ABBR}}
 
     <div class="right item">
         <a class="ui blue button" href="{% url 'analysis:workspace-new' %}">New analysis</a>
-        <!-- <a href="http://localhost:4200/new-analysis" target="_new">+</a> -->
     </div>
 </div>
 
-
 {% render_table table 'django_tables2/semantic.html' %}
-
 
 <hr>
 

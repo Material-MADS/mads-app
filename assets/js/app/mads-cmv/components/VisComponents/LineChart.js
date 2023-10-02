@@ -1,11 +1,38 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'LineChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'LineChart' is a visualization component that displays a classic line chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color
+//             palettes and also internal support methods from FormUtils
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+
 import * as deepEqual from 'deep-equal';
 import * as Bokeh from "@bokeh/bokehjs";
+
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Line Chart",
   extent: { width: undefined, height: 400 },
@@ -16,13 +43,16 @@ const defaultOptions = {
   lineWidth: 2,
   lineDash: undefined,
   colorMap: 'Category10',
-  // fontSize: '7px'
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
-  const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
-  // const tools = "save,pan,box_zoom,reset,wheel_zoom";
+  const tools = "pan,crosshair,wheel_zoom,reset,save";
 
   const fig = Bokeh.Plotting.figure({
     tools,
@@ -42,8 +72,12 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Gets the chart range based on the data
+//-------------------------------------------------------------------------------------------------
 function getRange(data){
   let rangeArray = data.filter((v, i, a) => a.indexOf(v) === i);
   if(typeof rangeArray[0] == "number"){
@@ -57,8 +91,12 @@ function getRange(data){
 
   return rangeArray;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Returns the previous value
+//-------------------------------------------------------------------------------------------------
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -66,7 +104,12 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function LineChart({
   data,
   mappings,
@@ -75,15 +118,19 @@ export default function LineChart({
   selectedIndices,
   onSelectedIndicesChange,
 }) {
+
+  // Initiation of the VizComp
   const rootNode = useRef(null);
   let views = null;
   const [mainFigure, setMainFigure] = useState(null);
   let cds = null;
   let selectedIndicesInternal = [];
   let internalData = data;
-  let internalOptions = Object.assign({}, defaultOptions, options);;
+  let internalOptions = Object.assign({}, defaultOptions, options);
+  let internalMappings = Object.assign({}, mappings);
+  if(Array.isArray(internalMappings.yData)) { internalMappings.yData = internalMappings.yData[0]; }
 
-
+  // Clear away all data if requested
   useEffect(() => {
     if(internalData.resetRequest){
       internalOptions = defaultOptions;
@@ -91,8 +138,9 @@ export default function LineChart({
     }
   }, [internalData])
 
+  // Create the VizComp based on the incomming parameters
   const createChart = async () => {
-    const { xData, yData } = mappings;
+    const { xData, yData } = internalMappings;
     if(internalData[xData]){ internalOptions.x_range = getRange(internalData[xData]); }
     if(internalData[yData]){ internalOptions.y_range = getRange(internalData[yData]); }
 
@@ -100,8 +148,14 @@ export default function LineChart({
     setMainFigure(fig);
 
     if(internalData[xData]){
-      let colors = internalOptions.colors;
-      if(!colors){
+      let colors = [];
+      const noOfMeasures = Object.keys(internalData).length - 1;
+      if(parseInt(cmMax[internalOptions.colorMap]) == 256){
+        const step = Math.floor(256/noOfMeasures);
+        const cm = allPal[internalOptions.colorMap+cmMax[internalOptions.colorMap]];
+        for(let i = 0; i < noOfMeasures; i++) { colors.push(cm[i*step]); };
+      }
+      else{
         colors = (cmMax[internalOptions.colorMap] != undefined) ? allPal[internalOptions.colorMap+cmMax[internalOptions.colorMap]] : allPal[defaultOptions.colorMap+cmMax[defaultOptions.colorMap]];
       }
 
@@ -135,13 +189,11 @@ export default function LineChart({
       var dataKeys = Object.keys(internalData);
       dataKeys.splice(dataKeys.indexOf(xData), 1);
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: 'Data point @' + xData + ' has the value @' + yData + '' }));
-
       for(var i = 0; i < dataKeys.length; i++){
         if(dataKeys[i] != xData){
-          var legendLabel = internalOptions.legendLabel == undefined ? dataKeys[i] + ' ' : (Array.isArray(internalOptions.legendLabel) ? internalOptions.legendLabel[i] : (internalOptions.legendLabel + (dataKeys.length == 1 ? "" : (" " + (i + 1)))));
-          var lineDash = internalOptions.lineDash == undefined ? undefined : (Array.isArray(internalOptions.lineDash) ? internalOptions.lineDash[i] : internalOptions.lineDash);
-          fig.line({
+          var legendLabel = internalOptions.legendLabel == undefined ? 'Line ' + (i+1) + ' ' : (Array.isArray(internalOptions.legendLabel) ? internalOptions.legendLabel[i] + '.' : (internalOptions.legendLabel + (dataKeys.length == 1 ? "." : (" " + (i + 1)))));
+          var lineDash = internalOptions.lineDash == undefined ? undefined : (Array.isArray(internalOptions.lineDash) ? internalOptions.lineDash[i%internalOptions.lineDash.length] : internalOptions.lineDash);
+          const renderer = fig.line({
             x: { field: xData },
             y: { field: dataKeys[i] },
             line_color: colors[i],
@@ -150,6 +202,20 @@ export default function LineChart({
             line_width: internalOptions.lineWidth,
             source: bData,
           });
+          const tooltip = [
+            [xData, '@{'+xData+'}'],
+            [dataKeys[i], '@{'+ dataKeys[i] + '}'],
+          ]
+          fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+          if(internalOptions.lineMarkersEnabled){
+            fig.circle({
+              x: { field: xData },
+              y: { field: dataKeys[i] },
+              fill_color: 'white',
+              size: 8,
+              source: bData,
+            })
+          }
         }
       }
     }
@@ -158,9 +224,9 @@ export default function LineChart({
     return cds;
   };
 
+  // Clear away the VizComp
   const clearChart = () => {
     if (Array.isArray(views)) {
-      console.warn("array!!!", views);
     } else {
       const v = views;
       if (v) {
@@ -172,6 +238,7 @@ export default function LineChart({
     views = null;
   };
 
+  // Recreate the chart if the data and settings change
   useEffect(() => {
     createChart();
     return () => {
@@ -179,6 +246,7 @@ export default function LineChart({
     };
   }, [data, mappings, options, colorTags]);
 
+  // Catch current data selections properly in the VizComp
   const prevCds = usePrevious(cds);
   useEffect(() => {
     if (selectedIndices.length === 0) {
@@ -188,20 +256,21 @@ export default function LineChart({
     }
   }, [selectedIndices]);
 
+  // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 LineChart.propTypes = {
-  data: PropTypes.shape({
-    // xData: PropTypes.arrayOf(PropTypes.string),
-    // yData: PropTypes.arrayOf(PropTypes.string),
-    // heatVal: PropTypes.arrayOf(PropTypes.number),
-    // indices: PropTypes.arrayOf(PropTypes.array),
-  }),
+  data: PropTypes.shape({}),
   mappings: PropTypes.shape({}),
   options: PropTypes.shape({
     title: PropTypes.string,
@@ -223,7 +292,12 @@ LineChart.propTypes = {
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 LineChart.defaultProps = {
   data: {},
   mappings: {
@@ -235,3 +309,4 @@ LineChart.defaultProps = {
   selectedIndices: [],
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------

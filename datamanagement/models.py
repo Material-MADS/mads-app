@@ -1,3 +1,23 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided models for the 'datamanagement' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'datamanagement' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, private-storage, uuid, common.modelsm logging, uuid libs
+#             and 'User'-folder's 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -16,13 +36,17 @@ from common.models import IndexedTimeStampedModel
 from common.models import OwnedResourceModel
 from users.models import User
 
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def get_encoded_filepath(instance, filename):
     filename, file_extension = os.path.splitext(filename)
     return os.path.join(str(instance.owner.uuid), str(instance.id) + file_extension)
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def allow_custom_users(private_file):
     request = private_file.request
 
@@ -42,8 +66,10 @@ def allow_custom_users(private_file):
         return True
 
     return False
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def delete_previous_file(function):
     """The decorator for deleting unnecessary file.
 
@@ -74,11 +100,13 @@ def delete_previous_file(function):
             previous.file.delete(False)
         return result
     return wrapper
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSource(OwnedResourceModel):
 
-    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304)
+    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304, content_types="text/csv")
     # file = PrivateFileField("File")
     shared_users = models.ManyToManyField(
         'users.User', blank=True,
@@ -113,9 +141,12 @@ class DataSource(OwnedResourceModel):
     @delete_previous_file
     def delete(self, using=None, keep_parents=False):
         super(DataSource, self).delete()
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 # when deleting model the file is removed
 @receiver(post_delete, sender=DataSource)
 def delete_file(sender, instance, **kwargs):
     instance.file.delete(False)
+#-------------------------------------------------------------------------------------------------

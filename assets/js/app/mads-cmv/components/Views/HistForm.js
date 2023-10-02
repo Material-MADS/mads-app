@@ -1,12 +1,38 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'Hist' View, driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HistForm' opens a customized form for the 'Hist' visualization component and allows
+//        the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm } from 'redux-form';
 import { Form } from 'semantic-ui-react';
 
-import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import Input from '../FormFields/Input';
-import SemanticDropdown from '../FormFields/Dropdown';
+import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const HistForm = (props) => {
+
+  // parameters and such
   const {
     handleSubmit,
     initialValues,
@@ -23,20 +49,29 @@ const HistForm = (props) => {
     props: { style: '' },
   }));
 
+  // input managers
   const [colorDisabled, setColorDisabled] = useState(
     !initialValues.colorAssignmentEnabled
   );
 
+  if(initialValues.targetColumns && initialValues.targetColumns.length > 0){
+    var hitCounter = 0;
+    for(var i = 0; i < initialValues.targetColumns.length; i++){
+      hitCounter += columns.some(e => e.value === initialValues.targetColumns[i]) ? 1 : 0;
+    }
+    if(hitCounter != initialValues.targetColumns.length){ initialValues.targetColumns = []; }
+  }
+
+  // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Field>
         <label>Target columns</label>
         <Field
-          name="targetColumns[0]"
-          component={SemanticDropdown}
+          name="targetColumns"
+          component={MultiSelectDropdown}
           placeholder="Columns"
           search
-          // trigger={<Label color={data.color}/>}
           options={columns}
         />
       </Form.Field>
@@ -60,20 +95,24 @@ const HistForm = (props) => {
           name="options.extent.width"
           component={Input}
           placeholder="Width"
-          // parse={(value) => Number(value)}
         />
         <Field
           fluid
           name="options.extent.height"
           component={Input}
           placeholder="Height"
-          // parse={(value) => Number(value)}
         />
       </Form.Group>
     </Form>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'Scatter',
 })(HistForm);
+//-------------------------------------------------------------------------------------------------

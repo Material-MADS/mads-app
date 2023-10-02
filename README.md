@@ -1,3 +1,8 @@
+[//]: # (==============================================================================================================)
+[//]: # (This is the Main ReadMe file for the CADS/MADS project)
+[//]: # (Description: How to set up the project server from Git, how to manage it as well as credits to the developers)
+[//]: # (==============================================================================================================)
+
 [![License: MIT](https://img.shields.io/github/license/vintasoftware/django-react-boilerplate.svg)](LICENSE.txt)
 
 # MADS/CADS Application (madsapp)
@@ -12,10 +17,12 @@ The platform helps material scientists design new materials with:
 
 ### Requirements
 
-- node.js
-  - yarn
-- Python
-  - pipenv, django
+- node.js 14.16.1
+  - yarn 1.22.19
+- Python 3.9
+  - pip 22.3.1
+  - pipenv 2022.11.30
+  - django 3.2.15
 
 ### Setup
 
@@ -24,20 +31,47 @@ The platform helps material scientists design new materials with:
   - `.env.example` -> `.env`
   - `madsapp/settings/local.py.example` -> `madsapp/settings/local.py`
 
+### Install Dependencies
+
+- Open a command line window and go to the project's directory.
+- Python packaging and dependency management
+  ```
+  # Install python packages.
+  pipenv install --dev
+  ```
+  If you have any problems, please confirm Python version, pip version and pipenv version.<br>
+  And don't forget to remove virtualenv before you retry "pipenv install --dev".
+  ```
+  pipenv --rm
+  ```
+- Install javascript packages by yarn.
+  ```
+  yarn --dev --frozen-lockfile
+  ```
+
 ### Running the project
 
 - Open a command line window and go to the project's directory.
-- `pipenv install --dev`
-- `yarn --dev --frozen-lockfile`
-- `yarn run start`
+  ```
+  yarn run start
+  ```
 - Open another command line window and go to the project's directory.
-- `pipenv shell`
+  ```
+  # Activate python virtualenv.
+  pipenv shell
+  ```
 - Create the migrations for `users` app with:
-  `python manage.py makemigrations`
+  ```
+  python manage.py makemigrations
+  ```
 - Run the migrations:
-  `python manage.py migrate`
+  ```
+  python manage.py migrate
+  ```
 - Run the server app:
-- `python manage.py runserver`
+  ```
+  python manage.py runserver
+  ```
 
 ### docker-compose
 
@@ -53,7 +87,7 @@ Please see some guide line like https://opensource.guide/how-to-contribute/ .
 
 You may follow blow procedure:
 
-1. Folk the repository
+1. Fork the repository
 2. Create a branch
 3. Commit changes
 4. Push the branch
@@ -70,4 +104,4 @@ https://doi.org/10.1039/D0RE00098A
 
 [MIT License](LICENSE.txt)
 
-Copyright (c) 2018 MADS/CADS development team
+Copyright (c) 2018-present MADS/CADS development team

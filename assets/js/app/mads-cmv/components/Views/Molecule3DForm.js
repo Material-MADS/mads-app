@@ -1,17 +1,42 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'Molecule3D' View,
+//              driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Molecule3DForm' opens a customized form for the 'Molecule3D' visualization component
+//        and allows the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
+//             lodash libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm, Label, change } from 'redux-form';
 import { Button, Form } from 'semantic-ui-react';
 
-import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
-import SemanticDropdown from '../FormFields/Dropdown';
-import SemCheckbox from '../FormFields/Checkbox';
 import Input from '../FormFields/Input';
 import inputTrad from '../FormFields/inputTraditional';
 import TextArea from '../FormFields/TextArea';
+
 import _ from 'lodash';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const Molecule3DForm = (props) => {
+
+  // parameters and such
   const {
     handleSubmit,
     initialValues,
@@ -23,9 +48,10 @@ const Molecule3DForm = (props) => {
     colorTags,
   } = props;
 
-
+  // input managers
   const fileChange = e => {
     var file = e.target.files[0]; // File object
+    props.change('fileExt', e.target.files[0].name.split('.').pop().toLowerCase());
     var reader = new FileReader();
 
     reader.onloadend = function(evt) {
@@ -40,6 +66,7 @@ const Molecule3DForm = (props) => {
         }
         else{
           props.change('molForm', "");
+          document.getElementsByName('molForm')[0].placeholder='';
         }
 
         var csidPos = trimmedMolStr.indexOf("<csid>");
@@ -80,19 +107,21 @@ const Molecule3DForm = (props) => {
               });
             })
             .then(data => {
-              // console.warn(data);
               props.change('molName', (JSON.parse(data)).records[0].commonName);
               props.change('molSmiles', encodeURIComponent((JSON.parse(data)).records[0].smiles));
             })
             .catch(err => {
               console.error(err);
               props.change('molName', "");
+              document.getElementsByName('molName')[0].placeholder='';
               props.change('molSmiles', "");
             });
         }
         else{
           props.change('molUrl', "");
+          document.getElementsByName('molUrl')[0].placeholder='';
           props.change('molName', "");
+          document.getElementsByName('molName')[0].placeholder='';
           props.change('molSmiles', "");
         }
       }
@@ -101,6 +130,7 @@ const Molecule3DForm = (props) => {
     reader.readAsBinaryString(file);
   };
 
+  // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Group widths="equal">
@@ -127,11 +157,12 @@ const Molecule3DForm = (props) => {
       <hr />
 
       <Form.Field>
-        <label>MOL File String: (Paste text or <Button as="label" htmlFor="file" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>Load File</Button>) [Use <a target='_blank' href='http://www.chemspider.com'>ChemSpider</a> for best support]</label>
+      <label>MOL, XYZ or CIF File: <Button as="label" htmlFor="file" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>Load File</Button> [Perhaps Use <a target='_blank' href='http://www.chemspider.com'>ChemSpider</a> for locating files]</label>
         <Field
           fluid
           name="molStr"
-          component={TextArea}
+          component={Input}
+          disabled={true}
           placeholder="CT1000292221
             3  2  0  0  0               999 V2000
               0.0021   -0.0041    0.0020 H   0  0  0  0  0  0  0  0  0  0  0  0
@@ -145,7 +176,6 @@ const Molecule3DForm = (props) => {
         <input type="file" id="file" style={{ display: "none" }} onChange={fileChange} />
       </Form.Field>
 
-      {/* validate={[ errorValidate ]} onChange={onCMChange}*/}
       <Form.Field>
         <label>Chemical Name:</label>
         <Field
@@ -180,6 +210,10 @@ const Molecule3DForm = (props) => {
         type="hidden"
         name="molSmiles"
       />
+      <input
+        type="hidden"
+        name="fileExt"
+      />
 
       <hr />
       <Form.Group widths="equal">
@@ -202,7 +236,13 @@ const Molecule3DForm = (props) => {
     </Form>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'Molecule3D',
 })(Molecule3DForm);
+//-------------------------------------------------------------------------------------------------

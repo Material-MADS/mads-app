@@ -1,8 +1,33 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is a 'Form Field' React Component (used in data editing/displaying forms)
+//              of the Custom 'Data Source Selector' type
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Form Fields' are component used inside all forms for editing and viewing connected data.
+//        'DataSourceSelector' is a drop down list that allows us to select which of our available
+//        data sources we wish to analyse in the current workspace.
+// ------------------------------------------------------------------------------------------------
+// References: React, prop-types & semantic-ui-react Libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import { Select } from 'semantic-ui-react';
 
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
+// The Component Class
+//-------------------------------------------------------------------------------------------------
 class DataSourceSelector extends React.Component {
   static propTypes = {
     selectedDataSource: PropTypes.string,
@@ -36,6 +61,7 @@ class DataSourceSelector extends React.Component {
         selectOnNavigation={false}
         placeholder="Select data source..."
         search
+        id="dataSourceSelector"
         options={items}
         onChange={(_, item) => onSelectionChange(item.value)}
         value={selectedDataSource}
@@ -43,5 +69,6 @@ class DataSourceSelector extends React.Component {
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
 export default DataSourceSelector;

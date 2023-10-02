@@ -1,3 +1,15 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Dockerfile for running CADS via Docker
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
 FROM python:3.9
 
 ENV PYTHONUNBUFFERED 1
@@ -39,3 +51,4 @@ RUN yarn run build
 EXPOSE 8000
 
 # CMD gunicorn madsapp.wsgi --limit-request-line 8188 --log-file -
+#-------------------------------------------------------------------------------------------------

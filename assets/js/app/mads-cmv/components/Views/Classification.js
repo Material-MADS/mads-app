@@ -1,25 +1,54 @@
-// import { connect } from 'react-redux';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Classification'
+//              View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Classification' is the manager of all current input that controls the final view of the
+//         'Classification' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal Classification & ClassificationForm libs,
+=================================================================================================*/
+
+//*** TODO: Could this be deleted, and just leave the Scatter Plot with some new settings to replace them
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
 
 import withCommandInterface from './ViewWrapper';
-import ClassificationVis from '../VisComponents/ClassificationVis';
-import ClassificationForm from './ClassificationForm';
-// import { withReducer } from 'recompose';
 import convertExtentValues from './FormUtils';
 
+import ClassificationVis from '../VisComponents/ClassificationVis';
+import ClassificationForm from './ClassificationForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
 const settings = {
   options: { title: 'Classification' },
 };
+//-------------------------------------------------------------------------------------------------
 
-class ClassificationView extends withCommandInterface(
-  ClassificationVis,
-  ClassificationForm,
-  settings
-) {
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class ClassificationView extends withCommandInterface( ClassificationVis, ClassificationForm, settings ) {
+
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    // console.log(values)
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -33,7 +62,6 @@ class ClassificationView extends withCommandInterface(
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
-    console.log(columns);
     if (values.featureColumns) {
       const filteredColumns = values.featureColumns.filter((f) =>
         columns.includes(f)
@@ -56,35 +84,24 @@ class ClassificationView extends withCommandInterface(
       x: values.targetColumn,
       y: `${values.targetColumn}--predicted`,
     };
-    console.warn(newValues.mappings);
 
     newValues = convertExtentValues(newValues);
-
-    console.log(newValues);
-    // TODO: apply filters
-    // updateView(id, newValues);
 
     this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
+  // Manages Save Model Requests
   handleModelSave = (name, overwrite, id) => {
-    // Note: override this if necessary
-    console.log('model saving...');
     const { actions } = this.props;
 
-    // submit setting form
-    // this.onSubmitClick();
     this.formReference.submit();
-    console.log(this.tmpViewParams);
     actions.saveModel(name, this.tmpViewParams, overwrite, id);
-    // this.close();
   };
 
+  // Manages data changes in the view
   mapData = (dataset) => {
-    console.log(dataset);
     const { id, view, actions } = this.props;
-
     const data = [];
 
     if (dataset[id]) {
@@ -104,11 +121,8 @@ class ClassificationView extends withCommandInterface(
         data.push(item);
       });
     }
-    console.log(data);
-    // actions.update
+
     return data;
   };
 }
-
-// export default connect(mapStateToProps)(ScatterView);
-export default ClassificationView;
+//-------------------------------------------------------------------------------------------------

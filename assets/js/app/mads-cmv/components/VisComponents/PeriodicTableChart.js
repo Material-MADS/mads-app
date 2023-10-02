@@ -1,10 +1,37 @@
-import React, { useState, useEffect, useRef } from "react";
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the
+//              'PeriodicTable' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PeriodicTable' is a visualization component that displays a classic Periodic Table
+//        with the most common elements abd most of their attributes, rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party lodash, Jquery, Bokeh and pandas libs
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { Component } from 'react';
 import PropTypes from "prop-types";
+
 import * as Bokeh from "@bokeh/bokehjs";
 import _, { transform } from 'lodash';
 import $ from "jquery";
 import { Series, DataFrame } from 'pandas-js';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Pre Initiate the Element data
+//-------------------------------------------------------------------------------------------------
 
 // Import Periodic Table Data and Prepare Periodic Table
 //=======================================================
@@ -47,14 +74,23 @@ const tooltip = [
   ['Electronic configuration', '@{electronic configuration}'],
 ];
 //=======================================================
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Periodic Table (omitting LA and AC Series)",
   extent: { width: 1000, height: 450 },
   x_range: groups,
   y_range: periods.reverse(),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
   const tools = "tap,box_select";
@@ -72,18 +108,104 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
-export default function PeriodicTable() {
-  const rootNode = useRef(null);
-  let views = null;
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
 
-  const createChart = async () => {
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Class
+//-------------------------------------------------------------------------------------------------
+
+export default class PeriodicTable extends Component {
+  // Initiation of the VizComp
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
+
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
+    }
+
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props && this.props.data && this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
+
+  // Create the VizComp based on the incomming parameters
+  async createChart() {
+    const {
+      options,
+    } = this.props;
+
+
+    // Create the VizComp based on the incomming parameters
     const data = new Bokeh.ColumnDataSource({ data: { ...dataset,}, });
-    const fig = createEmptyChart({});
+    this.mainFigure = createEmptyChart({});
 
-    const r = fig.rect({
+    const r = this.mainFigure.rect({
       x: { field: 'group' },
       y: { field: 'period' },
       width: 0.95,
@@ -100,12 +222,12 @@ export default function PeriodicTable() {
       },
     });
 
-    fig.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [r] }));
+    this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [r] }));
 
     const text_props = {source: data, text_align: "left", text_baseline: "middle"};
-    const x = { field: 'group', transform: new Bokeh.Dodge({ value: -0.4, range: fig.x_range, }) };
+    const x = { field: 'group', transform: new Bokeh.Dodge({ value: -0.4, range: this.mainFigure.x_range, }) };
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: { field: 'period' },
       text: { field: 'symbol' },
@@ -113,24 +235,24 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
          field: "period",
-         transform: new Bokeh.Dodge({ value: 0.3, 'range': fig.y_range })
+         transform: new Bokeh.Dodge({ value: 0.3, 'range': this.mainFigure.y_range })
       },
       text: { field: 'atomic number' },
       text_font_size: '11px',
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
         field: 'period',
         transform: new Bokeh.Dodge({
           value: -0.35,
-          range: fig.y_range,
+          range: this.mainFigure.y_range,
         }),
       },
       text: { field: 'name' },
@@ -138,13 +260,13 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: x,
       y: {
         field: 'period',
         transform: new Bokeh.Dodge({
           value: -0.2,
-          range: fig.y_range,
+          range: this.mainFigure.y_range,
         }),
       },
       text: { field: 'atomic mass' },
@@ -152,7 +274,7 @@ export default function PeriodicTable() {
       ...text_props,
     });
 
-    fig.text({
+    this.mainFigure.text({
       x: ["3", "3"],
       y: ["VI", "VII"],
       text: ["LA", "AC"],
@@ -160,52 +282,43 @@ export default function PeriodicTable() {
       text_baseline: "middle",
     });
 
-    fig.outline_line_color = null;
-    fig.xgrid[0].grid_line_color = null;
-    fig.ygrid[0].grid_line_color = null;
-    fig.xaxis[0].axis_line_color = null;
-    fig.yaxis[0].axis_line_color = null;
-    fig.xaxis[0].major_tick_line_color = null;
-    fig.yaxis[0].major_tick_line_color = null;
-    fig.xaxis[0].major_label_standoff = 0;
-    fig.yaxis[0].major_label_standoff = 0;
-    fig.legend.orientation = "horizontal";
-    fig.legend.location = "top_center";
+    this.mainFigure.outline_line_color = null;
+    this.mainFigure.xgrid[0].grid_line_color = null;
+    this.mainFigure.ygrid[0].grid_line_color = null;
+    this.mainFigure.xaxis[0].axis_line_color = null;
+    this.mainFigure.yaxis[0].axis_line_color = null;
+    this.mainFigure.xaxis[0].major_tick_line_color = null;
+    this.mainFigure.yaxis[0].major_tick_line_color = null;
+    this.mainFigure.xaxis[0].major_label_standoff = 0;
+    this.mainFigure.yaxis[0].major_label_standoff = 0;
+    this.mainFigure.legend.orientation = "horizontal";
+    this.mainFigure.legend.location = "top_center";
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    $(rootNode.current).parent().parent().find(".ui.mini.icon.button").eq(1).hide();
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
+    $(this.rootNode.current).parent().parent().find(".ui.mini.icon.button").eq(1).hide();
 
-    return cds;
-  };
-
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-      console.warn("array!!!", views);
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
+    this.views = views;
+  }
 
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  });
-
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  // Add the VizComp to the DOM
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 PeriodicTable.propTypes = {
   options: PropTypes.shape({
     title: PropTypes.string,
@@ -217,7 +330,13 @@ PeriodicTable.propTypes = {
     }),
   }),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 PeriodicTable.defaultProps = {
   options: defaultOptions,
 };
+//-------------------------------------------------------------------------------------------------

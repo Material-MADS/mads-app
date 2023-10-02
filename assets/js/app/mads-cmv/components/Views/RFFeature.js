@@ -1,14 +1,37 @@
-// import { connect } from 'react-redux';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'RFFeature' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'RFFeature' (Feature Importance) is the manager of all current input that controls the
+//         final view of this specific case of a 'BarChart' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal BarChart & RFFeatureForm libs,
+=================================================================================================*/
 
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
 
 import withCommandInterface from './ViewWrapper';
-// import QuadBarChart from '../VisComponents/QuadBarChart';
+import convertExtentValues from './FormUtils';
+
 import BarChart from '../VisComponents/BarChart';
 import RFFeatureForm from './RFFeatureForm';
 
-import convertExtentValues from './FormUtils';
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
 const settings = {
   options: {
     title: 'Feature Importance (RF)',
@@ -18,33 +41,25 @@ const settings = {
   },
 };
 
-class RFFeatureView extends withCommandInterface(
-  BarChart,
-  RFFeatureForm,
-  settings
-) {
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class RFFeatureView extends withCommandInterface( BarChart, RFFeatureForm, settings ) {
+
+  // Manages data selection changes in the view
   handleSelectionChange = (indices) => {
-    // const { dataset, updateSelection, } = this.props;
-    // const data = this.mapData(dataset);
-    // console.log(data);
-    // let selections = [];
-    // indices.forEach((i) => {
-    //   const idx = data.indices[i];
-    //   selections = [...selections, ...idx];
-    // });
-    // console.log(selections);
-    // updateSelection(selections);
   };
 
   getSelection = (selection) => {
     // do nothing
   };
 
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    console.log(values);
-
     const { id, view, colorTags, actions, dataset } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -58,7 +73,6 @@ class RFFeatureView extends withCommandInterface(
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
-    console.log(columns);
     if (values.featureColumns) {
       const filteredColumns = values.featureColumns.filter((f) =>
         columns.includes(f)
@@ -80,13 +94,12 @@ class RFFeatureView extends withCommandInterface(
       data[c] = fc.values.toArray();
     });
 
-    console.log(data);
     newValues = convertExtentValues(newValues);
-
     actions.sendRequestViewUpdate(view, newValues, data);
     // updateView(id, newValues);
   };
 
+  // Manages data changes in the view
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
@@ -98,5 +111,4 @@ class RFFeatureView extends withCommandInterface(
     return data;
   };
 }
-
-export default RFFeatureView;
+//-------------------------------------------------------------------------------------------------

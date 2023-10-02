@@ -1,19 +1,39 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018-)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: Settings for webpacks static module bundler for this app if in local developer mode
+// ------------------------------------------------------------------------------------------------
+// Notes: This is the additional settings config used by local developer deployments
+// ------------------------------------------------------------------------------------------------
+// References: 'webpack.base.config' and some additional external libraries
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 const autoprefixer = require('autoprefixer');
 const webpack = require('webpack');
-const SpritesmithPlugin = require('webpack-spritesmith');
 const BundleTracker = require('webpack-bundle-tracker');
 const path = require('path');
 const baseConfig = require('./webpack.base.config');
 
-console.log(baseConfig);
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Add and change the configs according to the need of this deployment mode
+//-------------------------------------------------------------------------------------------------
 baseConfig[0].mode = 'development';
 baseConfig[1].mode = 'development';
 
 const serverAddr = process.env.DEV_SERVER_PUBLIC_ADDR || 'http://localhost';
 const serverPort = process.env.DEV_SERVER_PORT || 3000;
 
-// sourcemap
 baseConfig[0].devtool = 'inline-source-map';
 baseConfig[1].devtool = 'inline-source-map';
 
@@ -50,20 +70,6 @@ baseConfig[1].module.rules.push(
 
 baseConfig[1].plugins = [
   new webpack.HotModuleReplacementPlugin(),
-  new SpritesmithPlugin({
-    src: {
-      cwd: path.resolve(__dirname, 'assets/images/'),
-      glob: '*.png',
-    },
-    target: {
-      image: path.resolve(
-        __dirname,
-        'assets/images/spritesmith-generated/sprite.png'
-      ),
-      css: path.resolve(__dirname, 'assets/sass/vendor/spritesmith.scss'),
-    },
-    retina: '@2x',
-  }),
   new BundleTracker({
     path: __dirname,
     filename: './assets/bundles/webpack-stats.json',
@@ -92,14 +98,5 @@ baseConfig[1].plugins = [
     Util: 'exports-loader?Util!bootstrap/js/dist/util',
   }),
 ];
-
-// baseConfig[1].optimization = {
-//   splitChunks: { chunks: 'all' },
-// };
-
-// baseConfig[1].node = {
-//   Buffer: false,
-//   process: false,
-// };
 
 module.exports = baseConfig;

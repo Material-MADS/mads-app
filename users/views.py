@@ -1,3 +1,21 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018-)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Management modules for Serverside User object
+# ------------------------------------------------------------------------------------------------
+# Notes: This is the views for the object that manages the user object on the Django server side
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, logging lib and 'users' folder 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth import login
@@ -13,9 +31,10 @@ from .models import User
 
 import logging
 logger = logging.getLogger(__name__)
+#-------------------------------------------------------------------------------------------------
 
 
-
+#-------------------------------------------------------------------------------------------------
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -41,8 +60,10 @@ def signup(request):
     else:
         form = SignupForm()
     return render(request, 'registration/signup.html', {'form': form})
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
@@ -57,4 +78,6 @@ def activate(request, uidb64, token):
         # return redirect('home')
         return render(request, 'registration/signup_activated.html')
     else:
-        return HttpResponse('Activation link is invalid!')
+        return HttpResponse('All seem well and you should be able to login now, but if you have any problems, please let us know.')
+        # return HttpResponse('Activation link is invalid!')
+#-------------------------------------------------------------------------------------------------

@@ -1,9 +1,37 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'BarChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'BarChart' is a visualization component that displays a classic bar chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, BarChart VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react'; // eslint-disable-line import/no-extraneous-dependencies
 import { action } from '@storybook/addon-actions'; // eslint-disable-line import/no-extraneous-dependencies
 
 import BarChart from './BarChart';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
 
 // 'with simple data specified with x axis'
 //=========================================
@@ -24,6 +52,30 @@ export function getBarChartDataPack(){
 const barChartDataPack = getBarChartDataPack();
 //=========================================
 
+// 'same as above but transposed data'
+//=========================================
+export function getBarChartDataPackTransposed(){
+  const data = {
+    years: ['2015', '2016', '2017'],
+    Apples: [2, 5, 3],
+    Pears: [1, 3, 2],
+    Nectarines: [4, 3, 4],
+    Plums: [3, 2, 4],
+    Grapes: [2, 4, 5],
+    Strawberries: [4, 6, 3],
+  };
+
+  const mappings = { dimension: 'years', measures: ['Apples', 'Pears', 'Nectarines', 'Plums', 'Grapes', 'Strawberries'] };
+  const options = { legendLocation: 'top_left' };
+  const onSelectedIndicesChange = action('selected_change');
+
+  return {data, mappings, options, onSelectedIndicesChange};
+}
+const barChartDataPackTransposed = getBarChartDataPackTransposed();
+//=========================================
+
+
+//=========================================
 
 // 'with simple data specified with x axis (4 measures)'
 //=========================================
@@ -110,8 +162,13 @@ chemData.data.forEach(item => {
 const cfMappings = { dimension: 'dimension', measures: ['measures'] };
 //=========================================
 
-const stories = storiesOf('BarChart', module);
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
+const stories = storiesOf('BarChart', module);
 stories
   .add('empty bar chart', () => <BarChart />)
   .add('with simple data specified with x axis', () => (
@@ -120,6 +177,14 @@ stories
       mappings = { barChartDataPack.mappings }
       options = { barChartDataPack.options }
       onSelectedIndicesChange = { barChartDataPack.onSelectedIndicesChange }
+    />
+  ))
+  .add('same as above with transposed data', () => (
+    <BarChart
+      data = { barChartDataPackTransposed.data }
+      mappings = { barChartDataPackTransposed.mappings }
+      options = { barChartDataPackTransposed.options }
+      // onSelectedIndicesChange = { barChartDataPackTransposed.onSelectedIndicesChange }
     />
   ))
   .add('with simple data specified with x axis (2 measures)', () => (
@@ -194,3 +259,4 @@ stories
       onSelectedIndicesChange={action('selected_change')}
     />
   ));
+//-------------------------------------------------------------------------------------------------

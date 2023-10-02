@@ -1,19 +1,45 @@
-import React, { useState, useEffect, useRef } from "react";
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Scatter3D' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Scatter3D' is a visualization component that displays a classic 3D Scatter Plot in
+//        various ways based on a range of available properties, and is rendered with the help of the
+//        Plotly library.
+// ------------------------------------------------------------------------------------------------
+// References: React, redux & prop-types Libs, 3rd party lodash, jquery and Plotly libs with
+//             Bokeh color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { useEffect, useRef } from "react";
 import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
+
 import _ from 'lodash';
 import $ from "jquery";
-
-import * as Bokeh from "@bokeh/bokehjs";
 import Plotly from 'plotly.js-dist-min';
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
+
+import * as loadingActions from '../../actions/loading';
+
 // Dev and Debug declarations
-window.Bokeh = Bokeh;
 window.Plotly = Plotly;
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Scatter 3D",
   extent: { width: 450, height: 450 },
@@ -35,8 +61,14 @@ const defaultOptions = {
   },
   colorMap: 'Category20c',
 };
+//-------------------------------------------------------------------------------------------------
 
-function getChartData(data, options) {
+
+//-------------------------------------------------------------------------------------------------
+// Get Chart Data
+// Support Method that extracts and prepare the provided data for the VisComp
+//-------------------------------------------------------------------------------------------------
+function getChartData(data, options, selectedIndices, colorTags) {
   const params = Object.assign({}, defaultOptions, options, _.isEmpty(data)?{marker: {size: 1, color: 'transparent', opacity: 0}}:{});
   data = _.isEmpty(data)?{x: [0.1, 0.2], y: [0.1, 0.2], z: [0.1, 0.2]}:data;
   let uniques = [... new Set(data.gr)];
@@ -58,10 +90,10 @@ function getChartData(data, options) {
     }
     else{
       cm = allPal.Magma256;
-      internalOptions.colorMap = 'Magma';
+      params.colorMap = 'Magma';
     }
     if(uniques.length > 20 && uniques.length < 256){
-      const step = Math.floor(256/angles.length);
+      const step = Math.floor(256/uniques.length);
       for(let i = 0; i < uniques.length; i++) {
         colors.push(cm[i*step]);
       };
@@ -74,7 +106,26 @@ function getChartData(data, options) {
 
   let styles = undefined;
   if(colors !== undefined){
-    styles = uniques.map((grCatName, index) => { return {target: grCatName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
+    styles = uniques.map((grColName, index) => { return {target: grColName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
+  }
+
+  var theMarkerColors = params.marker.color;
+  if((selectedIndices && selectedIndices.length > 0) || colorTags.length > 0){
+    theMarkerColors = data.x.map(v => params.marker.color);
+  }
+
+  if(selectedIndices && selectedIndices.length > 0){
+    for(var i = 0; i < selectedIndices.length; i++){
+      theMarkerColors[selectedIndices[i]] = '#FFA500';
+    }
+  }
+
+  if(colorTags.length > 0){
+    colorTags.forEach((colorTag) => {
+      colorTag.itemIndices.forEach((i) => {
+        theMarkerColors[i] = colorTag.color;
+      });
+    });
   }
 
   var cData = [{
@@ -89,16 +140,21 @@ function getChartData(data, options) {
     y: data.y,
     z: data.z,
     marker: {
-      size: params.marker.size,
-      color: params.marker.color,
+      size: (params.marker.manySizes && params.marker.manySizes.length > 0) ? params.marker.manySizes : params.marker.size,
+      color: theMarkerColors,
       opacity: params.marker.opacity,
     },
   },];
 
   return cData;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Get Chart Layout
+// Support Method that extracts and prepare the provided layout settings for the VisComp
+//-------------------------------------------------------------------------------------------------
 function getChartLayout(data, options, currentDataSourceName) {
   const params = Object.assign({}, defaultOptions, options);
 
@@ -153,8 +209,13 @@ function getChartLayout(data, options, currentDataSourceName) {
 
   return cLayout;
 }
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// Get Chart Configuration
+// Support Method that extracts and prepare the provided Option Parameters for the VisComp
+//-------------------------------------------------------------------------------------------------
 function getChartConfig(options) {
   const params = Object.assign({}, defaultOptions, options);
 
@@ -167,22 +228,23 @@ function getChartConfig(options) {
 
   return cConfig;
 }
+//-------------------------------------------------------------------------------------------------
 
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
 export default function Scatter3D({
   data,
-  mappings,
   options,
   colorTags,
+  selectedIndices,
+  isPropSheetOpen,
+  actions,
 }) {
+
+  // Initiation of the VizComp
   const rootNode = useRef(null);
-  let internalData = data;
   let internalOptions = options;
 
   let currentDataSourceName = "";
@@ -191,46 +253,66 @@ export default function Scatter3D({
     currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
   } catch (error) { /*Just ignore and move on*/ }
 
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions.title = "Scatter 3D";
-      internalOptions.axisTitles = ['x', 'y', 'z'];
-      delete internalData.resetRequest;
-    }
-  }, [internalData])
-
+  // Create the VizComp based on the incoming parameters
   const createChart = async () => {
+    if(actions){ actions.setLoadingState(true); }
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
-    let sData = getChartData(internalData, internalOptions);
-    let layout = getChartLayout(internalData, internalOptions, currentDataSourceName);
+    let sData = getChartData(data, internalOptions, selectedIndices, colorTags);
+    let layout = getChartLayout(data, internalOptions, currentDataSourceName);
     let config = getChartConfig(internalOptions);
 
-    $(rootNode.current).append('<img id="Scatter3DLoadingGif" src="https://miro.medium.com/max/700/1*CsJ05WEGfunYMLGfsT2sXA.gif" width="300" />');
+    loadingActions.setLoadingState(true);
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
-        $( "#Scatter3DLoadingGif" ).remove();
+      })
+      .finally(function() {
+        internalOptions["camera"] = (rootNode.current).layout.scene.camera;
+        if(actions){ actions.setLoadingState(false); }
       });
-
-      (rootNode.current).on('plotly_relayout', function(internalData){ internalOptions["camera"] = (rootNode.current).layout.scene.camera});
     });
   };
 
-  const clearChart = () => { };
+  // Clear away the VizComp
+  const clearChart = () => { /* Called when component is deleted */ };
+
+  // Only called at init and set our final exit function
+  useEffect(() => {
+    return () => { clearChart(); };
+  }, []);
+
+  // Recreate the chart if the data and settings change
+  useEffect(() => {
+    if(isPropSheetOpen){ return; }
+
+    // Clear away all data if requested
+    if(data.resetRequest){
+      internalOptions.title = "";
+      internalOptions.axisTitles = ['x', 'y', 'z'];
+      delete data['gr'];
+      delete data.resetRequest;
+    }
+
+    createChart();
+  }, [data, options]);
 
   useEffect(() => {
+    if(isPropSheetOpen){ return; }
     createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
+  }, [selectedIndices, colorTags]);
 
+  // Add the VizComp to the DOM
   return (
-    <div id="container">
+    <div>
       <div ref={rootNode} />
     </div>
   );
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 Scatter3D.propTypes = {
   data: PropTypes.shape({ }),
   mappings: PropTypes.shape({
@@ -251,10 +333,16 @@ Scatter3D.propTypes = {
   }),
   colorTags: PropTypes.arrayOf(PropTypes.object),
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 Scatter3D.defaultProps = {
   data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],
 };
+//-------------------------------------------------------------------------------------------------

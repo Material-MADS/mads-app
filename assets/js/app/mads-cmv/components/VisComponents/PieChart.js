@@ -1,10 +1,36 @@
-import React, { useState, useEffect, useRef } from "react";
-import PropTypes from "prop-types";
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'PieChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PieChart' is a visualization component that displays a classic pie chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
 import * as deepEqual from 'deep-equal';
-import * as Bokeh from "@bokeh/bokehjs";
+import * as Bokeh from '@bokeh/bokehjs';
+
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Pie Chart",
   extent: { width: undefined, height: 400 },
@@ -12,7 +38,12 @@ const defaultOptions = {
   y_range: [-1.0, 1.0],
   colorMap: 'Category20c',
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
 function createEmptyChart(options) {
   const params = Object.assign({}, defaultOptions, options);
   const tools = "pan,crosshair,tap,wheel_zoom,reset,save";
@@ -33,48 +64,117 @@ function createEmptyChart(options) {
 
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
 
-export default function PieChart({
-  data,
-  mappings,
-  options,
-  colorTags,
-  selectedIndices,
-  onSelectedIndicesChange,
-}) {
-  const rootNode = useRef(null);
-  let views = null;
-  const [mainFigure, setMainFigure] = useState(null);
-  let cds = null;
-  let selectedIndicesInternal = [];
-  let internalData = data;
-  let internalOptions = options;
 
-  useEffect(() => {
-    if(internalData.resetRequest){
-      internalOptions.title = undefined;
-      delete internalData.resetRequest;
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Class
+//-------------------------------------------------------------------------------------------------
+
+export default class PieChart extends Component {
+  // Initiation of the VizComp
+  constructor(props) {
+    super(props);
+    this.cds = null;
+    this.rootNode = React.createRef();
+    this.clearChart = this.clearChart.bind(this);
+    this.createChart = this.createChart.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
+    this.lastSelections = [];
+    this.selecting = false;
+  }
+
+  componentDidMount() {
+    this.createChart();
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const diff = _.omitBy(nextProps, (v, k) => {
+      const { [k]: p } = this.props;
+      return p === v;
+    });
+
+    if (diff.colorTags) {
+      return true;
     }
-  }, [internalData])
 
-  const createChart = async () => {
-    const fig = createEmptyChart(internalOptions);
-    setMainFigure(fig);
+    if (diff.selectedIndices) {
+      if (this.cds) {
+        this.cds.selected.indices = diff.selectedIndices;
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  componentDidUpdate() {
+    this.clearChart();
+    this.createChart();
+  }
+
+  componentWillUnmount() {
+    this.clearChart();
+  }
+
+  handleSelectedIndicesChange() {
+    const { onSelectedIndicesChange } = this.props;
+    const { indices } = this.cds.selected;
+
+    if (this.selecting) {
+      return;
+    }
+
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+      this.selecting = true;
+      this.lastSelections = [...indices];
+      onSelectedIndicesChange(indices);
+      this.selecting = false;
+    }
+  }
+
+  // Clear away the VizComp
+  clearChart() {
+    if (Array.isArray(this.views)) {
+    } else {
+      const v = this.views;
+      if (v) {
+        v.remove();
+      }
+    }
+    if(this.props.data.resetRequest){
+      this.props.options.title = defaultOptions.title;
+      delete this.props.data.resetRequest;
+    }
+    this.mainFigure = null;
+    this.views = null;
+  }
+
+  // Create the VizComp based on the incomming parameters
+  async createChart() {
+    const {
+      data,
+      mappings,
+      options,
+      colorTags,
+      selectedIndices,
+      onSelectedIndicesChange,
+    } = this.props;
+
+    let selectedIndicesInternal = [];
+    let internalData = data;
+    let internalOptions = options;
+
+    // Create the VizComp based on the incomming parameters
+    this.mainFigure = createEmptyChart(internalOptions);
 
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     const { dimensions, values } = mappings;
 
     if(internalData[values] && internalData[values].length > 256){
-      fig.title.text_color = "red";
-      fig.title.text = "Your target column includes way too many categories (" + internalData[values].length + "), No Pie Chart drawn!";
+      this.mainFigure.title.text_color = "red";
+      this.mainFigure.title.text = "Your target column includes way too many categories (" + internalData[values].length + "), No Pie Chart drawn!";
       internalData = {};
     }
 
@@ -135,11 +235,11 @@ export default function PieChart({
           percentage,
         },
       });
-      cds = sData;
+      this.cds = sData;
 
       // setup callback
-      if (cds) {
-        cds.connect(cds.selected.change, () => {
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, () => {
           const indices = sData.selected.indices;
           if (!deepEqual(selectedIndicesInternal, indices)) {
             selectedIndicesInternal = [...indices];
@@ -150,9 +250,9 @@ export default function PieChart({
         });
       }
 
-      fig.add_tools(new Bokeh.HoverTool({ tooltips: '@' + dimensions + ': @' + values + ' (@percentage %)' }));
+      this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: '@' + dimensions + ': @' + values + ' (@percentage %)' }));
 
-      fig.wedge({
+      this.mainFigure.wedge({
         x: 0,
         y: 0,
         radius: 0.4,
@@ -166,55 +266,38 @@ export default function PieChart({
         source: sData,
       });
 
-      fig.xaxis[0].axis_label = null;
-      fig.yaxis[0].axis_label = null;
-      fig.xaxis[0].visible = false;
-      fig.yaxis[0].visible = false;
-      fig.xgrid[0].grid_line_color = null;
-      fig.ygrid[0].grid_line_color = null;
+      this.mainFigure.xaxis[0].axis_label = null;
+      this.mainFigure.yaxis[0].axis_label = null;
+      this.mainFigure.xaxis[0].visible = false;
+      this.mainFigure.yaxis[0].visible = false;
+      this.mainFigure.xgrid[0].grid_line_color = null;
+      this.mainFigure.ygrid[0].grid_line_color = null;
     }
 
-    views = await Bokeh.Plotting.show(fig, rootNode.current);
-    return cds;
-  };
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
-  const clearChart = () => {
-    if (Array.isArray(views)) {
-      console.warn("array!!!", views);
-    } else {
-      const v = views;
-      if (v) {
-        v.remove();
-      }
+    if (this.views) {
+      this.clearChart();
     }
 
-    setMainFigure(null);
-    views = null;
-  };
+    this.views = views;
+  }
 
-  useEffect(() => {
-    createChart();
-    return () => {
-      clearChart();
-    };
-  }, [data, mappings, options, colorTags]);
-
-  const prevCds = usePrevious(cds);
-  useEffect(() => {
-    if (selectedIndices.length === 0) {
-      if (prevCds) {
-        prevCds.selected.indices = [];
-      }
-    }
-  }, [selectedIndices]);
-
-  return (
-    <div id="container">
-      <div ref={rootNode} />
-    </div>
-  );
+  // Add the VizComp to the DOM
+  render() {
+    return (
+      <div>
+        <div ref={this.rootNode} />
+      </div>
+    );
+  }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 PieChart.propTypes = {
   data: PropTypes.shape({
     values: PropTypes.arrayOf(PropTypes.number),
@@ -236,7 +319,12 @@ PieChart.propTypes = {
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 PieChart.defaultProps = {
   data: {},
   mappings: {
@@ -248,3 +336,4 @@ PieChart.defaultProps = {
   selectedIndices: [],
   onSelectedIndicesChange: undefined,
 };
+//-------------------------------------------------------------------------------------------------

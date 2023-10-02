@@ -1,3 +1,20 @@
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: (Django) the template for Workspace page of the web application
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is the Workspace template file
+# ------------------------------------------------------------------------------------------------
+# References: ga.html (Google Analytics)
+#=================================================================================================
+{% endcomment %}
+
 {% load render_bundle from webpack_loader %} {% load static %}
 
 <!DOCTYPE html>
@@ -110,9 +127,15 @@
       <a
         class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
         href="{% url 'docs:index' %}"
-        href="{% url 'docs:index' %}"
-        >Docs</a
+        href="{% url 'docs:index' %}" target="_blank"
+        >Online Docs</a
       >
+      {% comment %} <a
+        class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
+        href="{% url 'more:index' %}"
+        href="{% url 'more:index' %}"
+        >Download & More</a
+      > {% endcomment %}
 
       {% block sidebar %}{% endblock %} {% if user.is_authenticated %}
       <div class="item">{{ user.get_username }}</div>
@@ -158,9 +181,14 @@
         >
         <a
           class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
-          href="{% url 'docs:index' %}"
-          >Docs</a
+          href="{% url 'docs:index' %}" target="_blank"
+          >Online Docs</a
         >
+        {% comment %} <a
+          class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
+          href="{% url 'more:index' %}"
+          >Download & More</a
+        > {% endcomment %}
 
         <div class="right item">
           {% if user.is_authenticated %}

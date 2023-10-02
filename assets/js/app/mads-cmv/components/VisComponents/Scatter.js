@@ -1,74 +1,90 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'Scatter' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Scatter' is a visualization component that displays a classic Scatter Plot in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types Libs, 3rd party pandas, deepEqual, lodash & Bokeh libs
+//             with various color palettes
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
-import * as gPalette from 'google-palette';
-import { showMessage } from '../../actions/message';
-import { yellowBright } from 'ansi-colors';
-
 import * as Bokeh from '@bokeh/bokehjs';
+
+import * as gPalette from 'google-palette';
 import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-
 const Category10_10 = Category10.Category10_10;
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: 'Scatter',
   selectionColor: 'orange',
   nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: 400, height: 400 },
 };
+//-------------------------------------------------------------------------------------------------
 
-function createEmptyChart(options) {
+
+//-------------------------------------------------------------------------------------------------
+// Creates an empty basic default Visualization Component of the specific type
+//-------------------------------------------------------------------------------------------------
+function createEmptyChart(options, dataIsEmpty) {
   const params = Object.assign({}, defaultOptions, options);
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
     title: params.title || 'Plot',
     tools,
-    // x_range: [0, 100],
-    // y_range: [0, 100],
+    x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
+    y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
     toolbar_location: 'right',
-    // toolbar_sticky: false,
-    // output_backend: 'svg',
   });
 
-  // const fig = new Bokeh.Plot({
-  //   title: params.title || 'Plot',
-  //   tools,
-  //   // x_range: [0, 100],
-  //   // y_range: [0, 100],
-  //   plot_width: params.extent.width || 400,
-  //   plot_height: params.extent.height || 400,
-  //   // toolbar_location: 'right',
-  //   // toolbar_sticky: false,
-  //   // output_backend: 'svg',
-  // });
-
-  // fig.output_backend = 'svg';
   return fig;
 }
+//-------------------------------------------------------------------------------------------------
 
-class BokehScatter extends Component {
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Class
+//-------------------------------------------------------------------------------------------------
+export default class BokehScatter extends Component {
+  // Initiation of the VizComp
   constructor(props) {
     super(props);
-    // this.state = {};
     this.cds = null;
 
     this.rootNode = React.createRef();
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange =
-      this.handleSelectedIndicesChange.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
-    // this.updatePlot = this.updatePlot.bind(this);
   }
 
   componentDidMount() {
@@ -76,23 +92,16 @@ class BokehScatter extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    // console.warn('0000', nextProps)
     const diff = _.omitBy(nextProps, (v, k) => {
       const { [k]: p } = this.props;
       return p === v;
     });
 
-    // if (diff.filteredIndices) {
-    //   return true;
-    // }
-
     if (diff.colorTags) {
       return true;
     }
 
-    // if (diff.selectedIndices && Object.keys(diff).length === 1) {
     if (diff.selectedIndices) {
-      // console.log(diff);
       if (this.cds) {
         this.cds.selected.indices = diff.selectedIndices;
       }
@@ -103,13 +112,11 @@ class BokehScatter extends Component {
   }
 
   componentDidUpdate() {
-    // this.updatePlot();
     this.clearChart();
     this.createChart();
   }
 
   componentWillUnmount() {
-    console.info('unmount');
     this.clearChart();
   }
 
@@ -117,39 +124,21 @@ class BokehScatter extends Component {
     const { onSelectedIndicesChange } = this.props;
     const { indices } = this.cds.selected;
 
-    // console.log('selecting', this.selecting);
     if (this.selecting) {
       return;
     }
 
-    // console.log(indices, this.lastIndices);
-    // if (onSelectedIndicesChange && !deepEqual(this.lastIndices, indices)) {
-    //   onSelectedIndicesChange(indices);
-    //   this.lastIndices = indices;
-    // }
     if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
       this.selecting = true;
-
-      // console.log(indices, this.lastSelections);
       this.lastSelections = [...indices];
       onSelectedIndicesChange(indices);
       this.selecting = false;
     }
   }
 
+  // Clear away the VizComp
   clearChart() {
-    // console.info('clear chart');
-    // if (this.views) {
-    //   Object.keys(this.views).forEach((key) => {
-    //     const v = this.views[key];
-    //     // v.model.disconnect_signals();
-    //     v.remove();
-    //     // console.log('remove', key);
-    //   });
-    // }
-    console.warn(this.views);
     if (Array.isArray(this.views)) {
-      console.warn('array!!!', this.views);
     } else {
       const v = this.views;
       if (v) {
@@ -161,8 +150,8 @@ class BokehScatter extends Component {
     this.views = null;
   }
 
+  // Create the VizComp based on the incomming parameters
   async createChart() {
-    // console.log('create', this.props);
     const {
       data,
       mappings,
@@ -173,23 +162,21 @@ class BokehScatter extends Component {
       showMessage,
     } = this.props;
 
-    // console.log('sc', selectedIndices, this.selecting);
-
     const { x: xName, y: yName, color } = mappings;
 
-    this.mainFigure = createEmptyChart(options);
     const df = new DataFrame(data);
 
     let x = [];
     let y = [];
 
     const cols = df.columns;
-    // console.log(cols)
-    // window.c = cols
+
+    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       x = df.get(xName).to_json({ orient: 'records' });
       y = df.get(yName).to_json({ orient: 'records' });
+
       this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
 
       // if data is categorical, warn
@@ -227,8 +214,6 @@ class BokehScatter extends Component {
         const pal = gPalette('tol-rainbow', 256).map((c) => `#${c}`);
         let low = df.get(color).values.min();
         let high = df.get(color).values.max();
-        console.log('low:', low);
-        console.log('high:', high);
         if (!low) {
           low = 0;
         }
@@ -236,38 +221,12 @@ class BokehScatter extends Component {
           high = 0;
         }
 
-        console.log(high);
         window.pal = pal;
 
-        // if (Number.isNaN(parseFloat(high)) || Number.isNaN(parseFloat(low))) {
-        //   // do nothing
-        //   // const factors = df.get(color).values.filter((a, i, self) => {
-        //   //   return self.indexOf(a) === i;
-        //   // });
-        //   // const cPal = gPalette('tol-rainbow', factors.length).map(c => `#${c}`);
-        //   // mapper = new Bokeh.CategoricalColorMapper({
-        //   //   factors,
-        //   //   palette: cPal,
-        //   // });
-        //   dispatch(showMessage({
-        //     header: '',
-        //     content: 'Type string is not supported in color mapping.',
-        //     type: 'error',
-        //   }));
-        // } else {
-        // mapper = new Bokeh.LinearColorMapper({
-        //   palette: pal,
-        //   low: parseFloat(low), // - (high - low) * 0.01,
-        //   high: parseFloat(high), // + (high - low) * 0.01,
-        // });
-
-        // const z = df.get(color).to_json({ orient: 'records' });
-        // this.cds = new Bokeh.ColumnDataSource({ data: { x, y, z } });
-        // }
         mapper = new Bokeh.LinearColorMapper({
           palette: pal,
-          low: parseFloat(low), // - (high - low) * 0.01,
-          high: parseFloat(high), // + (high - low) * 0.01,
+          low: parseFloat(low),
+          high: parseFloat(high),
         });
 
         const z = df.get(color).to_json({ orient: 'records' });
@@ -276,11 +235,8 @@ class BokehScatter extends Component {
 
       // setup callback
       this.cds.connect(this.cds.selected.change, () => {
-        // console.log(arguments);
         this.handleSelectedIndicesChange();
       });
-
-      // TODO: recover tool selection
 
       // call the circle glyph method to add some circle glyphs
       const selectionColor = options.selectionColor || 'orange';
@@ -308,8 +264,6 @@ class BokehScatter extends Component {
           label_standoff: 8,
           location: [0, 0],
         });
-
-        // TODO: colorbar title
 
         this.mainFigure.toolbar_location = null;
         this.mainFigure.add_layout(colorBar, 'right');
@@ -343,14 +297,10 @@ class BokehScatter extends Component {
           filters: [iFilter],
         });
         circles.view = view;
-        // console.log(view);
       }
     }
 
-    const views = await Bokeh.Plotting.show(
-      this.mainFigure,
-      this.rootNode.current
-    );
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
     if (this.views) {
       this.clearChart();
@@ -359,15 +309,21 @@ class BokehScatter extends Component {
     this.views = views;
   }
 
+  // Add the VizComp to the DOM
   render() {
     return (
-      <div id="container">
+      <div>
         <div ref={this.rootNode} />
       </div>
     );
   }
 }
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
 BokehScatter.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   mappings: PropTypes.shape({
@@ -390,7 +346,12 @@ BokehScatter.propTypes = {
   onSelectedIndicesChange: PropTypes.func,
   showMessage: PropTypes.func,
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
 BokehScatter.defaultProps = {
   data: [],
   mappings: {},
@@ -405,6 +366,4 @@ BokehScatter.defaultProps = {
   filteredIndices: [],
   onSelectedIndicesChange: undefined,
 };
-
-// export default connect()(BokehScatter);
-export default BokehScatter;
+//-------------------------------------------------------------------------------------------------

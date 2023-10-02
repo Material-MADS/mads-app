@@ -1,6 +1,27 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) web application setttings for this deployment mode [local base]
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is a deployment settings file for the website.
+# ------------------------------------------------------------------------------------------------
+# References: base settings
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from .base import *  # noqa
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 DEBUG = True
 
 HOST = 'http://localhost:8000'
@@ -21,7 +42,6 @@ MEDIA_ROOT = base_dir_join('mediafiles')
 MEDIA_URL = '/media/'
 
 PRIVATE_STORAGE_ROOT = './private_media/'
-# PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
 PRIVATE_STORAGE_AUTH_FUNCTION = 'datamanagement.models.allow_custom_users'
 
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
@@ -97,3 +117,4 @@ LOGGING = {
 }
 
 JS_REVERSE_JS_MINIFY = False
+#-------------------------------------------------------------------------------------------------

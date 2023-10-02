@@ -1,3 +1,24 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) common folder contains all base-root reusable codes that are
+#              shared and used by all various "apps" within this web site. This file contains
+#              code to support various 'models'.
+# ------------------------------------------------------------------------------------------------
+# Notes: This is 'common' code that support various apps and files with all reusable features
+#        that is needed for the different pages Django provides
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries and markdown, fields & uuid libs
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import models
@@ -8,18 +29,20 @@ from markdownx.models import MarkdownxField
 
 import uuid
 
-# User = get_user_model()
+#-------------------------------------------------------------------------------------------------
 
 
-
+#-------------------------------------------------------------------------------------------------
 class IndexedTimeStampedModel(models.Model):
     created = AutoCreatedField(_('created'), db_index=True)
     modified = AutoLastModifiedField(_('modified'), db_index=True)
 
     class Meta:
         abstract = True
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class OwnedResourceModel(IndexedTimeStampedModel):
     id = models.UUIDField(
         db_index=True, primary_key=True, default=uuid.uuid4,
@@ -31,7 +54,7 @@ class OwnedResourceModel(IndexedTimeStampedModel):
     owner = models.ForeignKey(
         'users.User', on_delete=models.SET_NULL, null=True
     )
-    description = MarkdownxField(
+    description = models.TextField(
         max_length=1000, blank=True,
         help_text="Enter a brief description of the resource"
     )
@@ -98,3 +121,4 @@ class OwnedResourceModel(IndexedTimeStampedModel):
 
     class Meta:
         abstract = True
+#-------------------------------------------------------------------------------------------------

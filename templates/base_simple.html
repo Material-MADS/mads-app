@@ -1,3 +1,20 @@
+{% comment %}
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: (Django) the template for the base_simple page of the web application
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is the base_simple template file used for registration part of the app
+# ------------------------------------------------------------------------------------------------
+# References: ga.html (Google Analytics)
+#=================================================================================================
+{% endcomment %}
+
 {% load render_bundle from webpack_loader %}
 {% load static %}
 
@@ -57,7 +74,7 @@
 <body>
 
   <div class="ui middle aligned center aligned grid">
-    <div class="column">
+    <div class="column" style="min-width: 400px;">
       {% block content %}
       {% endblock %}
     </div>

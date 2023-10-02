@@ -1,3 +1,23 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided views for the 'Prediction' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'prediction' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, logging libs and 'prediction'-folder's 'forms', 'models',
+#             'helpers' and 'users'-folder's 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django import forms
 from django.contrib import messages
 from django.db.models import Q
@@ -20,8 +40,6 @@ from common.helpers import OwnedResourceModelFilter
 from .forms import PredictionForm
 from .forms import PretrainedModelForm
 
-# from .helpers import get_contents_from_file
-
 from .models import PretrainedModel
 from .helpers import PretrainedModelTable
 from users.models import User
@@ -29,13 +47,19 @@ from users.models import User
 import logging
 
 logger = logging.getLogger(__name__)
+#-------------------------------------------------------------------------------------------------
 
+#-------------
+# views below.
+#-------------
 
-# Create your views here.
+#-------------------------------------------------------------------------------------------------
 def index(request):
     return render(request, "prediction/index.html")
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class PModelActionMixin:
     @property
     def success_msg(self):
@@ -69,8 +93,10 @@ class PModelActionMixin:
 
         messages.info(self.request, self.success_msg)
         return response
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class FilteredPModelListView(SingleTableMixin, FilterView):
     model = PretrainedModel
     table_class = PretrainedModelTable
@@ -116,8 +142,10 @@ class FilteredPModelListView(SingleTableMixin, FilterView):
         context["num_of_shared"] = num_of_all - num_of_owned
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailView):
     model = PretrainedModel
     pk_url_kwarg = "id"
@@ -144,8 +172,6 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # context['form'] = self.get_form()
 
         context["file"] = context["object"].file
         context["metadata"] = context["object"].metadata
@@ -185,13 +211,13 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         }
         return self.render_to_response(context)
 
-        # return super().form_valid(form)
-
     def form_invalid(self, form):
         # put logic here
         return super().form_invalid(form)
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class PretrainedModelUpdateView(PermissionRequiredMixin, PModelActionMixin, UpdateView):
     model = PretrainedModel
     form_class = PretrainedModelForm
@@ -199,11 +225,10 @@ class PretrainedModelUpdateView(PermissionRequiredMixin, PModelActionMixin, Upda
     template_name = "prediction/model_update.html"
     success_msg = "The pretrained model is updated."
     permission_required = "prediction.change_model"
-
-    # fields = ('name', 'description', 'file', 'accessibility',
-    #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class PretrainedModelDeleteView(PermissionRequiredMixin, DeleteView):
     model = PretrainedModel
     pk_url_kwarg = "id"
@@ -214,3 +239,4 @@ class PretrainedModelDeleteView(PermissionRequiredMixin, DeleteView):
         result = super().delete(request, *args, **kwargs)
         messages.success(self.request, "The pretrained model is deleted.")
         return result
+#-------------------------------------------------------------------------------------------------

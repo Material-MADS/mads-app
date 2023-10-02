@@ -1,3 +1,24 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is an example test sample dataset of unemployment in the US over time,
+//              populary used for understanding heatmaps, and is used for that purpose also here
+//              during development testing in the localhost Storybook environment, and it is not
+//              used in the live online website.
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Unemployment' data contains data of unemployment in the US over decades.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Monthly unemployment in the US from 1948 to 2016
+//-------------------------------------------------------------------------------------------------
 const data = [
   {
     "Year": 1948,
@@ -1104,5 +1125,6 @@ const data = [
     "Annual": 4.9
   }
 ];
+//-------------------------------------------------------------------------------------------------
 
 export default data;

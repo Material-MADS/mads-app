@@ -1,27 +1,56 @@
-// import DataFrame from 'dataframe-js';
-import { Series, DataFrame } from 'pandas-js';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'Bar' Chart View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Bar' is the manager of all current input that controls the final view of the
+//         'BarChart' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal BarChart & BarForm libs,
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import { DataFrame } from 'pandas-js';
+
 import withCommandInterface from './ViewWrapper';
+import convertExtentValues from './FormUtils';
+
 import Bar from '../VisComponents/BarChart';
 import BarForm from './BarForm';
 
-import convertExtentValues from './FormUtils';
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Support Methods and Variables
+//-------------------------------------------------------------------------------------------------
+
+//====================
+// Get Median
+//-------------------------------------------------------------------------------------------------
+const getMedian = function(arr) {
+  const mid = Math.floor(arr.length / 2), nums = [...arr].sort((a, b) => a - b);
+  return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+};
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
 export default class BarView extends withCommandInterface(Bar, BarForm) {
 
-  handleSelectionChange = (indices) => {
-    const { dataset, updateSelection } = this.props;
-    const data = this.mapData(dataset);
-
-    let selections = [];
-    indices.forEach((i) => {
-      const idx = data.indices[i];
-      selections = [...selections, ...idx];
-    });
-    console.log(selections);
-    updateSelection(selections);
-  };
-
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
+    if(values.mappings.measures.length == 0){ throw "No data to work with" }
+
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
 
@@ -34,37 +63,80 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
       newValues.filter = filteredFilters;
     }
 
-    if (newValues.mappings.dimension == undefined || newValues.mappings.measures == undefined) {
-      return;
+    // extract data
+    var transposedData;
+    if(newValues.options.transposeEnabled){
+      var transposeSplitColumnValues = dataset.main.data.map(r => r[newValues.options.transposeSplitColumn].toString());
+      transposedData = newValues.options.transposeGroup.map((tgm) => {return {[newValues.options.transposeGroupLabel]: tgm};} );
+
+      for(var i = 0; i < transposeSplitColumnValues.length; i++){
+        const theValueRow = dataset.main.data.filter(row => row[newValues.options.transposeSplitColumn] == transposeSplitColumnValues[i]);
+        for(var k = 0; k < transposedData.length; k++){
+          const theValue = theValueRow[0][newValues.options.transposeGroup[k]];
+          transposedData[k][transposeSplitColumnValues[i]] = theValue;
+        }
+      }
     }
 
-    // extract data
-    const df = new DataFrame(dataset.main.data);
-    const s1 = df.get(newValues.mappings.dimension);
-    const s2 = df.get(newValues.mappings.measures);
+    var dataSource = (transposedData != undefined) ? transposedData : dataset.main.data
+    var categorizedData;
+    if(newValues.options.valCalcMethod){
+      var filteredUniqueCategoriesOnly = [...new Set(dataSource.map(r => r[newValues.mappings.dimension].toString()))] ;
+      categorizedData = filteredUniqueCategoriesOnly.map((uc) => {return {[newValues.mappings.dimension]: uc }; });
+      for(var j = 0, cdr; cdr = categorizedData[j]; j++){
+        const theCatRows = dataSource.filter(row => row[newValues.mappings.dimension] == cdr[newValues.mappings.dimension]);
+        for(var i = 0, msrs; msrs = newValues.mappings.measures[i]; i++){
+          switch (newValues.options.valCalcMethod) {
+            case 'Total':
+              var theSum = theCatRows.reduce(function (acc, obj) { return acc + obj[msrs]; }, 0);
+              cdr[msrs] = theSum;
+              break;
+            case 'Mean':
+              var theSum = theCatRows.reduce(function (acc, obj) { return acc + obj[msrs]; }, 0);
+              cdr[msrs] = (theSum / theCatRows.length);
+              break;
+            case 'Median':
+              cdr[msrs] = getMedian(theCatRows.map(o => o[msrs]));
+              break;
+            case 'Max':
+              cdr[msrs] = (Math.max(...theCatRows.map(o => o[msrs])));
+              break;
+            case 'Min':
+              cdr[msrs] = (Math.min(...theCatRows.map(o => o[msrs])));
+              break;
+
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+
     const data = {};
-    data[newValues.mappings.dimension] = s1.values.toArray();
-    data[newValues.mappings.measures] = s2.values.toArray();
-
+    const df = (categorizedData != undefined) ? new DataFrame(categorizedData) : new DataFrame(dataSource);
+    const dimensions = df.get(newValues.mappings.dimension);
+    const measures = df.get(newValues.mappings.measures);
+    data[newValues.mappings.dimension] = dimensions.values.toArray();
+    newValues.mappings.measures.forEach((c) => {
+      const mc = df.get(c);
+      data[c] = mc.values.toArray();
+    });
     newValues = convertExtentValues(newValues);
-    newValues['options']['title'] = 'The value of "' + newValues.mappings.measures + '" for each "' + newValues.mappings.dimension + '"';
-    newValues.mappings.measures = [newValues.mappings.measures];
+    newValues['options']['title'] = 'The ' + ((categorizedData != undefined) ? newValues.options.valCalcMethod+" " : "") + 'values of [' + newValues.mappings.measures.map(c => `"${c}", `).join('') + '] for ' + ((categorizedData != undefined) ? "the categories of " : "") + '"' + newValues.mappings.dimension + '"';
 
-    console.warn(newValues);
-    console.warn(data)
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
+
+  // Manages data changes in the view
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
 
-    console.warn('dataset');
-console.warn(dataset);
-console.warn(this.props.view.settings);
-
     if (dataset[id]) {
-      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.mappings.dimension)) {
+      var testValue = this.props.view.settings.options.transposeEnabled ? this.props.view.settings.options.transposeGroup[0] : this.props.view.settings.mappings.measures[0]
+      if (dataset.main.schema.fields.some(e => e.name === testValue)) {
         data = dataset[id];
       }
       else{
@@ -72,22 +144,7 @@ console.warn(this.props.view.settings);
       }
     }
 
-    console.warn("leaving mapdata")
-console.warn(data)
     return data;
-
-    // const { data } = dataSet.main;
-    // const df = new DataFrame(data);
-    // console.log(df);
-
-    // const mappedData = {};
-
-    // df.columns.forEach((col) => {
-    //   const ar = df.get(col);
-    //   mappedData[col] = ar.values.toArray();
-    // });
-
-    // console.log(mappedData);
-    // return mappedData;
   };
 }
+//-------------------------------------------------------------------------------------------------

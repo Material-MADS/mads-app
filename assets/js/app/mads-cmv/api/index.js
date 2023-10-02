@@ -1,3 +1,22 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the offered server side API for each feature/module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'index' exports an api module that let us access all other modules server side methods
+// ------------------------------------------------------------------------------------------------
+// References: 3rd part lib axios and js-cookie. internal datasources, views, userinfo,
+//             workspace and prediction
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -7,6 +26,9 @@ import userInfo from './userInfo';
 import workspace from './workspace';
 import prediction from './prediction';
 
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
 const getClient = () => {
   const csrfToken = Cookies.get('csrftoken');
   const headers = {
@@ -16,8 +38,9 @@ const getClient = () => {
   const client = axios.create({ headers });
   return client;
 };
+//-------------------------------------------------------------------------------------------------
 
-// const exportedAPI = process.env.NODE_ENV === 'development' ? mockAPI : realAPI;
+//-------------------------------------------------------------------------------------------------
 const api = {};
 
 api.datasources = datasources(getClient);
@@ -27,3 +50,5 @@ api.workspace = workspace(getClient);
 api.prediction = prediction(getClient);
 
 export default api;
+
+//-------------------------------------------------------------------------------------------------

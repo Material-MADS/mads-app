@@ -1,3 +1,24 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'BarChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'BarChart' is a visualization component that displays a classic bar chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, Scatter VizComp and ColorTag. Various TestData
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react'; // eslint-disable-line import/no-extraneous-dependencies
 import { action } from '@storybook/addon-actions'; // eslint-disable-line import/no-extraneous-dependencies
@@ -9,6 +30,16 @@ import data from './testdata/data-ex';
 import bData from './testdata/response-ex';
 import data2 from './testdata/chem';
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// 'with bigger data'
+//=========================================
 export function getScatterDataPack(){
   const data = bData.data;
   const mappings = {
@@ -21,20 +52,32 @@ export function getScatterDataPack(){
 }
 const SDPack = getScatterDataPack();
 
-const stories = storiesOf('Scatter', module);
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
+const stories = storiesOf('Scatter', module);
 stories
   .add('empty scatter plot', () => <Scatter />)
-  .add('with data', () => (
-    <Scatter
-      data={data}
-      mappings={{
-        x: 'Formation Energy (eV)',
-        y: 'Band Gap (eV)',
-      }}
-      onSelectedIndicesChange={action('selected_change')}
-    />
-  ))
+  .add('with data', () => {
+    const cTag = new ColorTag({
+      color: 'red',
+      itemIndices: [0, 10],
+    });
+    return (
+      <Scatter
+        data={data}
+        mappings={{
+          x: 'Formation Energy (eV)',
+          y: 'Band Gap (eV)',
+        }}
+        onSelectedIndicesChange={action('selected_change')}
+        colorTags={[cTag]}
+      />
+    );
+  })
   .add('with bigger data', () => (
     <Scatter
       data = { SDPack.data }
@@ -103,25 +146,4 @@ stories
       options={{ extent: { width: 400, height: 400 } }}
     />
   ));
-// .add('with knobs', () => {
-//   // const defaultExtent = { width: 400, height: 400 };
-//   // const groupId = 'GROUP-ID1';
-//   // const extent = object('extent', defaultExtent);
-//   // const width = number('width', 400);
-//   // const height = number('height', 400);
-
-//   const selections = array('selectedIndices', [0]).map(Number);
-
-//   return (
-//     <Scatter
-//       data={bData.data}
-//       mappings={{
-//         x: 'Formation Energy (eV)',
-//         y: 'Band Gap (eV)',
-//       }}
-//       // extent={{ width, height }}
-//       selectedIndices={selections}
-//       // onSelectedIndicesChange={action('selected_change')}
-//     />
-//   );
-// });
+//-------------------------------------------------------------------------------------------------

@@ -1,31 +1,50 @@
-import magic
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided forms for the 'datamanagement' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'datamanagement' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, logging libs and 'datamanagement'-folder's 'models' as
+#             well as 'User'-folder's 'models'
+#=================================================================================================
 
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
+import magic
 from django import forms
 from .models import DataSource
-
 from django.contrib.auth.models import Group
 from users.models import User
 
 import logging
 logger = logging.getLogger(__name__)
 
-# from .validators import validate_users_hidden
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 # https://developer.mozilla.org/ja/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
 supported_file_types = [
     'text/plain',
     'application/csv',
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/msword',
+    'text/csv',
     'application/vnd.ms-excel',
+    # 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    # 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    # 'application/msword',
 ]
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceForm(forms.ModelForm):
 
     class Meta(object):
@@ -113,3 +132,4 @@ class DataSourceForm(forms.ModelForm):
         logger.info('file is cleaned')
 
         return file
+#-------------------------------------------------------------------------------------------------

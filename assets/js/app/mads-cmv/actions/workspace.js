@@ -1,60 +1,103 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: These are the available Actions for the 'Workspace' feature/module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Workspace' let us save and load a set of views (visualization components) as a
+//        group (workspace)
+// ------------------------------------------------------------------------------------------------
+// References: api, message, loading and workspace models
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import api from '../api';
 import Workspace from '../models/Workspace';
 import * as messageActions from './message';
 import * as loadingActions from './loading';
 
-// Action types
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Export constants and methods
+//-------------------------------------------------------------------------------------------------
 export const WORKSPACE_INFO_REQUEST = 'WORKSPACE_INFO_REQUEST';
 export const WORKSPACE_INFO_SUCCESS = 'WORKSPACE_INFO_SUCCESS';
 export const WORKSPACE_INFO_FAILURE = 'WORKSPACE_INFO_FAILURE';
 
 export const WORKSPACE_STATE_RESET = 'WORKSPACE_STATE_RESET';
 
+//-------------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------
 const requestWorkspaceInfo = () => ({
   type: WORKSPACE_INFO_REQUEST,
 });
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const receiveWorkspaceInfo = (data) => ({
   type: WORKSPACE_INFO_SUCCESS,
   data,
   receivedAt: Date.now(),
 });
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const getWorkspaceInfoFailure = (error) => ({
   type: WORKSPACE_INFO_FAILURE,
   error,
 });
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 export const resetWorkspace = (workspace) => ({
   type: WORKSPACE_STATE_RESET,
   workspace,
 });
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const fetchCurrentWorkspaceInfo = () => (dispatch) => {
   dispatch(requestWorkspaceInfo());
 
   if (window.workspaceId) {
+    dispatch(loadingActions.setLoadingState(true));
     return api.workspace
       .fetchWorkspaceInfo(window.workspaceId)
       .then((res) => {
         dispatch(loadingActions.setLoadingState(true));
         dispatch(receiveWorkspaceInfo(res.data));
         dispatch(resetWorkspace(res.data));
-        dispatch(loadingActions.setLoadingState(false));
+        // dispatch(loadingActions.setLoadingState(false));
       })
       .catch((err) => {
         dispatch(getWorkspaceInfoFailure(err));
+        // dispatch(loadingActions.setLoadingState(false));
+      })
+      .finally(() => {
         dispatch(loadingActions.setLoadingState(false));
       });
   }
 
   return dispatch(getWorkspaceInfoFailure());
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 export const fetchWorkspaceInfoIfNeeded = () => (dispatch, getState) => {
   return dispatch(fetchCurrentWorkspaceInfo());
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const createNewWorkspace = async (workspace) => {
   const resCreated = await api.workspace.createWorkspace(workspace);
   const createdWorkspace = resCreated.data;
@@ -67,7 +110,9 @@ const createNewWorkspace = async (workspace) => {
 
   return createdWorkspace;
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 const updateWorkspace = async (id, workspace) => {
   const resUpdated = await api.workspace.updateWorkspace(id, workspace);
   const updatedWorkspace = resUpdated.data;
@@ -76,19 +121,19 @@ const updateWorkspace = async (id, workspace) => {
 
   return updatedWorkspace;
 };
+//-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
 export const saveWorkspace = (name, overwrite, id) => async (
   dispatch,
   getState
 ) => {
-  console.log('Saving workspace ...');
   const state = getState();
   const workspace = new Workspace({ name });
   const contents = {
     colorTags: state.colorTags,
     dataSources: state.dataSources,
     dataset: state.dataset,
-    dependencies: state.dependencies,
     selection: state.selection,
     views: state.views,
   };
@@ -105,7 +150,6 @@ export const saveWorkspace = (name, overwrite, id) => async (
       })
     );
     dispatch(messageActions.setMessageOpen(true));
-    console.log(updatedWorkspace);
     return;
   }
 
@@ -120,5 +164,5 @@ export const saveWorkspace = (name, overwrite, id) => async (
     })
   );
   dispatch(messageActions.setMessageOpen(true));
-  console.log(createdWorkspace);
 };
+//-------------------------------------------------------------------------------------------------

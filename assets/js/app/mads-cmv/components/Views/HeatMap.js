@@ -1,28 +1,40 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the 'HeatMap' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HeatMap' is the manager of all current input that controls the final view of the
+//         'HeatMap' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal HeatMap & HeatMapForm libs,
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
+import _ from 'lodash';
 
 import withCommandInterface from './ViewWrapper';
+import convertExtentValues from './FormUtils';
+
 import HeatMap from '../VisComponents/HeatMap';
 import HeatMapForm from './HeatMapForm';
 
-import _ from 'lodash';
+//-------------------------------------------------------------------------------------------------
 
-import convertExtentValues from './FormUtils';
 
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
 class HeatMapView extends withCommandInterface(HeatMap, HeatMapForm) {
 
-  handleSelectionChange = (indices) => {
-    const { dataset, updateSelection } = this.props;
-    const data = this.mapData(dataset);
-
-    let selections = [];
-    indices.forEach((i) => {
-      const idx = data.indices[i];
-      selections = [...selections, ...idx];
-    });
-    console.log(selections);
-    updateSelection(selections);
-  };
-
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
@@ -42,7 +54,6 @@ class HeatMapView extends withCommandInterface(HeatMap, HeatMapForm) {
     const yData = (df.get(newValues.yData).values.toArray()).map(v => (v + ''));
     const heatVal = (df.get(newValues.heatVal).values.toArray()).map(v => (parseFloat(v)));
     const data = { xData, yData, heatVal };
-    // newValues["data"] = data;
 
     let xRange = [];
     if(isNaN(xData[0])){
@@ -77,6 +88,7 @@ class HeatMapView extends withCommandInterface(HeatMap, HeatMapForm) {
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
+  // Manages data changes in the view
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
@@ -94,5 +106,6 @@ class HeatMapView extends withCommandInterface(HeatMap, HeatMapForm) {
     return data;
   };
 }
+//-------------------------------------------------------------------------------------------------
 
 export default HeatMapView;

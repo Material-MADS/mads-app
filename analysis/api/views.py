@@ -1,15 +1,28 @@
-"""[summary]
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided rest api for the 'Analysis' page involving
+#              views
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is one of the REST API part of the serverside module that allows the user to
+#         interact with the 'analysis' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries and rest framework, logging, sys libs and
+#             'analysis' folder's 'models', 'api' subfolder's 'serializers' and 'permissions'
+#             and 'utilz' folder's 'processor', 'users' folder's 'serializers'
+#=================================================================================================
 
-Returns:
-    [type] -- [description]
-"""
-
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django.db.models import Q
 import logging
-from rest_framework.generics import (
-    ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView
-)
+from rest_framework.generics import ( ListCreateAPIView, RetrieveUpdateDestroyAPIView )
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -19,7 +32,6 @@ from rest_framework.parsers import JSONParser
 from rest_framework import status
 
 from ..models import Workspace
-# from .serializers import WorkspaceSerializer
 from .serializers import WorkspaceSerializer
 from .serializers import WorkspaceSimpleSerializer
 from .permissions import IsOwnerOrReadOnly
@@ -28,10 +40,12 @@ from users.serializers import CustomUserDetailsSerializer
 
 import sys
 
-
 logger = logging.getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 class WorkspaceFilteredLookupMixin(object):
 
     def get_queryset(self):
@@ -56,40 +70,43 @@ class WorkspaceFilteredLookupMixin(object):
         ).distinct()
 
         return queryset
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceCreateAPIView(
-    # PermissionRequiredMixin,
     WorkspaceFilteredLookupMixin,
     ListCreateAPIView
 ):
-    # permission_required = 'datamanagement.list_datasources'
-    # queryset = DataSource.objects.all()
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     serializer_class = WorkspaceSerializer
     lookup_field = 'id'
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceRetrieveUpdateDestroyAPIView(
     WorkspaceFilteredLookupMixin,
     RetrieveUpdateDestroyAPIView
 ):
-    # queryset = DataSource.objects.all()
-    # permission_required = 'datamanagement.change_datasource'
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
         IsOwnerOrReadOnly,
     )
     serializer_class = WorkspaceSerializer
     lookup_field = 'id'
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceContentsAPIView(
     RetrieveUpdateDestroyAPIView
 ):
     pass
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceNewAPIView(APIView):
 
     permission_classes = (
@@ -106,8 +123,10 @@ class WorkspaceNewAPIView(APIView):
 
         request.session['test'] = request.data
         return Response('testtest')
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class WorkspaceAPIViewSet(
         WorkspaceFilteredLookupMixin,
         viewsets.ModelViewSet,
@@ -120,16 +139,11 @@ class WorkspaceAPIViewSet(
     """
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
-    permission_classes = (
-        # permissions.IsAuthenticatedOrReadOnly,
-        IsOwnerOrReadOnly,
-    )
+    permission_classes = ( IsOwnerOrReadOnly, )
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'owned':
             return WorkspaceSimpleSerializer
-        # if self.action == 'retrieve':
-        #     return WorkspaceSimpleSerializer
         return WorkspaceSerializer
 
 
@@ -141,11 +155,6 @@ class WorkspaceAPIViewSet(
     def owned(self, request):
         owned_workspaces = Workspace.objects.all().filter(owner=request.user)
 
-        # page = self.paginate_queryset(recent_users)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(owned_workspaces, many=True)
         return Response(serializer.data)
 
@@ -153,26 +162,6 @@ class WorkspaceAPIViewSet(
     @action(detail=True)
     def test(self, request, *args, **kwargs):
         logger.info('test')
-
-
-    # @action(detail=False)
-    # def create_new(self, request, *args, **kwargs):
-    #     logger.info('create new state')
-    #     # workspace = Workspace
-    #     logger.info(request.session.get('temp_state'))
-
-    #     # ws = Workspace.objects.create()
-    #     ws = Workspace()
-    #     ws.name = ws.id
-    #     ws.owner = request.user
-    #     ws.contents = '{}'
-    #     logger.info(ws.id)
-
-    #     serializer = WorkspaceSerializer(ws)
-
-    #     request.session['temp_state'] = serializer.data
-    #     logger.info(request.session.get('temp_state'))
-    #     return Response({'status': 'created'})
 
 
     @action(detail=False)
@@ -215,7 +204,6 @@ class WorkspaceAPIViewSet(
     @action(detail=False)
     def clear(self, request, *args, **Kwargs):
         logger.info(request.session.get('temp_state'))
-        # request.session.clear()
         del request.session['temp_state']
 
         return Response({'status': 'test'})
@@ -239,23 +227,14 @@ class WorkspaceAPIViewSet(
             logger.error(serializer.errors)
             return Response({'status': 'error: data is incorrect'}, status=500)
 
-        # logger.info(ws)
-        # # ws.save()
-        # request.session.clear()
-
         return Response({'status': 'test'})
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class ViewUpdateAPIs(APIView):
-    """
 
-    Arguments:
-        APIView {[type]} -- [description]
-    """
     permission_classes = (
-        # permissions.IsAuthenticated,
-        # permissions.IsAuthenticatedOrReadOnly,
-        # IsOwnerOrReadOnly,
         permissions.AllowAny,
     )
     parser_classes = (JSONParser,)
@@ -264,10 +243,8 @@ class ViewUpdateAPIs(APIView):
         try:
             return super(ViewUpdateAPIs, self).handle_exception(exc)
         except (TypeError, ValueError):
-            # content = {'detail': '{}'.format(exc.args)}
             content = {'detail': exc.args}
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
 
 
     def get(self, request):
@@ -275,37 +252,24 @@ class ViewUpdateAPIs(APIView):
 
 
     def post(self, request):
-        # logger.info(request.data)
-
-        # logger.info(request.data['view'])
-        # logger.info(request.data['view']['type'])
-
         result = {'status': 'success' }
 
-        # try:
         result = process_view(request.data)
-        # except:
-        #     t, v, tb = sys.exc_info()
-        #     result['status'] = 'error'
-        #     result['type'] = t
-        #     return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # logger.info(result['status'])
         if ('status' in result.keys() and result['status'].startswith('error')):
             return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(result)
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class CurrentUserView(APIView):
     permission_classes = (
-        # permissions.IsAuthenticated,
-        # permissions.IsAuthenticatedOrReadOnly,
-        # IsOwnerOrReadOnly,
         permissions.AllowAny,
     )
 
     def get(self, request):
         serializer = CustomUserDetailsSerializer(request.user)
         return Response(serializer.data)
-
+#-------------------------------------------------------------------------------------------------

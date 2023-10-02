@@ -1,30 +1,43 @@
-// import { connect } from 'react-redux';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Inner workings and Content Manager Controler of the
+//              'K-Means Clustering' View
+// ------------------------------------------------------------------------------------------------
+// Notes: 'K-Means Clustering' is the manager of all current input that controls the final view of the
+//         this specific case of a 'BarChart' visualization component.
+// ------------------------------------------------------------------------------------------------
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PieChart & PieForm libs,
+=================================================================================================*/
 
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import { DataFrame } from 'pandas-js';
 
 import withCommandInterface from './ViewWrapper';
-// import QuadBarChart from '../VisComponents/QuadBarChart';
-import BarChart from '../VisComponents/BarChart';
-import ClusteringForm from './ClusteringForm';
-
 import convertExtentValues from './FormUtils';
 
-const settings = {
-  options: {
-    title: 'Clustering',
-    // legendLocation: 'top_left',
-    // extent: { width: 600, height: 400 },
-    // xaxis_orientation: 'vertical',
-  },
-};
+import ClusteringVis from '../VisComponents/ClusteringVis';
+import ClusteringForm from './ClusteringForm';
 
-class ClusteringView extends withCommandInterface(
-  BarChart,
-  ClusteringForm,
-  settings
-) {
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// The View Class for this Visualization Component
+//-------------------------------------------------------------------------------------------------
+export default class ClusteringView extends withCommandInterface( ClusteringVis, ClusteringForm ) {
+
+  // Manages data selection changes in the view
   handleSelectionChange = (indices) => {
-    console.log('clustering selection changed', indices);
     if (indices.length === 0) {
       return;
     }
@@ -33,35 +46,20 @@ class ClusteringView extends withCommandInterface(
 
     let selections = [];
     const { cluster } = dataset[id];
-    // console.log(cluster);
     indices.forEach((cid) => {
       const sel = cluster.forEach((i, ii) => {
-        // console.log(i, ii)
         if (i === cid) {
           selections.push(ii);
         }
       });
-
-      // selections = selections.concat(sel);
     });
-
-    console.log(selections);
 
     updateSelection(selections);
   };
 
-  // getSelection = selection => {
-  //   // do nothing
-  //   console.log("sel", selection);
-  //   return selection;
-  //   // return [];
-  // };
-
+  // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    console.log(values);
-
     const { id, view, colorTags, actions, dataset } = this.props;
-
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -73,62 +71,71 @@ class ClusteringView extends withCommandInterface(
       newValues.filter = filteredFilters;
     }
 
-    // filter out featureColumns
-    const columns = this.getColumnOptionArray();
-    console.log(columns);
-    if (values.featureColumns) {
-      const filteredColumns = values.featureColumns.filter((f) =>
-        columns.includes(f)
-      );
-      newValues.featureColumns = filteredColumns;
-    }
+    var data = {};
+    if(newValues.visType == "Bar Chart"){
+      // filter out featureColumns
+      const columns = this.getColumnOptionArray();
+      if (values.featureColumns) {
+        const filteredColumns = values.featureColumns.filter((f) =>
+          columns.includes(f)
+        );
+        newValues.featureColumns = filteredColumns;
+      }
 
-    // extract data
-    const data = {};
-    const df = new DataFrame(dataset.main.data);
-    // const tc = df.get(newValues.targetColumn);
-    // data[newValues.targetColumn] = tc.values.toArray();
-    newValues.featureColumns.forEach((c) => {
-      const fc = df.get(c);
-      data[c] = fc.values.toArray();
-    });
+      // extract data
+      const df = new DataFrame(dataset.main.data);
+      newValues.featureColumns.forEach((c) => {
+        const fc = df.get(c);
+        data[c] = fc.values.toArray();
+      });
+    }
+    else{
+      if (!values.colorAssignmentEnabled) { newValues.mappings.color = ''; }
+      data = [...dataset.main.data];
+    }
 
     newValues = convertExtentValues(newValues);
 
-    console.log(data);
-    // TODO: apply filters
-
     actions.sendRequestViewUpdate(view, newValues, data);
-    // updateView(id, newValues);
   };
 
+  // Manages data changes in the view
   mapData = (dataset) => {
-    console.log(dataset);
     const { id, view } = this.props;
-
     const data = {};
-
     const counts = [];
+
     if (dataset[id]) {
-      const cids = dataset[id].cluster;
-      const cidsStr = [];
-      const noc = view.settings.numberOfClusters;
-      console.log(noc);
-      for (let i = 0; i < noc; i++) {
-        const c = cids.filter((x) => x === i).length;
-        console.log(c);
-        // counts.push(c);
-        counts.push(c);
-        cidsStr.push(i.toString());
+      var testValue = this.props.view.settings.featureColumns[0]
+      if (dataset.main.schema.fields.some(e => e.name === testValue)) {
+        data.visType = dataset[id].vis_type
+
+        if(data.visType == "Bar Chart"){
+          const cids = dataset[id].cluster;
+          const cidsStr = [];
+          const noc = view.settings.numberOfClusters;
+          for (let i = 0; i < noc; i++) {
+            const c = cids.filter((x) => x === i).length;
+            counts.push(c);
+            cidsStr.push(i.toString());
+          }
+
+          data.cids = cidsStr;
+          data.counts = counts;
+        }
+        else{
+          data.cluster = dataset[id].cluster;
+          data.data = dataset[id].data;
+        }
+      }
+      else{
+        data["resetRequest"] = true;
       }
 
-      data.cids = cidsStr;
-      data.counts = counts;
-      console.log(data);
+
     }
 
     return data;
   };
 }
-
-export default ClusteringView;
+//-------------------------------------------------------------------------------------------------

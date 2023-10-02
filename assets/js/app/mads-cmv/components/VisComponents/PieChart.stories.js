@@ -1,11 +1,39 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'PieChart' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'PieChart' is a visualization component that displays a classic pie chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
+// ------------------------------------------------------------------------------------------------
+// References: React & storybook Libs, 3rd party lodash, PieChart VizComp
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
+
 import _ from 'lodash';
 
 import PieChart from './PieChart';
 
-// Simple Test Data - SETUP BEGIN
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
+//-------------------------------------------------------------------------------------------------
+
+// Simple Test Data
 //=========================================
 export function getPieDataPack(){
   const originalTestData = {
@@ -37,9 +65,8 @@ export function getPieDataPack(){
 }
 const STDPack = getPieDataPack();
 //=========================================
-// Simple Test Data - SETUP END
 
-// Small File Sample Data - SETUP BEGIN
+// Small File Sample Data
 //=========================================
 import sampledata from './testdata/data-ex';
 const sgc = {};
@@ -54,9 +81,8 @@ for (let key in sgc) {
   sgData.values.push(sgc[key]);
 }
 //=========================================
-// Small File Sample Data - SETUP END
 
-// Bigger File Sample Data - SETUP BEGIN
+// Bigger File Sample Data
 //=========================================
 import biggersampledata from './testdata/response-ex';
 const sgc2 = {};
@@ -71,9 +97,8 @@ for (let key in sgc2) {
   bsgData.values.push(sgc2[key]);
 }
 //=========================================
-// Bigger File Sample Data - SETUP END
 
-// Numeric Chem File Data - SETUP BEGIN
+// Numeric Chem File Data
 //=========================================
 import numericchemdata from './testdata/chem';
 const cData =  { dimensions: _.range(10).map((num) => { return num * 10 + "% - " + ((num * 10) + 10) + "%"; }), values: Array(10).fill(0) };
@@ -82,10 +107,14 @@ numericchemdata.data.forEach(item => {
   cData.values[Math.floor(sg/10)]++;
 });
 //=========================================
-// Numeric Chem File Data - SETUP END
 
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
 const stories = storiesOf('PieChart', module);
-
 stories
   .add('...empty', () => <PieChart />)
   .add('...with small data', () => (
@@ -113,3 +142,4 @@ stories
        options = {{title: "The composition of 10 categories in the column of CH4-Conversion% in sample Material Data"}}
     />
   ));
+//-------------------------------------------------------------------------------------------------

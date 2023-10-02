@@ -1,5 +1,23 @@
 # https://docs.djangoproject.com/en/1.10/ref/settings/
 
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) web application setttings for this deployment mode [base]
+# ------------------------------------------------------------------------------------------------
+# Notes:  This is a deployment settings file for the website.
+# ------------------------------------------------------------------------------------------------
+# References: os and 3rd party libs
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 import os
 
 from decouple import config  # noqa
@@ -26,9 +44,8 @@ ALLOWED_HOSTS = []
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-## UPLOAD LIMITS
+# UPLOAD LIMITS
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
-# FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -52,6 +69,8 @@ INSTALLED_APPS = [
     "datamanagement.apps.DatamanagementConfig",
     "analysis.apps.AnalysisConfig",
     "prediction.apps.PredictionConfig",
+    "docs.apps.DocsConfig",
+    "more.apps.MoreConfig",
     "private_storage",
     "django_js_reverse",
     "webpack_loader",
@@ -64,7 +83,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",  # CORS check when deployment
     "django.middleware.common.CommonMiddleware",
@@ -156,15 +174,9 @@ LOGIN_REDIRECT_URL = "/"
 
 
 REST_FRAMEWORK = {
-    # 'EXCEPTION_HANDLER': 'madsapp.madsapp.utils.custom_exception_handler',
-    # 'DEFAULT_RENDERER_CLASSES': (
-    #     'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-    #     'rest_framework.renderers.JSONRenderer',
-    # ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
-        # 'rest_framework.authentication.BasicAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
@@ -181,3 +193,4 @@ MARKDOWNX_MARKDOWNIFY_FUNCTION = "markdownx.utils.markdownify"
 
 
 DISABLE_SIGNUP = config("APP_DISABLE_SIGNUP") == "True"
+#-------------------------------------------------------------------------------------------------

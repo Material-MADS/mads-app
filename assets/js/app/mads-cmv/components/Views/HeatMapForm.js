@@ -1,18 +1,43 @@
-import React, { useState } from 'react';
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the Settings Configuration Form for the 'HeatMap' View, driven by ReduxForm
+// ------------------------------------------------------------------------------------------------
+// Notes: 'HeatMapForm' opens a customized form for the 'HeatMap' visualization component and allows
+//        the user to edit its look, feel and behavior in multiple ways.
+// ------------------------------------------------------------------------------------------------
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
+//             jquery & various color palettes, Internal Form Utilities Support functions
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { useState, useRef } from 'react';
 import { Field, reduxForm } from 'redux-form';
-import { Form } from 'semantic-ui-react';
+import { Button, Form } from 'semantic-ui-react';
 
 import Input from '../FormFields/Input';
-import inputTrad from '../FormFields/inputTraditional';
-import SemCheckbox from '../FormFields/Checkbox';
 import SemanticDropdown from '../FormFields/Dropdown';
-import $ from 'jquery'
 
+import $ from 'jquery'
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
-//import * as gPalette from 'google-palette';
+
 import { cmMax, colorMapOptions } from './FormUtils';
 
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Form Support Methods that manages various individual form fields that requires some form of
+// attention to its content
+//-------------------------------------------------------------------------------------------------
+
+//=======================
 const required = (value, values, props) => {
     if(value && !props.columns.some(e => e.value === value)){
       value = undefined;
@@ -27,9 +52,16 @@ const required = (value, values, props) => {
       return;
     }
 }
+//=======================
+//-------------------------------------------------------------------------------------------------
 
 
+//-------------------------------------------------------------------------------------------------
+// The ReduxForm Module for this specific view and Visualisation Component
+//-------------------------------------------------------------------------------------------------
 const HeatMapForm = (props) => {
+
+  // parameters and such
   const {
     handleSubmit,
     initialValues,
@@ -46,6 +78,8 @@ const HeatMapForm = (props) => {
     props: { style: '' },
   }));
 
+
+  // input managers
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
   );
@@ -54,6 +88,8 @@ const HeatMapForm = (props) => {
     setValue(event);
   };
 
+
+  // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
 
@@ -128,10 +164,17 @@ const HeatMapForm = (props) => {
         ))}
         <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
       </div>
+
     </Form>
   );
 };
+//-------------------------------------------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------
+// Exporting and sharing this ReduxForm Module
+//-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'HeatMap',
 })(HeatMapForm);
+//-------------------------------------------------------------------------------------------------

@@ -1,17 +1,62 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the Wrapper Container for all Views that holds the different VisComps
+// ------------------------------------------------------------------------------------------------
+// Notes: 'ViewWrapper' is the View manager / controller that holds each various VisComp View
+//        and gives us the needed interface to remove or edit the VisComp.
+// ------------------------------------------------------------------------------------------------
+// References: react, prop-types and semantic-ui-react libs, Needed FormField components
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Dropdown, Form } from 'semantic-ui-react';
+import { Button, Modal, Popup } from 'semantic-ui-react';
+
 import DevStage from '../FormFields/DevStage';
 
-import { DepGraph } from 'dependency-graph';
+//-------------------------------------------------------------------------------------------------
 
-function withCommandInterface(
+
+//-------------------------------------------------------------------------------------------------
+// The ViewWrapper Package
+//-------------------------------------------------------------------------------------------------
+export default function withCommandInterface(
   WrappedComponent,
   SettingForm,
   settings = {},
   properties = {}
 ) {
+  // The ViewWrapper Class
   class ViewWrapper extends React.Component {
+
+    componentDidMount() {
+      if(this.props.view.settings.isDupli){
+        this.props.view.settings.isDupli = false;
+        try {
+          this.handleSubmit(this.props.view.settings);
+        } catch (error) {
+          // No need to do something, just dont try again with this one
+        }
+      }
+
+      if(this.props.devStage != 'Stable Release'){
+        this.props.actions.showMessage({
+          header: 'STILL UNDER DEVELOPMENT',
+          content: 'This component (' + this.props.view.name + ') is still in development and might change a lot before it is released. It is only available in ' + this.props.devStage + ' state and should only be used for testing and not in production.',
+          type: 'warning',
+        });
+      }
+    }
+
     state = {
       propSheetOpen: false,
     };
@@ -48,8 +93,6 @@ function withCommandInterface(
         }
       });
 
-      // window.DepGraph = DepGraph;
-
       return columnOptions;
     };
 
@@ -71,20 +114,17 @@ function withCommandInterface(
 
     handleModelSave = (name, overwrite, id) => {
       // Note: override this if necessary
-      console.log('model saving...');
     };
 
     handleSelectionChange = (indices) => {
       // Note: override this if needed
       const { updateSelection } = this.props;
-      // console.log('selected!!!', indices);
 
-      // console.trace();
       updateSelection(indices);
     };
 
     handleSubmit = (values) => {
-      // Note: override this if necessary
+      // Note: override this if necessary or more exactly... "handleSubmit" needs to be overridden.
       console.error('"handleSubmit" needs to be overridden.');
     };
 
@@ -103,6 +143,10 @@ function withCommandInterface(
       this.props.removeView(id);
     };
 
+    onDuplicateClick = (id, view) => {
+      this.props.duplicateView(id, view);
+    };
+
     render() {
       const {
         dataset,
@@ -110,27 +154,27 @@ function withCommandInterface(
         view,
         id,
         selection,
+        defaultOptions,
+        customButtons,
         colorTags,
         isLoggedIn,
         showMessage,
         actions,
+        getNewAvailableId,
         version,
-        devStage
+        devStage,
+        freeMobilityEnabled,
       } = this.props;
 
-      //console.log(this.props);
-
       const { main } = dataset;
-
       const { propSheetOpen } = this.state;
-
       const columnOptions = this.getColumnOptions();
-
-      // console.log(colorTags);
-      // let { data } = main;
-      // // TODO: compose data...
       const data = this.mapData(dataset);
       const selectionInternal = this.getSelection(selection);
+
+      const tellWSSomething = (msg) => {
+        this.props.tellWSSomething(msg);
+      };
 
       // compose filtered indices
       let filteredIndices = [];
@@ -147,38 +191,83 @@ function withCommandInterface(
         filteredIndices = Array.from(s);
       }
 
+      // Add the ViewWrapper to the DOM
       return (
         <div className="view-container">
-          <Button
-            size="mini"
-            icon="remove"
-            onClick={() => this.onDeleteClick(id)}
+          <Popup
+            trigger={<Button size="mini" icon="remove" onClick={() => this.onDeleteClick(id)} />}
+            content='Delete'
+            // disabled
+            size='small'
           />
-          <Button size="mini" icon="configure" onClick={() => this.show()} />
-          {(devStage == "Beta") && (<DevStage stage={devStage} /> )}
+          <Popup
+            trigger={<Button size="mini" icon="configure" onClick={() => this.show()} />}
+            content='Configure'
+            size='small'
+          />
+
+          {freeMobilityEnabled && <Popup
+            trigger={<Button className="the-drag-handle" size="mini" icon="arrows alternate" /> }
+            content='Move'
+            size='small'
+          />}
+
+          <Popup
+            trigger={<Button size="mini" icon="copy"  onClick={() => this.onDuplicateClick(id, view)} style={{marginRight: '20px'}}/>}
+            content='Duplicate'
+            size='small'
+          />
+          {customButtons.map((cb,index)=>{
+              if(cb.type == "color"){
+                return <Popup key={index} trigger={<input id={cb.name+view.id} type='color' style={{width: "25px", marginLeft: "2px"}} defaultValue="#ff0000"></input>} content={cb.text} size='small' />
+              }
+              else if(cb.type == "number"){
+                return <Popup key={index} trigger={<input id={cb.name+view.id} type='number' step={cb.step} min={cb.min || 0} max={cb.max || 100} style={{width: "40px", marginLeft: "2px"}} defaultValue={cb.defVal || 0}></input>} content={cb.text} size='small' />
+              }
+              else if(cb.type == "list"){
+                return <Popup key={index} trigger={<select id={cb.name+view.id} defaultValue={cb.options[0].value}>{cb.options.map(o => (<option key={o.value} value={o.value}>{o.text}</option>))}</select>} content={cb.text} size='small' />
+              }
+              else{
+                return <Popup key={index} trigger={<Button id={cb.name+view.id} className="ui custom-btn-color button" style={{border: '1px solid gray'}} size="mini" icon={cb.icon} />} content={cb.text} size='small' />
+              }
+          })}
+
+          <DevStage stage={devStage} version={version} />
           <WrappedComponent
             data={data || []}
             {...settings}
             {...view.settings}
             properties={view.properties}
-            // mappings={mappings}
             selectedIndices={selectionInternal}
+            id={view.id}
+            originalOptions={defaultOptions}
             colorTags={colorTags}
             filteredIndices={filteredIndices}
             onSelectedIndicesChange={(indices) =>
               this.handleSelectionChange(indices)
             }
             showMessage={actions.showMessage}
+            isPropSheetOpen={propSheetOpen}
+            actions={actions}
+            tellWSSomething={tellWSSomething}
           />
 
-          <Modal open={propSheetOpen} onClose={this.close}>
+          <Modal open={propSheetOpen} onClose={this.close} onMouseDown={ e => e.stopPropagation() }> {/* FORTEST: [onMouseDown={ e => e.stopPropagation() }] */}
             <Modal.Header>
               {view.name} {`[${view.id}]`}
+              {/* <label><Popup trigger={<span style={{fontSize: "14px", color: "blue"}}>🛈</span>} size='small' wide='very'>
+                <p>
+                  Designed and Developed by XXX.<br />
+                  Under the Guidance and Supervision of YYY.
+                </p>
+              </Popup></label> */}
             </Modal.Header>
             <Modal.Content>
               <SettingForm
+                dataset={dataset}
                 initialValues={view.settings}
                 enableReinitialize
+                defaultOptions={defaultOptions}
                 ref={(form) => {
                   this.formReference = form;
                 }}
@@ -188,6 +277,7 @@ function withCommandInterface(
                 colorTags={colorTags}
                 onModelSave={this.handleModelSave}
                 isLoggedIn={isLoggedIn}
+                actions={actions}
               />
             </Modal.Content>
             <Modal.Actions>
@@ -208,5 +298,4 @@ function withCommandInterface(
 
   return ViewWrapper;
 }
-
-export default withCommandInterface;
+//-------------------------------------------------------------------------------------------------

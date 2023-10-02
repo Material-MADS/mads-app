@@ -1,3 +1,23 @@
+#=================================================================================================
+# Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+#          Hokkaido University (2018)
+#          Last Update: Q3 2023
+# ________________________________________________________________________________________________
+# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+#          Jun Fujima (Former Lead Developer) [2018-2021]
+# ________________________________________________________________________________________________
+# Description: Serverside (Django) Provided views for the 'datamanagement' page
+# ------------------------------------------------------------------------------------------------
+# Notes: This is one part of the serverside module that allows the user to interact with the
+#        'datamanagement' interface of the website. (DB and server Python methods)
+# ------------------------------------------------------------------------------------------------
+# References: Django platform libraries, logging libs and 'datamanagement'-folder's 'forms',
+#             'models', 'helpers' and 'users'-folder's 'models'
+#=================================================================================================
+
+#-------------------------------------------------------------------------------------------------
+# Import required Libraries
+#-------------------------------------------------------------------------------------------------
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -34,15 +54,16 @@ from .helpers import DataSourceFilter
 from .helpers import DataSourceFilterHelper
 from users.models import User
 
-
 import rules
-
 
 from logging import getLogger
 
 logger = getLogger(__name__)
 
+#-------------------------------------------------------------------------------------------------
 
+
+#-------------------------------------------------------------------------------------------------
 class DataSourceActionMixin:
     @property
     def success_msg(self):
@@ -78,8 +99,10 @@ class DataSourceActionMixin:
 
         messages.info(self.request, self.success_msg)
         return response
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class FilteredDataSourceListView(SingleTableMixin, FilterView):
     table_class = DataSourceTable
     model = DataSource
@@ -104,14 +127,25 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
                 accessibility=DataSource.ACCESSIBILITY_PUBLIC
             )
 
-        queryset = queryset.filter(
-            Q(owner=u)
-            | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
-            | (
-                Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
-                & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
-            )
-        ).distinct()
+        if u.is_superuser or u.is_staff:
+            queryset = queryset.filter(
+                Q(owner=u)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PRIVATE)
+                | (
+                    Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
+                    & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+                )
+            ).distinct()
+        else:
+            queryset = queryset.filter(
+                Q(owner=u)
+                | Q(accessibility=DataSource.ACCESSIBILITY_PUBLIC)
+                | (
+                    Q(accessibility=DataSource.ACCESSIBILITY_INTERNAL)
+                    & (Q(shared_users__in=[u]) | Q(shared_groups__in=g))
+                )
+            ).distinct()
 
         return queryset
 
@@ -133,8 +167,10 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
         context["object_list"] = qs
         context["datasource_list"] = qs
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceDetailView(PermissionRequiredMixin, DetailView):
     # model = Book
     model = DataSource
@@ -154,7 +190,7 @@ class DataSourceDetailView(PermissionRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # read contents if the file is CSS or EXCEL
+        # read contents if the file is CSS (or EXCEL?)
         context["file"] = context["object"].file
 
         contents, file_type, columns = get_contents_from_file(context["object"].file)
@@ -164,8 +200,10 @@ class DataSourceDetailView(PermissionRequiredMixin, DetailView):
         context["columns"] = columns
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceCreateView(LoginRequiredMixin, DataSourceActionMixin, CreateView):
     model = DataSource
     form_class = DataSourceForm
@@ -180,8 +218,10 @@ class DataSourceCreateView(LoginRequiredMixin, DataSourceActionMixin, CreateView
         context["owner"] = self.request.user
 
         return context
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceUpdateView(PermissionRequiredMixin, DataSourceActionMixin, UpdateView):
     model = DataSource
     form_class = DataSourceForm
@@ -189,11 +229,10 @@ class DataSourceUpdateView(PermissionRequiredMixin, DataSourceActionMixin, Updat
     template_name = "datamanagement/datasource_update.html"
     success_msg = "The data source is updated."
     permission_required = "datamanagement.change_datasource"
-
-    # fields = ('name', 'description', 'file', 'accessibility',
-    #           'shared_users', 'shared_groups', 'users_hidden', 'groups_hidden', )
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 class DataSourceDeleteView(PermissionRequiredMixin, DeleteView):
     model = DataSource
     pk_url_kwarg = "id"
@@ -204,8 +243,10 @@ class DataSourceDeleteView(PermissionRequiredMixin, DeleteView):
         result = super().delete(request, *args, **kwargs)
         messages.success(self.request, "The data source is deleted.")
         return result
+#-------------------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------------------
 def get_data(request, id):
 
     target = DataSource.objects.get(id=id)
@@ -216,9 +257,7 @@ def get_data(request, id):
     if not rules.test_rule("can_read_datasource", request.user, target):
         return HttpResponseNotAllowed("Access denied.")
 
-    # logger.info(request.user)
     logger.info(request.user.id)
-
     logger.info(target.name)
 
     contents, file_type, columns = get_contents_from_file(target.file)
@@ -227,3 +266,4 @@ def get_data(request, id):
         return HttpResponse(contents)
 
     return HttpResponseServerError("The file type is not supported.")
+#-------------------------------------------------------------------------------------------------
