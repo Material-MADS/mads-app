@@ -35,6 +35,7 @@ const ParCoordsForm = (props) => {
   // parameters and such
   const {
     handleSubmit,
+    initialValues,
     pristine,
     reset,
     submitting,
@@ -48,6 +49,10 @@ const ParCoordsForm = (props) => {
     value: c.id,
     props: { style: '' },
   }));
+
+
+  // console.log(initialValues);
+  // if(!initialValues.axes){ initialValues.axes = [] };
 
   // The form itself, as being displayed in the DOM
   return (

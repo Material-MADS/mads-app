@@ -142,6 +142,7 @@ class StatisticsVis extends Component {
       colorTags,
       selectedIndices,
       onSelectedIndicesChange,
+      originalData,
     } = this.props;
 
     $(this.rootNode.current).empty();

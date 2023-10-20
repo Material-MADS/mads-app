@@ -5,22 +5,25 @@
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'ImageView' View
+// Description: This is the Inner workings and Content Manager Controler of the 'Molecule3D' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ImageView' is the manager of all current input that controls the final view of the
-//         'ImageView' visualization component.
+// Notes: 'Molecule3D' is the manager of all current input that controls the final view of the
+//         'Molecule3D' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal ImageView & ImageViewForm libs
+// References: 3rd party lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal Molecule3D & Molecule3DForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+import _ from 'lodash';
+
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ImageView from '../VisComponents/ImageVis';
-import ImageViewForm from './ImageForm';
+import Molecule3D from '../VisComponents/Molecule3DVis';
+import Molecule3DForm from './Molecule3DForm';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -28,7 +31,7 @@ import ImageViewForm from './ImageForm';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ImageViewView extends withCommandInterface(ImageView, ImageViewForm) {
+export default class Molecule3DView extends withCommandInterface(Molecule3D, Molecule3DForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
@@ -44,21 +47,19 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
       newValues.filter = filteredFilters;
     }
 
-    let data = {};
-    newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-    newValues = convertExtentValues(newValues);
-    for (const cf in newValues.options.cssFilters) {
-      if(cf !== "isEnabled"){
-        newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
-      }
-    }
+    // extract and insert data
+    let data = {
+      name: newValues.molName,
+      formula: newValues.molForm,
+      url: newValues.molUrl,
+      smiles: newValues.molSmiles,
+      data: newValues.molStr,
+      fileExt: newValues.fileExt,
+    };
+    newValues["data"] = data;
 
-    if(newValues.options.skImg.isEnabled){
-      const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
-      const manipData = dataset[id] ? dataset[id].manipVer : "";
-      data = {origin: originData, manipVer: manipData};
-    }
-    actions.sendRequestViewUpdate(view, newValues, data);
+    newValues = convertExtentValues(newValues);
+    updateView(id, newValues);
   };
 
   // Manages data changes in the view
@@ -68,12 +69,8 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
 
     if (dataset[id]) {
       data = dataset[id];
-
-      if (data.debugInfo) {
-        console.log("SERVER SIDE DEBUG INFO:");
-        console.log(data.debugInfo);
-      }
     }
+
     return data;
   };
 }

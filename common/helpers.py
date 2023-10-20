@@ -99,13 +99,13 @@ def get_contents_from_file(file):
         # Extract which delimiter is used in this csv file
         delimiter = '@'
         possible_delimeters = [',', ';', '\t', '\s', '|']
-        df_check = pd.read_csv(file, sep=delimiter, nrows=2)
+        df_check = pd.read_csv(file, sep=delimiter, nrows=2, encoding_errors='replace')
         cellStr = df_check.iat[0,0]
         cnt = [cellStr.count(','), cellStr.count(';'), cellStr.count('\t'), cellStr.count('\s'), cellStr.count('|') ]
         delimiter = possible_delimeters[cnt.index(max(cnt))]
         file.seek(0)
 
-        df = pd.read_csv(file, sep=delimiter)
+        df = pd.read_csv(file, sep=delimiter, encoding_errors='replace')
         json = df.to_json(orient='table')
         contents = json
         columns = df.columns

@@ -23,7 +23,7 @@ import { DataFrame } from 'pandas-js';
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import NodeGraph from '../VisComponents/NodeGraph';
+import NodeGraph from '../VisComponents/NodeGraphVis';
 import NodeGraphForm from './NodeGraphForm';
 
 //-------------------------------------------------------------------------------------------------

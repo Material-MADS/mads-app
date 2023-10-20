@@ -58,11 +58,13 @@ const validate = (values, props) => {
       if(testColumn && !props.columns.some(e => e.value === testColumn)){
         values.mappings.xData = undefined;
         values.mappings.yData = undefined;
-        values.options.axisLabels = undefined;
-        values.options.XAxisLabel = undefined;
-        values.options.YAxisLabel = undefined;
-        values.options.legendLabel = undefined;
-        values.options.title = undefined;
+        values.options.axisLabels = ['', ''];
+        values.options.XAxisLabel = "";
+        values.options.YAxisLabel = "";
+        values.options.legendLabel = "";
+        values.options.title = "";
+        values.options.colorMap = "Category10";
+        values.options.extent = {width: 700, height: 400};
       }
     }
   }
@@ -129,6 +131,8 @@ const LineForm = (props) => {
   initialValues.options.XAxisLabel = (initialValues.options.axisLabels && initialValues.options.axisLabels.length == 2) ? initialValues.options.axisLabels[0] : initialValues.options.XAxisLabel;
   initialValues.options.YAxisLabel = (initialValues.options.axisLabels && initialValues.options.axisLabels.length == 2) ? initialValues.options.axisLabels[1] : initialValues.options.YAxisLabel;
 
+  if(!initialValues.options.colorMap){ initialValues.options.colorMap = "Category10" };
+
   // input managers
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
@@ -137,6 +141,7 @@ const LineForm = (props) => {
   const onCMChange = (newVal) => {
     setValue(newVal);
   };
+
 
   // The form itself, as being displayed in the DOM
   return (

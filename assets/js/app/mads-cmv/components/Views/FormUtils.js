@@ -104,7 +104,7 @@ export const colorMapOptions = [
 // Takes an array and map it out to be used as a list of options for a Dropdown Field in a form
 //-------------------------------------------------------------------------------------------------
 // export const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
-export const getDropdownOptions = function(list, noOptionEnabled){
+export const getDropdownOptions = function(list, noOptionEnabled, noOptionText){
   if(list.length == 0){ return []; }
 
   var allOptions = [...list];
@@ -112,7 +112,8 @@ export const getDropdownOptions = function(list, noOptionEnabled){
     allOptions = list.map((i) => ({ key: i, text: i, value: i }));
   }
   if(noOptionEnabled){
-    allOptions.unshift({ key: 'noneAtAll', text: 'Not Applicable', value: 'noneAtAll' });
+    if(!noOptionText){ noOptionText = 'Not Applicable' }
+    allOptions.unshift({ key: 'noneAtAll', text: noOptionText, value: 'noneAtAll' });
   }
 
   return allOptions;
