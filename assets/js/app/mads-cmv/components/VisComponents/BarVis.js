@@ -6,35 +6,26 @@
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 //          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the React Component for the Visualization View of the 'Classification'
-//              module
+// Description: This is the React Component for the Visualization View of the 'BarChart' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Classification' is a visualization component using ML-classification on the data before
-//        displaying its result in a classic Scatter plot. (rendered by the Bokeh-Charts library.)
+// Notes: 'BarChart' is a visualization component that displays a classic bar chart in numerous
+//        ways based on a range of available properties, and is rendered with the help of the
+//        Bokeh-Charts library.
 // ------------------------------------------------------------------------------------------------
-// References: React & prop-types Libs, 3rd party pandas, deepEqual, lodash and Bokeh libs, with
-//             various color palettes
+// References: React & prop-types Libs, 3rd party deepEqual, Bokeh libs with various color palettes
 =================================================================================================*/
-
-//*** TODO: Convert this to the newer react component type using hooks or perhaps...
-//*** TODO: Could this (and perhaps Regression) be deleted, and just leave the Scatter Plot with some new settings to replace them
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { getRGBAColorStrFromAnyColor } from './VisCompUtils';
 
-import { DataFrame } from 'pandas-js';
 import * as deepEqual from 'deep-equal';
-import _ from 'lodash';
 import * as Bokeh from '@bokeh/bokehjs';
 
-import * as gPalette from 'google-palette';
-import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
-
-const Category10_10 = Category10.Category10_10;
+import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 //-------------------------------------------------------------------------------------------------
 
@@ -43,10 +34,13 @@ const Category10_10 = Category10.Category10_10;
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: 'Classification',
+  title: 'Bar Chart',
   selectionColor: 'orange',
-  nonselectionColor: `#${Greys9[3].toString(16)}`,
+  nonselectionColor: '#' + allPal['Greys9'][3].toString(16),
   extent: { width: 400, height: 400 },
+  colorMap: 'Category10',
+  barColors: [],
+  barType: "Vertical",
 };
 //-------------------------------------------------------------------------------------------------
 
@@ -55,19 +49,23 @@ const defaultOptions = {
 // Creates an empty basic default Visualization Component of the specific type
 //-------------------------------------------------------------------------------------------------
 function createEmptyChart(options, dataIsEmpty) {
-  const params = Object.assign({}, defaultOptions, options);
+  const params = { ...options };
+  const tools = 'pan,crosshair,tap,reset,save';
 
-  const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
   const fig = Bokeh.Plotting.figure({
     tools,
-    x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
+    x_range: params.x_range || (dataIsEmpty ? ['A', 'B'] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
   });
 
-  fig.title.text = params.title || 'Plot'; //title object must be set separately or it will become a string (bokeh bug)
-  // fig.title.text_color = "#303030";
+  if (params.xaxis_orientation) {
+    fig.xaxis[0].major_label_orientation = params.xaxis_orientation;
+  }
+
+  fig.title.text = params.title || defaultOptions.title; //title object must be set separately or it will become a string (bokeh bug)
+  //fig.title.text_color = "red";
   //fig.title.text_font_size = "40px";
   //fig.title.text_font = "Times New Roman";
 
@@ -83,23 +81,26 @@ function resetKeyProps(compProps) {
   compProps.options.title = defaultOptions.title;
   delete compProps.options.x_range;
   delete compProps.options.y_range;
-  compProps.mappings.x = "";
-  compProps.mappings.y = "";
+  compProps.options.transposeEnabled = false;
+  delete compProps.options.transposeGroup;
+  delete compProps.options.transposeGroupLabel;
+  delete compProps.options.transposeSplitColumn;
+  compProps.options.valCalcMethod = false;
+
+  compProps.mappings.dimension = "";
+  compProps.mappings.measures = [];
 }
 //-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
-// This Visualization Component Class
+// This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
-export default class ClassificationVis extends Component {
-  // Initiation of the VizComp
+export default class BokehBarChart extends Component {
   constructor(props) {
     super(props);
     this.cds = null;
-
     this.rootNode = React.createRef();
-
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
     this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
@@ -165,17 +166,14 @@ export default class ClassificationVis extends Component {
         v.remove();
       }
     }
-
     if(this.props.appMsg && this.props.appMsg.resetRequest){
       resetKeyProps(this.props);
       delete this.props.appMsg.resetRequest;
     }
-
     this.mainFigure = null;
     this.views = null;
   }
 
-  // Create the VizComp based on the incomming parameters
   async createChart() {
     const {
       data,
@@ -183,135 +181,114 @@ export default class ClassificationVis extends Component {
       options,
       colorTags,
       selectedIndices,
-      filteredIndices,
+      onSelectedIndicesChange,
     } = this.props;
 
-    const { x: xName, y: yName, color } = mappings;
-    const df = new DataFrame(data);
+    let selectedIndicesInternal = [];
+    let internalOptions = {...defaultOptions, ...options};
+    const { dimension, measures } = mappings;
 
-    let x = [];
-    let y = [];
+    const testDataMapMeasure = measures ? [...measures][0] : undefined;
 
-    const cols = df.columns;
-    window.c = cols;
+    // setup ranges
+    if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
+      data[dimension] = data[dimension].map(String);
+      if(internalOptions.barType == "Vertical"){ internalOptions.x_range = data[dimension]; }
+      else { internalOptions.y_range = data[dimension]; }
+    }
 
-    // this.mainFigure = createEmptyChart(options);
-    this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)));
+    this.mainFigure = createEmptyChart(internalOptions, !(dimension && measures && data[dimension] && data[testDataMapMeasure]));
 
-    if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
-      x = df.get(xName).to_json({ orient: 'records' });
-      y = df.get(yName).to_json({ orient: 'records' });
-      this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
+    if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
+      const ds = new Bokeh.ColumnDataSource({ data });
+      this.cds = ds;
 
-      this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.method + ")";
-      this.mainFigure.xaxis[0].axis_label = xName;
-      this.mainFigure.yaxis[0].axis_label = yName;
-
-      // selection
-      if (selectedIndices.length > 0) {
-        this.cds.selected.indices = selectedIndices;
-        this.lastSelections = selectedIndices;
-      }
-
-      // color
-      const colors = new Array(x.length).fill(
-        `#${Category10_10[0].toString(16)}`
-      );
-      colorTags.forEach((colorTag) => {
-        colorTag.itemIndices.forEach((i) => {
-          colors[i] = colorTag.color;
-        });
-      });
-
-      let mapper = null;
-      if (color) {
-        const pal = gPalette('tol-rainbow', 256).map((c) => `#${c}`);
-        const low = df.get(color).values.min();
-        const high = df.get(color).values.max();
-        mapper = new Bokeh.LinearColorMapper({
-          palette: pal,
-          low, // - (high - low) * 0.01,
-          high, // + (high - low) * 0.01,
-        });
-
-        const colorBar = new Bokeh.ColorBar({
-          color_mapper: mapper,
-          label_standoff: 8,
-          location: [0, 0],
-        });
-        this.mainFigure.add_layout(colorBar, 'right');
-
-        const z = df.get(color).to_json({ orient: 'records' });
-        this.cds = new Bokeh.ColumnDataSource({ data: { x, y, z } });
+      var noOfMeasures = measures.length > 2 ? measures.length : 3;
+      var cm = (allPal[(internalOptions.colorMap + noOfMeasures)] != undefined) ? allPal[(internalOptions.colorMap + noOfMeasures)] : allPal[(internalOptions.colorMap + '_' + noOfMeasures)];
+      let colors = [];
+      if(noOfMeasures <= 20){ colors = cm.slice(0, noOfMeasures); }
+      else{
+        if(allPal[(internalOptions.colorMap + '256')] != undefined){ cm = allPal[(internalOptions.colorMap + '256')]; }
+        else{ cm = allPal.Magma256;  internalOptions.colorMap = 'Magma'; }
+        if(noOfMeasures > 20 && noOfMeasures < 256){
+          const step = Math.floor(256/noOfMeasures);
+          for(let i = 0; i < noOfMeasures; i++) { colors.push(cm[i*step]); };
+        }
+        else{ colors = cm; }
       }
 
       // setup callback
-      this.cds.connect(this.cds.selected.change, () => {
-        this.handleSelectedIndicesChange();
-      });
-
-      // call the circle glyph method to add some circle glyphs
-      const selectionColor = options.selectionColor || 'orange';
-      const nonselectionColor =
-        options.nonselectionColor || `#${Greys9[3].toString(16)}`;
-
-      let circles = null;
-      if (mapper) {
-        // call the circle glyph method to add some circle glyphs
-        circles = this.mainFigure.circle(
-          { field: 'x' },
-          { field: 'y' },
-          {
-            source: this.cds,
-            fill_alpha: 0.6,
-            fill_color: { field: 'z', transform: mapper },
-            selection_color: selectionColor,
-            nonselection_color: nonselectionColor,
-            line_color: null,
+      if (this.cds) {
+        this.cds.connect(this.cds.selected.change, (...args) => {
+          const indices = ds.selected.indices;
+          if (!deepEqual(selectedIndicesInternal, indices)) {
+            selectedIndicesInternal = [...indices];
+            if (onSelectedIndicesChange) {
+              onSelectedIndicesChange(indices);
+            }
           }
-        );
-      } else {
-        circles = this.mainFigure.circle(
-          { field: 'x' },
-          { field: 'y' },
-          {
-            source: this.cds,
-            fill_alpha: 0.6,
-            fill_color: colors,
-            selection_color: selectionColor,
-            nonselection_color: nonselectionColor,
-            line_color: null,
-          }
-        );
+        });
       }
 
-      // filter
-      if (filteredIndices.length > 0) {
-        const iFilter = new Bokeh.IndexFilter({
-          indices: filteredIndices,
+      const barWidth = 4 / (measures.length * 5);
+      const step = barWidth + barWidth * 0.1;
+      measures.forEach((m, i) => {
+        const xv = new Bokeh.Dodge({
+          name: dimension,
+          value: step * i - (step * (measures.length - 1)) / 2,
+          range: ((internalOptions.barType == "Vertical") ? this.mainFigure.x_range : this.mainFigure.y_range),
         });
-        const view = new Bokeh.CDSView({
-          source: this.cds,
-          filters: [iFilter],
-        });
-        circles.view = view;
-      }
 
-      const yMax = Math.max.apply(null, y);
+        const l = data[dimension].length;
+        const ppal = new Array(l).fill(colors[i]);
 
-      const source = new Bokeh.ColumnDataSource({
-        data: { x: [0, yMax], y: [0, yMax] },
+        if (internalOptions.barColors) {
+          internalOptions.barColors.forEach((c, i) => {
+            ppal[i] = c;
+          });
+        }
+
+        for(var n = 0, ct; ct = colorTags[n]; n++){
+          var target = parseInt(ct.itemIndices[0]);
+          const baseColorAsHexStr = "#" + (ppal[target] & 0x00FFFFFF).toString(16).padStart(6, '0');
+          const baseColorAsRGB = getRGBAColorStrFromAnyColor(baseColorAsHexStr);
+          const tintColorAsRGB = getRGBAColorStrFromAnyColor(ct.color);
+          ppal[target] = RGB_Linear_Blend(0.85,baseColorAsRGB,tintColorAsRGB);
+        }
+
+        const barChartParamObj = {
+          x: ((internalOptions.barType == "Vertical") ? { field: dimension, transform: xv } : undefined),
+          y: ((internalOptions.barType != "Vertical") ? { field: dimension, transform: xv } : undefined),
+          top: ((internalOptions.barType == "Vertical") ? { field: m } : undefined),
+          right: ((internalOptions.barType != "Vertical") ? { field: m } : undefined),
+          width: ((internalOptions.barType == "Vertical") ? barWidth : undefined),
+          height: ((internalOptions.barType != "Vertical") ? barWidth : undefined),
+          source: ds,
+          color: ppal,
+          legend: {
+            value: measures[i],
+          },
+        };
+
+        let renderer;
+        if(internalOptions.barType == "Vertical"){
+          renderer = this.mainFigure.vbar(barChartParamObj);
+        }
+        else {
+          renderer = this.mainFigure.hbar(barChartParamObj);
+        }
+
+        const tooltip = [
+          [dimension, '@'+dimension+'\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'],
+          ["Group", m],
+          ["Value", '@'+m],
+        ]
+        this.mainFigure.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+        this.mainFigure.legend.location = internalOptions.legendLocation || 'top_right';
       });
-      let line = new Bokeh.Line({
-        x: { field: 'x' },
-        y: { field: 'y' },
-        line_color: 'red',
-        line_width: 1,
-      });
-      this.mainFigure.add_glyph(line, source);
     }
 
-    const views = await Bokeh.Plotting.show( this.mainFigure, this.rootNode.current );
+    const views = await Bokeh.Plotting.show(this.mainFigure, this.rootNode.current);
 
     if (this.views) {
       this.clearChart();
@@ -335,17 +312,18 @@ export default class ClassificationVis extends Component {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's Allowed and expected Property Types
 //-------------------------------------------------------------------------------------------------
-ClassificationVis.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.object),
+BokehBarChart.propTypes = {
+  data: PropTypes.shape({}),
   mappings: PropTypes.shape({
-    x: PropTypes.string,
-    y: PropTypes.string,
-    color: PropTypes.string,
+    dimension: PropTypes.string,
+    measures: PropTypes.arrayOf(PropTypes.string),
   }),
   options: PropTypes.shape({
     title: PropTypes.string,
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
+    palette: PropTypes.arrayOf(PropTypes.string),
+    barColors: PropTypes.arrayOf(PropTypes.string),
     extent: PropTypes.shape({
       width: PropTypes.number.isRequired,
       height: PropTypes.number.isRequired,
@@ -353,7 +331,6 @@ ClassificationVis.propTypes = {
   }),
   colorTags: PropTypes.arrayOf(PropTypes.object),
   selectedIndices: PropTypes.arrayOf(PropTypes.number),
-  filteredIndices: PropTypes.arrayOf(PropTypes.number),
   onSelectedIndicesChange: PropTypes.func,
 };
 //-------------------------------------------------------------------------------------------------
@@ -362,15 +339,12 @@ ClassificationVis.propTypes = {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's default initial start Property Values
 //-------------------------------------------------------------------------------------------------
-ClassificationVis.defaultProps = {
-  data: [],
+BokehBarChart.defaultProps = {
+  data: {},
   mappings: {},
   options: defaultOptions,
   colorTags: [],
   selectedIndices: [],
-  filteredIndices: [],
   onSelectedIndicesChange: undefined,
 };
 //-------------------------------------------------------------------------------------------------
-
-

@@ -4,23 +4,37 @@
 //          Last Update: Q3 2023
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'ImageView' View
+// Description: This is the Inner workings and Content Manager Controler of the 'Hist' Chart View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ImageView' is the manager of all current input that controls the final view of the
-//         'ImageView' visualization component.
+// Notes: 'Hist' is the Histogram manager of all current input that controls the final view of the
+//         this specific case of a 'QuadBarChart' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal ImageView & ImageViewForm libs
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal QuadBarChart & HistForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+import { DataFrame } from 'pandas-js';
+
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ImageView from '../VisComponents/ImageVis';
-import ImageViewForm from './ImageForm';
+import QuadBarChart from '../VisComponents/QuadBarChartVis';
+import HistForm from './HistForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
+const settings = {
+  options: { title: 'Histogram' },
+};
 
 //-------------------------------------------------------------------------------------------------
 
@@ -28,7 +42,7 @@ import ImageViewForm from './ImageForm';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ImageViewView extends withCommandInterface(ImageView, ImageViewForm) {
+export default class HistView extends withCommandInterface(QuadBarChart, HistForm, settings) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
@@ -44,20 +58,20 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
       newValues.filter = filteredFilters;
     }
 
-    let data = {};
-    newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-    newValues = convertExtentValues(newValues);
-    for (const cf in newValues.options.cssFilters) {
-      if(cf !== "isEnabled"){
-        newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
-      }
+    if (!newValues.targetColumns[0] || !newValues.bins) {
+      return;
     }
 
-    if(newValues.options.skImg.isEnabled){
-      const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
-      const manipData = dataset[id] ? dataset[id].manipVer : "";
-      data = {origin: originData, manipVer: manipData};
-    }
+    // extract data
+    const data = {};
+    const df = new DataFrame(dataset.main.data);
+    newValues.targetColumns.forEach((c) => {
+      const tc = df.get(c);
+      data[c] = tc.values.toArray();
+    });
+
+    newValues = convertExtentValues(newValues);
+
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
@@ -67,13 +81,14 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
     let data = {};
 
     if (dataset[id]) {
-      data = dataset[id];
-
-      if (data.debugInfo) {
-        console.log("SERVER SIDE DEBUG INFO:");
-        console.log(data.debugInfo);
+      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumns[0])) {
+        data = dataset[id];
+      }
+      else{
+        data["resetRequest"] = true;
       }
     }
+
     return data;
   };
 }

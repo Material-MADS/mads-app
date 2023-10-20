@@ -4,15 +4,15 @@
 //          Last Update: Q3 2023
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'ParCoords' View
+// Description: This is the Inner workings and Content Manager Controler of the
+//              'Periodic Table' Chart View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ParCoordsView' is the manager of all current input that controls the final view of the
-//         'ParCoords' visualization component.
+// Notes: 'PeriodicTable' is the manager of all current input that controls the final view of the
+//         'PeriodicTableChart' visualization component.
 // ------------------------------------------------------------------------------------------------
 // References: Internal ViewWrapper & Form Utility Support,
-//             Internal ParCoords & ParCoordsForm libs,
+//             Internal PeriodicTableChart & PeriodicTableForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
@@ -21,8 +21,8 @@
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ParCoords from '../VisComponents/ParCoordsVis';
-import ParCoordsForm from './ParCoordsForm';
+import PeriodicTableChart from '../VisComponents/PeriodicTableVis';
+import PeriodicTableForm from './PeriodicTableForm';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -30,29 +30,16 @@ import ParCoordsForm from './ParCoordsForm';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class TableView extends withCommandInterface( ParCoords, ParCoordsForm ) {
+export default class PeriodicTableView extends withCommandInterface(PeriodicTableChart, PeriodicTableForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
-  handleSubmit = (values) => {
-    const { id, updateView, colorTags } = this.props;
-    let newValues = { ...values };
+  // handleSubmit = (values) => {
+  //   const { id, view, updateView, colorTags, actions, dataset } = this.props;
+  //   let newValues = { ...values };
 
-    // filter out non-existing columns & colorTags
-    const options = this.getColumnOptionArray();
-    const filteredColumns = values.axes.filter((c) => options.includes(c));
-    newValues.axes = filteredColumns;
+  //   newValues = convertExtentValues(newValues);
 
-    if (values.filter) {
-      const colorTagIds = colorTags.map((c) => c.id);
-      const filteredFilters = values.filter.filter((f) =>
-        colorTagIds.includes(f)
-      );
-      newValues.filter = filteredFilters;
-    }
-
-    newValues = convertExtentValues(newValues);
-
-    updateView(id, newValues);
-  };
+  //   updateView(id, newValues);
+  // };
 }
 //-------------------------------------------------------------------------------------------------

@@ -5,22 +5,26 @@
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'ImageView' View
+// Description: This is the Inner workings and Content Manager Controler of the 'Pie' Chart View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ImageView' is the manager of all current input that controls the final view of the
-//         'ImageView' visualization component.
+// Notes: 'Pie' is the manager of all current input that controls the final view of the
+//         'PieChart' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal ImageView & ImageViewForm libs
+// References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
+//             Internal PieChart & PieForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+import { DataFrame } from 'pandas-js';
+import _ from 'lodash';
+
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ImageView from '../VisComponents/ImageVis';
-import ImageViewForm from './ImageForm';
+import PieChart from '../VisComponents/PieChartVis';
+import PieForm from './PieForm';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -28,7 +32,7 @@ import ImageViewForm from './ImageForm';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ImageViewView extends withCommandInterface(ImageView, ImageViewForm) {
+export default class PieView extends withCommandInterface(PieChart, PieForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
@@ -44,20 +48,18 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
       newValues.filter = filteredFilters;
     }
 
-    let data = {};
-    newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-    newValues = convertExtentValues(newValues);
-    for (const cf in newValues.options.cssFilters) {
-      if(cf !== "isEnabled"){
-        newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
-      }
+    if (newValues.targetColumn == undefined || newValues.bins == undefined) {
+      return;
     }
 
-    if(newValues.options.skImg.isEnabled){
-      const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
-      const manipData = dataset[id] ? dataset[id].manipVer : "";
-      data = {origin: originData, manipVer: manipData};
-    }
+    // extract data
+    const df = new DataFrame(dataset.main.data);
+    const s = df.get(newValues.targetColumn);
+    const data = s.values.toArray();
+
+    newValues = convertExtentValues(newValues);
+    newValues['options']['title'] = 'The composition of ' + ((newValues.bins == 0 || typeof data[0] == 'string') ? 'all' : newValues.bins) + ' categories in the column of "' + newValues.targetColumn + '"';
+
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
@@ -67,13 +69,14 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
     let data = {};
 
     if (dataset[id]) {
-      data = dataset[id];
-
-      if (data.debugInfo) {
-        console.log("SERVER SIDE DEBUG INFO:");
-        console.log(data.debugInfo);
+      if (dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn)) {
+        data = dataset[id];
+      }
+      else{
+        data["resetRequest"] = true;
       }
     }
+
     return data;
   };
 }

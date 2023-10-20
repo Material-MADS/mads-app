@@ -21,39 +21,40 @@
 //-------------------------------------------------------------------------------------------------
 
 // Visualization
-import TableView from './Table';
-import ScatterView from './Scatter';
-import BarView from './Bar';
-import PieView from './Pie';
-import Scatter3DView from './Scatter3D';
-import GapMinderView from './GapMinder';
-import LineView from './Line';
+import TableView from './TableView';
+import ScatterView from './ScatterView';
+import BarView from './BarView';
+import PieView from './PieView';
+import Scatter3DView from './Scatter3DView';
+import LineView from './LineView';
+import ViolinPlotView from './ViolinPlotView';
+import GapMinderView from './GapMinderView';
 
 // Data Processing
 import ImageViewView from './ImageView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
-import HistView from './Hist';
-import RFFeatureView from './RFFeature';
-import ClusteringView from './Clustering';
-import HeatMapView from './HeatMap';
-import PairwiseCorrelationView from './PairwiseCorrelation';
+import HistView from './HistView';
+import RFFeatureView from './RFFeatureView';
+import ClusteringView from './ClusteringView';
+import HeatMapView from './HeatMapView';
+import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
 
 // Machine Learning
-import RegressionView from './Regression';
-import ClassificationView from './Classification';
-import TensorFlowView from './TensorFlow';
-import GaussianProcessView from './GaussianProcess';
+import RegressionView from './RegressionView';
+import ClassificationView from './ClassificationView';
+import TensorFlowView from './TensorFlowView';
+import GaussianProcessView from './GaussianProcessView';
 
 // Static Data Visual Support
-import PeriodicTableView from './PeriodicTable';
-import Molecule3DView from './Molecule3D';
-import StatisticsView from './Statistics';
+import PeriodicTableView from './PeriodicTableView';
+import Molecule3DView from './Molecule3DView';
+import StatisticsView from './StatisticsView';
 
 // Other
-import CustomView from './Custom';
+import CustomView from './CustomView';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -84,6 +85,7 @@ const config = [
         },
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -104,6 +106,7 @@ const config = [
         },
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -127,6 +130,7 @@ const config = [
       },
       mappings: {},
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -149,6 +153,7 @@ const config = [
         },
       }
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -179,6 +184,7 @@ const config = [
         },
       }
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -204,32 +210,59 @@ const config = [
       },
       mappings: {},
     },
+    enabled: true,
+  },
+  //------------------------------------------
+
+
+  // Violin Plot - A Customizable Violin Plot
+  //------------------------------------------
+  {
+    type: 'violinPlot',
+    name: 'Violin Plot',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: ViolinPlotView,
+    settings: {
+      options: {
+        title: "Violin Plot",
+        extent: {
+          width: 700,
+          height: 400,
+        },
+        colorMap: 'Category10',
+      },
+      // mappings: {},
+    },
+    enabled: true,
   },
   //------------------------------------------
 
   // GapMinder - A Hans Rosling Inspiration
-  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  // NOT YET FINISHED AT ALL
   //------------------------------------------
-  // {
-  //   type: 'gapminder',
-  //   name: 'GapMinder',
-  //   category: 'Visualization',
-  //   version: 0.2,
-  //   devStage: "Alfa Draft",
-  //   component: GapMinderView,
-  //   settings: {
-  //     options: {
-  //       axisTitles: ['x', 'y'],
-  //       marker: {
-  //         size: 2,
-  //         color: 'red',
-  //         opacity: 0.8,
-  //       },
-  //       colorMap: 'Category20c',
-  //       extent: { width: 450, height: 450 },
-  //     }
-  //   },
-  // },
+  {
+    type: 'gapminder',
+    name: 'GapMinder',
+    category: 'Visualization',
+    version: 0.2,
+    devStage: "Alfa Draft",
+    component: GapMinderView,
+    settings: {
+      options: {
+        axisTitles: ['x', 'y'],
+        marker: {
+          size: 2,
+          color: 'red',
+          opacity: 0.8,
+        },
+        colorMap: 'Category20c',
+        extent: { width: 900, height: 600 },
+      }
+    },
+    enabled: false,
+  },
   //------------------------------------------
 
 
@@ -314,6 +347,7 @@ const config = [
         annotation: [],
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -336,6 +370,7 @@ const config = [
         extent: { width: 500, height: 300 },
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -358,6 +393,7 @@ const config = [
         bins: 'binEdges',
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -378,6 +414,7 @@ const config = [
         measures: ['importance'],
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -399,6 +436,7 @@ const config = [
         },
       }
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -418,6 +456,7 @@ const config = [
         maskEnabled: true,
       }
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -448,6 +487,7 @@ const config = [
         txtCol: "#000000",
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -475,6 +515,7 @@ const config = [
       cvmethodArg: 0.2,
       mappings: {},
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -497,6 +538,7 @@ const config = [
       targetColumn: '',
       mappings: {},
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -518,6 +560,7 @@ const config = [
         measures: ['counts'],
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -544,6 +587,7 @@ const config = [
         },
       }
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -568,42 +612,44 @@ const config = [
         },
       },
     },
+    enabled: true,
   },
 
   // TensorFlow View - A Customizable TensorFlow ML Component
-  // COMMENTED OUT SINCE IT IS NOT YET FINISHED AT ALL
+  // NOT YET FINISHED AT ALL
   //------------------------------------------
-  // {
-  //   type: 'tensorflow',
-  //   name: 'TensorFlow',
-  //   category: 'Machine Learning',
-  //   version: 0.2,
-  //   devStage: "Alfa Draft",
-  //   component: TensorFlowView,
-  //   // customBtns: [
-  //   //   {name: 'saveImg', icon: 'save', text: 'Save Image'},
-  //   //   {name: 'annotateImg', icon: 'edit', text: 'Enable Annotate Image'},
-  //   //   {name: 'annotateBrushType', type: 'list', text: 'Pen or Eraser?', options: [{key: "Pen0", text:"Pen", value: 0}, {key: "Eraser1", text:"Eraser", value: 1}]},
-  //   //   {name: 'annotationColor', type: 'color', text: 'Annotation Color'},
-  //   //   {name: 'annotationSize', type: 'number', step: 1, defVal: 2, text: 'Annotation Brush Size'},
-  //   //   {name: 'annotationOpacity', type: 'number', step: 0.1, min: 0.1, max: 1.0, defVal: 1.0, text: 'Annotation Brush Opacity'},
-  //   //   {name: 'annotateImgReset', icon: 'trash', text: 'Reset All Annotations'},
-  //   // ],
-  //   settings: {
-  //     options: {
-  //       title: "",
-  //       extent: {
-  //         width: 400,
-  //         height: 300,
-  //       },
-  //       border: {
-  //         color: "black",
-  //         style: "solid",
-  //         size: 2,
-  //       },
-  //     },
-  //   },
-  // },
+  {
+    type: 'tensorflow',
+    name: 'TensorFlow',
+    category: 'Machine Learning',
+    version: 0.2,
+    devStage: "Alfa Draft",
+    component: TensorFlowView,
+    // customBtns: [
+    //   {name: 'saveImg', icon: 'save', text: 'Save Image'},
+    //   {name: 'annotateImg', icon: 'edit', text: 'Enable Annotate Image'},
+    //   {name: 'annotateBrushType', type: 'list', text: 'Pen or Eraser?', options: [{key: "Pen0", text:"Pen", value: 0}, {key: "Eraser1", text:"Eraser", value: 1}]},
+    //   {name: 'annotationColor', type: 'color', text: 'Annotation Color'},
+    //   {name: 'annotationSize', type: 'number', step: 1, defVal: 2, text: 'Annotation Brush Size'},
+    //   {name: 'annotationOpacity', type: 'number', step: 0.1, min: 0.1, max: 1.0, defVal: 1.0, text: 'Annotation Brush Opacity'},
+    //   {name: 'annotateImgReset', icon: 'trash', text: 'Reset All Annotations'},
+    // ],
+    settings: {
+      options: {
+        title: "",
+        extent: {
+          width: 400,
+          height: 300,
+        },
+        border: {
+          color: "black",
+          style: "solid",
+          size: 2,
+        },
+      },
+    },
+    enabled: false,
+  },
   //------------------------------------------
 
 
@@ -623,6 +669,7 @@ const config = [
       columns: [],
     },
     rglRules : {isResizable: false},
+    enabled: true,
   },
   //------------------------------------------
 
@@ -645,6 +692,7 @@ const config = [
         txtCol: "#000000",
       },
     },
+    enabled: true,
   },
   //------------------------------------------
 
@@ -654,24 +702,25 @@ const config = [
 
   //------------------------------------------
   // Custom - A collection of all VisComps that can be added via a smart 'Wizard'-form
-  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED, THEREFORE IT IS COMMENTED OUT
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
   //------------------------------------------
-  // {
-  //   type: 'custom',
-  //   name: 'Custom',
-  //   category: 'Other',
-  //   version: 0.1,
-  //   devStage: "Draft",
-  //   component: CustomView,
-  //   settings: {
-  //     options: {
-  //       extent: {
-  //         width: 400,
-  //         height: 400,
-  //       },
-  //     },
-  //   },
-  // },
+  {
+    type: 'custom',
+    name: 'Custom',
+    category: 'Other',
+    version: 0.1,
+    devStage: "Draft",
+    component: CustomView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+      },
+    },
+    enabled: false,
+  },
   //------------------------------------------
 ];
 //-------------------------------------------------------------------------------------------------

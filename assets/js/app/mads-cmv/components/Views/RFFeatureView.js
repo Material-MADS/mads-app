@@ -4,23 +4,42 @@
 //          Last Update: Q3 2023
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'ImageView' View
+// Description: This is the Inner workings and Content Manager Controler of the 'RFFeature' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'ImageView' is the manager of all current input that controls the final view of the
-//         'ImageView' visualization component.
+// Notes: 'RFFeature' (Feature Importance) is the manager of all current input that controls the
+//         final view of this specific case of a 'BarChart' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal ImageView & ImageViewForm libs
+// References: 3rd party pandas libs, Internal ViewWrapper & Form Utility Support,
+//             Internal BarChart & RFFeatureForm libs,
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
+import { DataFrame } from 'pandas-js';
+
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ImageView from '../VisComponents/ImageVis';
-import ImageViewForm from './ImageForm';
+import BarChart from '../VisComponents/BarVis';
+import RFFeatureForm from './RFFeatureForm';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Custom Settings to pass to the VisComp
+//-------------------------------------------------------------------------------------------------
+const settings = {
+  options: {
+    title: 'Feature Importance (RF)',
+    legendLocation: 'top_left',
+    extent: { width: 600, height: 400 },
+    xaxis_orientation: 'vertical',
+  },
+};
 
 //-------------------------------------------------------------------------------------------------
 
@@ -28,11 +47,19 @@ import ImageViewForm from './ImageForm';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class ImageViewView extends withCommandInterface(ImageView, ImageViewForm) {
+export default class RFFeatureView extends withCommandInterface( BarChart, RFFeatureForm, settings ) {
+
+  // Manages data selection changes in the view
+  handleSelectionChange = (indices) => {
+  };
+
+  getSelection = (selection) => {
+    // do nothing
+  };
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    const { id, view, updateView, colorTags, actions, dataset } = this.props;
+    const { id, view, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
 
     // filter out non-existing columns & colorTags
@@ -44,21 +71,32 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
       newValues.filter = filteredFilters;
     }
 
-    let data = {};
-    newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-    newValues = convertExtentValues(newValues);
-    for (const cf in newValues.options.cssFilters) {
-      if(cf !== "isEnabled"){
-        newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
-      }
+    // filter out featureColumns
+    const columns = this.getColumnOptionArray();
+    if (values.featureColumns) {
+      const filteredColumns = values.featureColumns.filter((f) =>
+        columns.includes(f)
+      );
+      newValues.featureColumns = filteredColumns;
     }
 
-    if(newValues.options.skImg.isEnabled){
-      const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
-      const manipData = dataset[id] ? dataset[id].manipVer : "";
-      data = {origin: originData, manipVer: manipData};
+    if (newValues.featureColumns.length === 0 || !newValues.targetColumn) {
+      return;
     }
+
+    // extract data
+    const data = {};
+    const df = new DataFrame(dataset.main.data);
+    const tc = df.get(newValues.targetColumn);
+    data[newValues.targetColumn] = tc.values.toArray();
+    newValues.featureColumns.forEach((c) => {
+      const fc = df.get(c);
+      data[c] = fc.values.toArray();
+    });
+
+    newValues = convertExtentValues(newValues);
     actions.sendRequestViewUpdate(view, newValues, data);
+    // updateView(id, newValues);
   };
 
   // Manages data changes in the view
@@ -68,12 +106,8 @@ export default class ImageViewView extends withCommandInterface(ImageView, Image
 
     if (dataset[id]) {
       data = dataset[id];
-
-      if (data.debugInfo) {
-        console.log("SERVER SIDE DEBUG INFO:");
-        console.log(data.debugInfo);
-      }
     }
+
     return data;
   };
 }
