@@ -247,21 +247,15 @@ const config = [
     name: 'GapMinder',
     category: 'Visualization',
     version: 0.2,
-    devStage: "Alfa Draft",
+    devStage: "Alfa Teaser",
     component: GapMinderView,
     settings: {
       options: {
-        axisTitles: ['x', 'y'],
-        marker: {
-          size: 2,
-          color: 'red',
-          opacity: 0.8,
-        },
-        colorMap: 'Category20c',
+        requiredFields: ['year', 'country'],
         extent: { width: 900, height: 600 },
-      }
+      },
     },
-    enabled: false,
+    enabled: true,
   },
   //------------------------------------------
 
@@ -622,18 +616,9 @@ const config = [
     type: 'tensorflow',
     name: 'TensorFlow',
     category: 'Machine Learning',
-    version: 0.2,
-    devStage: "Alfa Draft",
+    version: 0.3,
+    devStage: "Alfa Teaser",
     component: TensorFlowView,
-    // customBtns: [
-    //   {name: 'saveImg', icon: 'save', text: 'Save Image'},
-    //   {name: 'annotateImg', icon: 'edit', text: 'Enable Annotate Image'},
-    //   {name: 'annotateBrushType', type: 'list', text: 'Pen or Eraser?', options: [{key: "Pen0", text:"Pen", value: 0}, {key: "Eraser1", text:"Eraser", value: 1}]},
-    //   {name: 'annotationColor', type: 'color', text: 'Annotation Color'},
-    //   {name: 'annotationSize', type: 'number', step: 1, defVal: 2, text: 'Annotation Brush Size'},
-    //   {name: 'annotationOpacity', type: 'number', step: 0.1, min: 0.1, max: 1.0, defVal: 1.0, text: 'Annotation Brush Opacity'},
-    //   {name: 'annotateImgReset', icon: 'trash', text: 'Reset All Annotations'},
-    // ],
     settings: {
       options: {
         title: "",
@@ -641,14 +626,9 @@ const config = [
           width: 400,
           height: 300,
         },
-        border: {
-          color: "black",
-          style: "solid",
-          size: 2,
-        },
       },
     },
-    enabled: false,
+    enabled: true,
   },
   //------------------------------------------
 

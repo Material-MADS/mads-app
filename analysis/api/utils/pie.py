@@ -81,3 +81,7 @@ def get_pie(data):
 
     return result
 #-------------------------------------------------------------------------------------------------
+
+# If Custom Error Message is needed use the following:
+# result['status'] = 'error'
+# result['detail'] = "This is the Custom Error Message"

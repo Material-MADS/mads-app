@@ -35,6 +35,16 @@ Data Management - {{PROJECT_NAME_ABBR}}
     table.table thead th.desc {
         background: #f9fafb url({% static 'images/icons/sort_desc.png' %}) no-repeat center right;
      }
+
+    .blink_me {
+      animation: blinker 1s steps(5, start) infinite;
+    }
+
+    @keyframes blinker {
+      to {
+        visibility: hidden;
+      }
+    }
 </style>
 {% endblock %}
 
@@ -48,7 +58,16 @@ Data Management - {{PROJECT_NAME_ABBR}}
 <ul>
     <li><strong>Owned:</strong> {{ num_of_owned }}</li>
     <li><strong>Shared:</strong> {{ num_of_shared }}</li>
+    {% comment %} <li><strong>Private:</strong> {{ num_of_private_owned }}</li> {% endcomment %}
+
 </ul>
+
+
+{% if num_of_private_owned >= max_owned %}
+  <div style="width: 100%; text-align: right;">
+    <span class="blink_me" style="font-weight: bold; color: darkred; font-size: 17px;">You have uploaded max amount ({{ max_owned }}) of private data files. Delete or make some public if you want to Add more.</span>
+  </div>
+{% endif %}
 
 <div class="ui secondary  menu">
     <div class="item">
@@ -64,7 +83,11 @@ Data Management - {{PROJECT_NAME_ABBR}}
     </div>
 
     <div class="right item">
+      {% if num_of_private_owned >= max_owned %}
+        <a class="ui blue button disabled" href="{% url 'datamanagement:datasource-add' %}">Add Datasource</a>
+      {% else %}
         <a class="ui blue button" href="{% url 'datamanagement:datasource-add' %}">Add Datasource</a>
+      {% endif %}
     </div>
 </div>
 

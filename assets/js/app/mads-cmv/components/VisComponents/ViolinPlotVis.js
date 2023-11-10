@@ -262,7 +262,7 @@ function getChartData(data, options, selectedIndices, colorTags) {
 // Get Chart Layout
 // Support Method that extracts and prepare the provided layout settings for the VisComp
 //-------------------------------------------------------------------------------------------------
-function getChartLayout(data, options, currentDataSourceName) {
+function getChartLayout(data, options) {
   const params = Object.assign({}, defaultOptions, options);
 
   var cLayout = {
@@ -330,20 +330,13 @@ export default function ViolinPlotVis({
   const rootNode = useRef(null);
   let internalOptions = options;
 
-  let currentDataSourceName = "";
-  try {
-    const availableDataSources = useSelector((state) => state.dataSources);
-    currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
-  } catch (error) { /*Just ignore and move on*/ }
-
-
   // Create the VizComp based on the incoming parameters
   const createChart = async () => {
 
     var theData = data.data;
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(theData, internalOptions, selectedIndices, colorTags);
-    let layout = getChartLayout(theData, internalOptions, currentDataSourceName);
+    let layout = getChartLayout(theData, internalOptions);
     let config = getChartConfig(internalOptions);
 
     loadingActions.setLoadingState(true);
@@ -367,16 +360,6 @@ export default function ViolinPlotVis({
   // Recreate the chart if the data and settings change
   useEffect(() => {
     if(isPropSheetOpen){ return; }
-
-    // Clear away all data if requested
-    if(data.resetRequest){
-      internalOptions.title = "";
-      internalOptions.numDataAxis = '';
-      internalOptions.category = '';
-      internalOptions.groupCol = '';
-      internalOptions.splitEnabled = false;
-      delete data.resetRequest;
-    }
 
     createChart();
   }, [data, options]);

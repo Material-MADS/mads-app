@@ -30,10 +30,11 @@ import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 
 import * as loadingActions from '../../actions/loading';
-// import { config } from "process";
 
 // Dev and Debug declarations
 window.Plotly = Plotly;
+
+import gmData from './testdata/gapMinderSubData';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -44,17 +45,10 @@ window.Plotly = Plotly;
 const defaultOptions = {
   title: "GapMinder",
   extent: { width: 900, height: 600 },
-  // axisTitles: ['x', 'y'],
-  // margin: { l: 10, r: 10, b: 10, t: 30, pad: 2 },
   modebar: { orientation: 'h'},
   displayModeBar: 'hover',
   modeBarButtonsToRemove: [], //[toImage, zoom3d, pan3d, orbitRotation, tableRotation, resetCameraDefault3d, resetCameraLastSave3d, hoverClosest3d]
   displaylogo: true,
-  // marker: {
-  //   size: 4,
-  //   color: 'red',
-  //   opacity: 0.8,
-  // },
   colorMap: 'Category20c',
 };
 //-------------------------------------------------------------------------------------------------
@@ -70,29 +64,6 @@ function getChartData(data, options, selectedIndices, colorTags) {
   var traces = [];
   var frames = [];
   var sliderSteps = [];
-
-  // data = _.isEmpty(data)?{x: [0.1, 0.2], y: [0.1, 0.2], z: [0.1, 0.2]}:data;
-  // let uniques = [... new Set(data.gr)];
-  // var cm = (allPal[(params.colorMap + uniques.length)] != undefined) ? allPal[(params.colorMap + uniques.length)] : allPal[(params.colorMap + '_' + uniques.length)];
-
-  // if(_.isEmpty(theData)){
-  //   $(rootNode.current).append(`
-  //   <div>
-  //     <div id="outputContainer` + id + `" style="
-  //       position: relative;
-  //       border: solid blue 1px;
-  //       padding: 10px;
-  //       font-weight: bold;
-  //       font-size: 20px;
-  //       width: ` + internalOptions.extent.width + `;
-  //     ">
-  //     </div>
-  //   </div>`
-  //   );
-
-  //   var outputContainer = $(rootNode.current).find("#outputContainer" + id);
-  //   outputContainer.html("<img width='200' src='https://www.gapminder.org/wp-content/themes/gapminder2/images/gapminder-logo.svg' /></br> New CADS Component Under Development");
-  // }
 
   if(_.isEmpty(data)){
     traces = [{
@@ -183,91 +154,9 @@ function getChartData(data, options, selectedIndices, colorTags) {
         }]
       });
     }
-
-
-
-
   }
 
-
   return {traces: traces, frames: frames, sliderSteps: sliderSteps};
-
-
-
-
-  // let colors = [];
-  // if(uniques.length <= 20){
-  //   if(cm != undefined){
-  //     colors = cm.slice(0, uniques.length);
-  //   }
-  //   else{
-  //     colors = allPal[(defaultOptions.colorMap + '_' + uniques.length)];
-  //     params.colorMap = defaultOptions.colorMap;
-  //   }
-  // }
-  // else if(uniques.length > 20 && uniques.length <= 256){
-  //   if(allPal[(params.colorMap + '256')] != undefined){
-  //     cm = allPal[(params.colorMap + '256')];
-  //   }
-  //   else{
-  //     cm = allPal.Magma256;
-  //     params.colorMap = 'Magma';
-  //   }
-  //   if(uniques.length > 20 && uniques.length < 256){
-  //     const step = Math.floor(256/uniques.length);
-  //     for(let i = 0; i < uniques.length; i++) {
-  //       colors.push(cm[i*step]);
-  //     };
-  //   }
-  //   else{ colors = cm; }
-  // }
-  // else{
-  //   colors = undefined;
-  // }
-
-  // let styles = undefined;
-  // if(colors !== undefined){
-  //   styles = uniques.map((grColName, index) => { return {target: grColName, value: {marker: {color: ("#"+colors[index].toString(16).slice(0, -2).padStart(6, '0'))}}} });
-  // }
-
-  // var theMarkerColors = params.marker.color;
-  // if((selectedIndices && selectedIndices.length > 0) || colorTags.length > 0){
-  //   theMarkerColors = data.x.map(v => params.marker.color);
-  // }
-
-  // if(selectedIndices && selectedIndices.length > 0){
-  //   for(var i = 0; i < selectedIndices.length; i++){
-  //     theMarkerColors[selectedIndices[i]] = '#FFA500';
-  //   }
-  // }
-
-  // if(colorTags.length > 0){
-  //   colorTags.forEach((colorTag) => {
-  //     colorTag.itemIndices.forEach((i) => {
-  //       theMarkerColors[i] = colorTag.color;
-  //     });
-  //   });
-  // }
-
-  // var cData = [{
-  //   type: 'scatter3d',
-  //   mode: 'markers',
-  //   transforms: [{
-  //     type: "groupby",
-  //     groups: data.gr,
-  //     styles: styles,
-  //   }],
-  //   x: data.x,
-  //   y: data.y,
-  //   z: data.z,
-  //   marker: {
-  //     size: (params.marker.manySizes && params.marker.manySizes.length > 0) ? params.marker.manySizes : params.marker.size,
-  //     color: theMarkerColors,
-  //     opacity: params.marker.opacity,
-  //   },
-  // },];
-
-  // return cData;
 }
 //-------------------------------------------------------------------------------------------------
 
@@ -357,58 +246,6 @@ function getChartLayout(data, options, sliderSteps) {
     };
   }
 
-
-
-
-  // var axisTitleAddon = ["", "", ""];
-  // if(currentDataSourceName != "" && data.x){
-  //   if(data.evr && params.axisTitles[0].substr(0,4) == "PC 1"){
-  //     (data.evr).forEach((item, index) => axisTitleAddon[index]=(" (" + ((item*100).toFixed(2)) + "%)"));
-  //     params.title = "3D PCA plot from " + data.noOfFeat + " features <br>of the " + currentDataSourceName + " dataset";
-  //   }
-  //   else{
-  //     params.title = "<span style='color:blue;'>" + params.axisTitles[0] + "<span style='color:red;'> vs. </span>" + params.axisTitles[1] + "<span style='color:red;'> vs. </span>" + params.axisTitles[2] + "<br><span style='color:purple; font-weight: bold;'>(by " + currentDataSourceName + ")</span></span>";
-  //   }
-  // }
-
-  // var cLayout = {
-  //   autosize: true,
-  //   width: params.extent.width,
-  //   height: params.extent.height,
-  //   title: {
-  //     text: params.title,
-  //   },
-  //   scene: {
-  //     xaxis: {
-  //       title: (params.axisTitles[0] || defaultOptions.axisTitles[0]) + axisTitleAddon[0],
-  //       nticks: _.isEmpty(data)?10:undefined,
-  //     },
-  //     yaxis: {
-  //       title: (params.axisTitles[1] || defaultOptions.axisTitles[1]) + axisTitleAddon[1],
-  //       nticks: _.isEmpty(data)?10:undefined,
-  //     },
-  //     zaxis: {
-  //       title: (params.axisTitles[2] || defaultOptions.axisTitles[2]) + axisTitleAddon[2],
-  //       nticks: _.isEmpty(data)?10:undefined,
-  //     },
-  //     camera: {
-  //       eye: params.camera.eye,
-  //       up: params.camera.up,
-  //       center: params.camera.center,
-  //     },
-  //   },
-  //   modebar: {
-  //     orientation: params.modebar.orientation,
-  //   },
-  //   margin: {
-  //     l: params.margin.l,
-  //     r: params.margin.r,
-  //     b: params.margin.b,
-  //     t: params.margin.t,
-  //     pad: params.margin.pad,
-  //   },
-  // };
-
   return cLayout;
 }
 //-------------------------------------------------------------------------------------------------
@@ -443,33 +280,24 @@ export default function Gapminder({
   selectedIndices,
   isPropSheetOpen,
   actions,
-  id,
 }) {
 
   // Initiation of the VizComp
   const rootNode = useRef(null);
-  // const uid = "id"+id;
   let internalOptions = options;
-
-  let currentDataSourceName = "";
-  try {
-    const availableDataSources = useSelector((state) => state.dataSources);
-    currentDataSourceName = (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name;
-  } catch (error) { /*Just ignore and move on*/ }
 
   // Create the VizComp based on the incoming parameters
   const createChart = async () => {
-    $(rootNode.current).empty();
-
     var theData = data.data;
 
-    console.log(theData);
+    if(_.isEmpty(theData)){
+      theData = gmData.data;
+    }
 
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(theData, internalOptions, selectedIndices, colorTags);
     let layout = getChartLayout(theData, internalOptions, sData.sliderSteps);
     let config = getChartConfig(internalOptions);
-
 
     loadingActions.setLoadingState(true);
     $(function(){
@@ -479,8 +307,6 @@ export default function Gapminder({
         if(actions){ actions.setLoadingState(false); }
       });
     });
-
-
   };
 
   // Clear away the VizComp
@@ -494,14 +320,6 @@ export default function Gapminder({
   // Recreate the chart if the data and settings change
   useEffect(() => {
     if(isPropSheetOpen){ return; }
-
-    // Clear away all data if requested
-    if(data.resetRequest){
-      internalOptions.title = "";
-      // internalOptions.axisTitles = ['x', 'y'];
-      // delete data['gr'];
-      delete data.resetRequest;
-    }
 
     createChart();
   }, [data, options]);
@@ -526,16 +344,8 @@ export default function Gapminder({
 //-------------------------------------------------------------------------------------------------
 Gapminder.propTypes = {
   data: PropTypes.shape({ }),
-  mappings: PropTypes.shape({
-    x: PropTypes.string,
-    y: PropTypes.string,
-    color: PropTypes.string,
-  }),
   options: PropTypes.shape({
     title: PropTypes.string,
-    selectionColor: PropTypes.string,
-    nonselectionColor: PropTypes.string,
-    chartColors: PropTypes.arrayOf(PropTypes.string),
     extent: PropTypes.shape({
       width: PropTypes.number,
       height: PropTypes.number.isRequired,
@@ -551,7 +361,6 @@ Gapminder.propTypes = {
 //-------------------------------------------------------------------------------------------------
 Gapminder.defaultProps = {
   data: {},
-  mappings: {},
   options: defaultOptions,
   colorTags: [],
 };
