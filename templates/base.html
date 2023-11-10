@@ -87,6 +87,41 @@
       }
     }
 
+    /* Basic styles for the accordion */
+    .accordion {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .accordion li {
+        margin-bottom: 5px;
+    }
+
+    .accordion .toggle {
+        cursor: pointer;
+    }
+
+    .accordion .toggle::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    /* Styles for nested lists */
+    .nested {
+        display: none;
+        margin-left: 20px;
+    }
+
+    /* Show nested list when the toggle is clicked */
+    .accordion .toggle.active::before {
+        content: '▼';
+    }
+
+    .accordion .toggle.active + .nested {
+        display: block;
+    }
+
   </style>
 
   {% block local_style %}{% endblock %}

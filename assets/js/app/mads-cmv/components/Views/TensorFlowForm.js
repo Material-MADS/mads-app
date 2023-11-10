@@ -25,9 +25,11 @@ import { Button, Form, Popup } from 'semantic-ui-react';
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
 import inputTrad from '../FormFields/inputTraditional';
-import SemCheckbox from '../FormFields/Checkbox';
+// import SemCheckbox from '../FormFields/Checkbox';
 
-import _, { values } from 'lodash';
+import { getDropdownOptions } from './FormUtils';
+
+// import _, { values } from 'lodash';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -38,33 +40,36 @@ import _, { values } from 'lodash';
 //-------------------------------------------------------------------------------------------------
 
 //=======================
-// const styles = ['none', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset'];
-// const imgManipOpts = ['None', 'Grayscale (CSS3 filters)', 'Grayscale (SciKit-Image)'];
-// const colorTints = ['Red', 'Green', 'Blue', 'Yellow', 'Pink', 'Cyan'];
-// const erosionOpts = ['Erosion', 'Holes', 'Peaks'];
-// const ridgeDetectOpts = ['Meijering', 'Hessian'];
-// const ragVersionOpts = ['Threshold 1', 'Threshold 2', 'Merging'];
-// const thresholdingVersionOpts = ['Multi-Otsu', 'Binary'];
-
-// let fileName = "";
-// let imageSize = {w: 0, h: 0};
-
-// const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
-// const getDropdownOptionsWBkgColor = (list) => list.map((i) => ({ key: i, text: i, value: i, style: {backgroundColor: i.toLowerCase()} }));
+const tensorFlowUsageOpts = ['WebCam Object Detection', 'Image Classification'];
+const modeArgs = [
+  [
+    { name: 'Number of Object Classes', defVal: 2 },
+  ],
+];
 
 //=======================
 
-//-------------------------------------------------------------------------------------------------
 
-
-//-------------------------------------------------------------------------------------------------
-// Set Submit Button Disabled
-//-------------------------------------------------------------------------------------------------
+//=======================
 const setSubmitButtonDisable = (disableState) => {
   if (disableState) { $(".ui.positive.button").prop('disabled', true); }
   else{ $(".ui.positive.button").prop('disabled', false); }
 }
+//=======================
+
+
+//=======================
+const validate = (values) => {
+  const errors = {};
+
+  setSubmitButtonDisable( errors.mappings.measures || errors.mappings.dimension );
+
+  return errors;
+};
+//=======================
+
 //-------------------------------------------------------------------------------------------------
+
 
 
 //-------------------------------------------------------------------------------------------------
@@ -84,21 +89,55 @@ const TensorFlowForm = (props) => {
   } = props;
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
-  // initialValues.options.cssFilters = {...defaultOptions.cssFilters, ...(initialValues.options.cssFilters) };
-  // initialValues.options.skImg = {...defaultOptions.skImg, ...(initialValues.options.skImg) };
 
-  // Make sure that older versions of TensorFlow loads without any problem and that empty values will not cause any problems
-  // if(!initialValues.options.imgData && initialValues.data && initialValues.data.data){ initialValues.options.imgData = initialValues.data.data; }
+  const [currentModeVal, setValue] = useState(
+    initialValues.options.tfMode
+  );
 
+  const onModeChange = (event) => {
+    setValue(event);
+    if(event == tensorFlowUsageOpts[0]){
+      props.change('options.modeArgs.arg1', modeArgs[0][0].defVal);
+    }
+    else if(event == tensorFlowUsageOpts[1]){
 
-  // const [currentImgTitle, setImgTitle] = useState( initialValues.options.title );
-
-  // const onImgTitleChange = (event) => { setImgTitle(event); };
+    }
+  };
 
 
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
+
+      <Form.Field>
+        <label>TensorFlow Mode<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Currently Available Tensorflow Modes and Usage Areas for this CADS component. Pick the one you want to use.' size='small' /></label>
+        <Field
+          name="options.tfMode"
+          placeholder="Select TensorFlow Usage Mode"
+          component={SemanticDropdown}
+          options={getDropdownOptions(tensorFlowUsageOpts)}
+          onChange={onModeChange}
+        />
+      </Form.Field>
+
+      {(currentModeVal == tensorFlowUsageOpts[0]) && <div>
+        <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentModeVal} Parameters:</label>
+        <Form.Group widths="equal" style={{paddingTop: "6px"}}>
+          <Form.Field>
+            <label>{modeArgs[0][0].name}:</label>
+            <Field
+              name="options.modeArgs.arg1"
+              component={inputTrad}
+              type="number"
+              step={1}
+              min={2}
+              max={10}
+            />
+          </Form.Field>
+        </Form.Group>
+      </div>}
+
+      <hr />
 
       <Form.Group widths="equal">
         <label>Extent:</label>

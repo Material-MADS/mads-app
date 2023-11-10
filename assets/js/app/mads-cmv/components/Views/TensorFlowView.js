@@ -35,30 +35,8 @@ export default class TensorFlowView extends withCommandInterface(TensorFlow, Ten
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
 
-    // filter out non-existing columns & colorTags
-    if (values.filter) {
-      const colorTagIds = colorTags.map((c) => c.id);
-      const filteredFilters = values.filter.filter((f) =>
-        colorTagIds.includes(f)
-      );
-      newValues.filter = filteredFilters;
-    }
-
     let data = {};
-    // newValues.options.border.size = isNaN(Number(newValues.options.border.size)) ? 0 : Number(newValues.options.border.size);
-    // newValues = convertExtentValues(newValues);
-    // for (const cf in newValues.options.cssFilters) {
-    //   if(cf !== "isEnabled"){
-    //     newValues.options.cssFilters[cf] = parseInt(newValues.options.cssFilters[cf]);
-    //   }
-    // }
 
-    // if(newValues.options.skImg.isEnabled){
-    //   const originData = (newValues.options.backupBlob && newValues.options.backupBlob !== "none") ? newValues.options.backupBlob : (newValues.options.imgData || "");
-    //   const manipData = dataset[id] ? dataset[id].manipVer : "";
-    //   data = {origin: originData, manipVer: manipData};
-    // }
-    // actions.sendRequestViewUpdate(view, newValues, data);
     updateView(id, newValues);
   };
 
@@ -69,12 +47,8 @@ export default class TensorFlowView extends withCommandInterface(TensorFlow, Ten
 
     if (dataset[id]) {
       data = dataset[id];
-
-      // if (data.debugInfo) {
-      //   console.log("SERVER SIDE DEBUG INFO:");
-      //   console.log(data.debugInfo);
-      // }
     }
+
     return data;
   };
 }

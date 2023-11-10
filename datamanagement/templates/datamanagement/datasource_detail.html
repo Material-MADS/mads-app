@@ -96,12 +96,16 @@
     </div>
 </div>
 
+<div id="isLoading">
+  <h1>
+    Loading Data... Please Stand By...
+  </h1>
+</div>
 
 {% if contents%}
 <div class="container" id="cc">
     <table id="example" class="display compact" width="100%"></table>
 </div>
-
 {% endif %}
 
 <hr>
@@ -153,6 +157,8 @@ let table = $('#example').dataTable({
     "columns": columns,
     'drawCallback': () => { }
 });
+
+$("#isLoading").hide();
 
 {% endif %}
 

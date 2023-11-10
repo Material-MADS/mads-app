@@ -34,6 +34,8 @@ from django.views.generic import DeleteView
 from django.views.generic import DetailView
 from django.views.generic import UpdateView
 
+from decouple import config
+
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
 from django.http import HttpResponseNotAllowed
@@ -160,6 +162,8 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
         num_of_all = qs.count()
         context["num_of_owned"] = num_of_owned
         context["num_of_shared"] = num_of_all - num_of_owned
+        context["num_of_private_owned"] = qs.filter(owner=self.request.user, accessibility=DataSource.ACCESSIBILITY_PRIVATE).count()
+        context["max_owned"] = int(config("MAX_PRIVATE_DATA_FILES"))
 
         context["lll"] = context["object_list"].count()
         context["dll"] = len(context["datasource_list"])
