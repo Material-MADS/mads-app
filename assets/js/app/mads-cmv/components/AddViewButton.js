@@ -36,7 +36,7 @@ import { createNewId } from './compUtils';
 const uniqueCategories = [...new Set( config.map(v => v.category)) ];
 const allAvaialableViews = Array(uniqueCategories.length);
 for(var i = 0; i < allAvaialableViews.length; i++){
-  allAvaialableViews[i] = config.filter((v) => v.category === uniqueCategories[i]);
+  allAvaialableViews[i] = config.filter((v) => (v.category === uniqueCategories[i] && (v.enabled) ));
 }
 
 const startId = 1;

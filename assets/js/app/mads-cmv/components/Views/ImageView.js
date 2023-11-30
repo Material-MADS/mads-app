@@ -19,8 +19,8 @@
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ImageView from '../VisComponents/ImageView';
-import ImageViewForm from './ImageViewForm';
+import ImageView from '../VisComponents/ImageVis';
+import ImageViewForm from './ImageForm';
 
 //-------------------------------------------------------------------------------------------------
 

@@ -77,6 +77,19 @@ function createEmptyChart(options, dataIsEmpty) {
 
 
 //-------------------------------------------------------------------------------------------------
+// Reset Key Props
+//-------------------------------------------------------------------------------------------------
+function resetKeyProps(compProps) {
+  compProps.options.title = defaultOptions.title;
+  delete compProps.options.x_range;
+  delete compProps.options.y_range;
+  compProps.mappings.x = "";
+  compProps.mappings.y = "";
+}
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
 // This Visualization Component Class
 //-------------------------------------------------------------------------------------------------
 export default class ClassificationVis extends Component {
@@ -151,6 +164,11 @@ export default class ClassificationVis extends Component {
       if (v) {
         v.remove();
       }
+    }
+
+    if(this.props.appMsg && this.props.appMsg.resetRequest){
+      resetKeyProps(this.props);
+      delete this.props.appMsg.resetRequest;
     }
 
     this.mainFigure = null;

@@ -23,6 +23,7 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from django.conf import settings
 
 from private_storage.fields import PrivateFileField
 
@@ -106,8 +107,9 @@ def delete_previous_file(function):
 #-------------------------------------------------------------------------------------------------
 class DataSource(OwnedResourceModel):
 
-    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304, content_types="text/csv")
-    # file = PrivateFileField("File")
+    # file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304, content_types="text/csv")
+    file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=int(settings.MAX_FILE_SIZE), content_types="text/csv")
+
     shared_users = models.ManyToManyField(
         'users.User', blank=True,
         related_name='datasource_shared_users'

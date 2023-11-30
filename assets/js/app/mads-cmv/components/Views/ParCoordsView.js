@@ -21,7 +21,7 @@
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import ParCoords from '../VisComponents/ParCoords';
+import ParCoords from '../VisComponents/ParCoordsVis';
 import ParCoordsForm from './ParCoordsForm';
 
 //-------------------------------------------------------------------------------------------------

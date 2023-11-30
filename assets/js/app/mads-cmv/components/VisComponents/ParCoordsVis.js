@@ -1,0 +1,326 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+//          Jun Fujima (Former Lead Developer) [2018-2021]
+// ________________________________________________________________________________________________
+// Description: This is the React Component for the Visualization View of the 'ParCoords' module
+// ------------------------------------------------------------------------------------------------
+// Notes: 'ParCoords' is a visualization component that displays a Parallell Coordinate chart in
+//        various ways based on a range of available properties, and is rendered with the help of
+//        the ParCoords library.
+// ------------------------------------------------------------------------------------------------
+// References: React & prop-types, semantic-ui-react Libs, 3rd party deepEqual, parcoord-es and
+//             pandas libs with various color palettes.
+=================================================================================================*/
+
+//-------------------------------------------------------------------------------------------------
+// Load required libraries
+//-------------------------------------------------------------------------------------------------
+import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { Header } from 'semantic-ui-react';
+
+import * as deepEqual from 'deep-equal';
+import 'parcoord-es/dist/parcoords.css';
+import ParCoords from 'parcoord-es';
+import { Series, DataFrame } from 'pandas-js';
+
+import { Category10 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
+
+const Category10_10 = Category10.Category10_10;
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Default Options / Settings
+//-------------------------------------------------------------------------------------------------
+const defaultOptions = {
+  title: 'Parallel Coordinates',
+  selectionColor: 'orange',
+  nonselectionColor: `#${Greys9[3].toString(16)}`,
+  extent: { width: 400, height: 400 },
+};
+//----------------------
+
+//----------------------
+const defaultStyle = {
+  position: 'relative',
+  width: '400px',
+  height: '400px',
+};
+//----------------------
+
+//----------------------
+const chartRoot = {
+  position: 'absolute',
+  top: '20px',
+  right: 0,
+  bottom: 0,
+  left: 0,
+};
+//----------------------
+
+//----------------------
+const headerStyle = {
+  margin: '10px',
+};
+//----------------------
+
+const pcMemory = {};
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component Creation Method
+//-------------------------------------------------------------------------------------------------
+export default function ParCoordsPlot({
+  data,
+  axes,
+  options,
+  colorTags,
+  selectedIndices,
+  onSelectedIndicesChange,
+  id,
+  tellWSSomething,
+  showMessage,
+}) {
+
+  // Initiation of the VizComp
+  const rootNode = useRef(null);
+  const pcRef = useRef(null);
+  let selectedIndicesInternal = [];
+  const uid = "pc_id_"+id;
+
+  const color = `#${Category10_10[0].toString(16)}`;
+
+  if(!pcMemory[uid]){
+    pcMemory[uid] = options.extent.height | defaultStyle.height;
+  }
+
+  // style settings
+  const style = { ...defaultStyle};
+
+  // Create the VizComp based on the incomming parameters
+  const createChart = () => {
+    const parcoords = ParCoords()(rootNode.current).alpha(0.4);
+    pcRef.current = parcoords;
+  };
+
+  // Clear away the VizComp
+  const clearChart = () => {
+    pcRef.current = null;
+  };
+
+  // Update the chart
+  const updateChart = () => {
+    const pc = pcRef.current;
+
+    if (!data || data.length == 0) {
+      console.warn('empty data');
+      return;
+    }
+
+    // Make sure that the dataset is not too large, and if it is don't bother to draw it.
+    const noOfCrossSections = data.length * Object.keys(data[0]).length;
+    if (noOfCrossSections > 50000) {
+      showMessage({
+        header: 'WARNING',
+        content: 'The dataset is too large (too many rows and columns together) to be suitable for this type of visualization. So we will not attempt to draw it since it basically would take too much time.',
+        type: 'warning',
+      });
+      console.warn('The dataset is too large (too many rows and columns together) to be suitable for this type of visualization. So we will not attempt to draw it since it basically would take too much time. (amount: ' + noOfCrossSections + ')');
+      data = [];
+      axes = [];
+      // pc.data([{x: 0, y:0},{x: 0, y:0}]);
+      try {
+        pc.clear("foreground");
+        pc.removeAxes();
+        // pc.clear("shadows");
+        // pc.clear("marks");
+        // pc.clear("extents");
+        // pc.clear("highlight");
+      } catch (error) { }
+
+      return;
+    }
+
+    const indexedData = data.map((d, i) => {
+      d['[index]'] = i;
+      return d;
+    });
+
+    const df = new DataFrame(indexedData);
+    let modData = df.to_json({ orient: 'records' });
+
+    // Make sure that the axes values correlate to the current data, otherwise reset axes
+    if(axes.length > 0 && modData.length > 0){
+      var AllDataKeys = Object.keys(modData[0]);
+      var isSubset = axes.every(function(val) {
+        return AllDataKeys.indexOf(val) >= 0;
+      })
+      if(!isSubset){
+        axes = [];
+      }
+    }
+
+    if (axes.length > 0) {
+      modData = df.get([...axes, '[index]']).to_json({ orient: 'records' });
+    }
+
+    // Make sure there are no null values in the data, if so replace with 0
+    modData.forEach(function (o) {
+      Object.keys(o).forEach(function (k) {
+        if (o[k] === null) {
+            o[k] = 0;
+        }
+      });
+    });
+
+    pc.data();
+
+    pc.data(modData)
+      .height(parseInt(options.extent.height) - 20)
+      .width(options.extent.width)
+      .mode('queue')
+      .hideAxis(['[index]'])
+      .composite('darker')
+      .render()
+      .shadows()
+      .reorderable()
+      .brushMode('1D-axes');
+
+    pc.removeAxes();
+    pc.createAxes();
+    pc.brushMode('1D-axes');
+    pc.updateAxes();
+
+    window.pc = pc;
+
+    pc.on('brushend', function (brushed, args) {
+      const {
+        selection: {
+          raw, //raw coordinate
+          scaled, //y-scale transformed
+        },
+        node, // svg node
+        axis, // dimension name
+      } = args;
+      const selected = new DataFrame(brushed);
+
+      let selectedIndices = [];
+      if (brushed.length == modData.length) {
+        selectedIndices = [];
+      } else if (brushed.length == 0) {
+        selectedIndices = [];
+      } else {
+        selectedIndices = selected
+          .get('[index]')
+          .to_json({ orient: 'records' });
+      }
+
+      if (onSelectedIndicesChange && !deepEqual(selectedIndices, selectedIndicesInternal)) {
+        selectedIndicesInternal = selectedIndices;
+        onSelectedIndicesChange(selectedIndices);
+      }
+    });
+
+    if(pcMemory[uid] != options.extent.height){
+      pcMemory[uid] = options.extent.height;
+      tellWSSomething({reloadWS: true});
+    }
+  };
+
+  // Create the chart when first mounted
+  useEffect(() => {
+    createChart();
+    return () => {
+      clearChart();
+    };
+  }, []);
+
+  // Recreate the chart if the data and settings change
+  useEffect(() => {
+    updateChart();
+  }, [data, axes, colorTags, options]);
+
+  // Manage Color Tags
+  useEffect(() => {
+    // colorTag
+    const colors = new Array(data.length).fill(
+      `#${Category10_10[0].toString(16)}`
+    );
+    colorTags.forEach((colorTag) => {
+      colorTag.itemIndices.forEach((i) => {
+        colors[i] = colorTag.color;
+      });
+    });
+
+    const lineColor = (d) => {
+      const i = d['[index]'];
+
+      return colors[i];
+    };
+
+    if (colors.length > 0) {
+      pcRef.current.color(lineColor);
+      pcRef.current.render();
+    }
+  }, [colorTags]);
+
+  if (options.extent.width) {
+    style.width = options.extent.width;
+  }
+  if (options.extent.height) {
+    style.height = options.extent.height;
+  }
+
+  // Add the VizComp to the DOM
+  return (
+    <div style={style}>
+      <Header size="tiny" style={headerStyle}>
+        Parallel Coordinates
+      </Header>
+      <div ref={rootNode} style={chartRoot} className="parcoords" />
+    </div>
+  );
+}
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's Allowed and expected Property Types
+//-------------------------------------------------------------------------------------------------
+ParCoordsPlot.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object),
+  axes: PropTypes.arrayOf(PropTypes.string),
+  options: PropTypes.shape({
+    extent: PropTypes.shape({
+      width: PropTypes.number.isRequired,
+      height: PropTypes.number.isRequired,
+    }),
+  }),
+  colorTags: PropTypes.arrayOf(PropTypes.object),
+  selectedIndices: PropTypes.arrayOf(PropTypes.number),
+  onSelectedIndicesChange: PropTypes.func,
+  showMessage: PropTypes.func,
+};
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// This Visualization Component's default initial start Property Values
+//-------------------------------------------------------------------------------------------------
+ParCoordsPlot.defaultProps = {
+  data: [],
+  axes: [],
+  options: { extent: { width: 800, height: 400 } },
+  colorTags: [],
+  selectedIndices: [],
+  onSelectedIndicesChange: undefined,
+};
+//-------------------------------------------------------------------------------------------------

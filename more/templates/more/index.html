@@ -25,6 +25,7 @@ Downloads & More - {{PROJECT_NAME_ABBR}}
 
 {% block content %}
 
+
 <h2>Downloads & More</h2>
 
 <hr>
@@ -42,12 +43,111 @@ Downloads & More - {{PROJECT_NAME_ABBR}}
 <p>
   <span style="font-weight: bold; font-size: 20px; color: purple;">People and Papers</span>
   <ul>
-    <li><a href="https://takahashigroup.github.io" target="_blank">CADS Software Development Group</a></li>
+    <li><a href="https://takahashigroup.github.io" target="_blank">CADS R&D Group</a></li>
     <li><a href="https://pubs.rsc.org/en/content/articlehtml/2020/re/d0re00098a" target="_blank">Academic CADS Paper: Catalyst Acquisition by Data Science (CADS): a web-based catalyst informatics platform for discovering catalysts</a></li>
     <li><a href="https://pubs.rsc.org/en/Content/ArticleLanding/2023/DD/D3DD00061C" target="_blank">Academic CADS Paper: Improving scientific image processing accessibility through development of graphical user interfaces for scikit-image</a></li>
   </ul>
 </p>
 
 <hr>
+<hr>
+
+<p>
+  <span style="font-weight: bold; font-size: 20px; color: purple;">Latest Updates and CADS System News</span>
+  <ul class="accordion" style="margin-left: 20px;">
+    <li>
+      <span class="toggle" style="font-size: 17px; font-weight: bold; color: orange;">What's New ⭐</span>
+        <ul class="nested">
+          <li>
+            <span class="toggle" style="font-size: 15px; font-weight: bold; color: darkred;">November 2023</span>
+            <ul class="nested" style="font-weight: bold;">
+              <li>
+                <span>Data Mangement Upgrades</span>
+                <ul style="font-weight: normal;">
+                  <li>Fixed bug when dealing with somewhat broken and badly composed data files (no more errors showing)</li>
+                  <li>More and better user feedback when uploading data files</li>
+                  <li>Allow for bigger data files (from 4Mb to 10Mb)</li>
+                  <li>Limit the number of private user data uploads to 25 (Public is still unlimited)</li>
+                </ul>
+              </li>
+              <li>
+                <span>New and improved Components</span>
+                <ul style="font-weight: normal;">
+                  <li>New CADS Violin Plot (Violin Plot) visualisation component</li>
+                  <li>Alpha Teaser of a new, under development, CADS visualisation component: GapMinder (GapMinder)</li>
+                  <li>Alpha Teaser of a new, under development, CADS visualisation component: TensorFlow (TensorFlow)</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <span class="toggle" style="font-size: 15px; font-weight: bold; color: darkred;">September 2023</span>
+            <ul class="nested" style="font-weight: bold;">
+              <li>Detailed User manuals for all aspects of CADS use and additional development</li>
+              <li>
+                <span>New and improved Components</span>
+                <ul style="font-weight: normal;">
+                  <li>New CADS Line Chart (Line) visualisation component final release</li>
+                  <li>New CADS Statistics Visualisation (Statistics) component final release</li>
+                  <li>New Bar Chart (Bar) visualisation component final release</li>
+                  <li>New Gaussian Process Regression (Gaussian Process) visualisation component final release</li>
+                  <li>New K-Means Clustering (KMeansCluster) visualisation component final release</li>
+                  <li>Updated CADS Scatterplot (Scatter) visualisation component from beta to final release</li>
+                  <li>Updated CADS HeatMap visualisation component from beta to final release</li>
+                  <li>Updated CADS PairwiseCorrelation visualisation component from beta to final release</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <span class="toggle" style="font-size: 15px; font-weight: bold; color: darkred;">June 2023</span>
+            <ul class="nested" style="font-weight: bold;">
+              <li>Bugfixed the Data Management System</li>
+              <li>Bugfixed Admin System</li>
+              <li>Re-categorize, re-order and re-sort CADS components for improved user experience</li>
+              <li>
+                <span>Improved Components</span>
+                <ul style="font-weight: normal;">
+                  <li>Updated CADS Table (Table) visualisation component from beta to final release</li>
+                  <li>Updated CADS Image Analyzing (ImageView) visualisation component from beta to final release</li>
+                  <li>Updated CADS Parallel Coordinates (Parallel Coordinates) visualisation component from beta to final release</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            <span class="toggle" style="font-size: 15px; font-weight: bold; color: darkred;">Prior to April 2023 but After March 2021 (Some notable mentions)</span>
+            <ul class="nested" style="font-weight: bold;">
+              <li>Various Bugfixes, visual updates and User interation feedbacks added</li>
+              <li>
+                <span>New and Improved Components</span>
+                <ul style="font-weight: normal;">
+                  <li>CADS Pie Chart (Pie) visualisation component</li>
+                  <li>CADS Scatter 3D (Scatter3D) visualisation component</li>
+                  <li>CADS Node Graph (NodeGraph) visualisation component</li>
+                  <li>CADS Periodic Table (Periodic Table) visualisation component</li>
+                  <li>CADS Molecule 3D (Molecule3D) visualisation component</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+    </li>
+  </ul>
+</p>
+
+<hr>
+
+<script>
+    // JavaScript to toggle the active class on click
+    document.querySelectorAll('.toggle').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+            this.classList.toggle('active');
+        });
+    });
+</script>
 
 {% endblock %}

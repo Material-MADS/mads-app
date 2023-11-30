@@ -21,7 +21,7 @@
 import React, { useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, FieldArray, getFormValues, getFormInitialValues } from 'redux-form';
-import { Form, Button, Modal, Popup } from 'semantic-ui-react';
+import { Form, Button, Modal, Popup, Grid } from 'semantic-ui-react';
 
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
@@ -32,12 +32,13 @@ import inputTrad from '../FormFields/inputTraditional';
 import $ from 'jquery'
 
 import api from '../../api';
-import { html } from 'd3';
+import { count, html } from 'd3';
 
 
 //-------------------------------------------------------------------------------------------------
 
 var datasetInfo = {}
+var datasetInfoPack = [];
 
 //-------------------------------------------------------------------------------------------------
 // Form Support Methods that manages various individual form fields that requires some form of
@@ -124,9 +125,28 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
           options={column}
           onChange={(e, data) => handleFeatureName(index, data)}
         />
-        <Popup style={{whiteSpace: 'pre-wrap'}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
-            <>Min and Max represent the range in which the user wants the machine to make predictions. <br />-----------------<br />{datasetInfo}</>
-          } size='small' wide />
+        <Popup style={{whiteSpace: 'pre-wrap', fontSize: "10px"}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
+            <>Min and Max represent the range in which the user wants the machine to make predictions. <br />----------------------------------<br />
+            {/* {datasetInfo} */}
+            <Grid centered divided columns={3}>
+              <Grid.Column textAlign='left'>
+                <p>
+                  {datasetInfoPack[0]}
+                </p>
+              </Grid.Column>
+              <Grid.Column textAlign='left'>
+                <p>
+                {datasetInfoPack[1]}
+                </p>
+              </Grid.Column>
+              <Grid.Column textAlign='left'>
+                <p>
+                {datasetInfoPack[2]}
+                </p>
+              </Grid.Column>
+            </Grid>
+            </>
+          } size='small' wide='very' position='bottom center' />
         <Field
           fluid
           name={`${feature}.min`}
@@ -190,14 +210,21 @@ const GaussianProcessForm = (props) => {
 
 
   datasetInfo = "";
+  datasetInfoPack = [3];
+  var amountOfDataColsPerGridCol = parseInt(Math.ceil(columns.length/3));
+  var counter = 1;
   const df = new DataFrame(dataset.main.data);
   for(var i = 0; i < columns.length; i++){
     const pandaCol = df.get(columns[i].key);
     const jsCol = pandaCol.values.toArray();
     datasetInfo += columns[i].key + ":   Min = " + Math.min(...jsCol) + ",   Max = " + Math.max(...jsCol) + "\n";
+    if((i+1) > (amountOfDataColsPerGridCol * counter)){
+      datasetInfoPack[counter-1] = datasetInfo;
+      datasetInfo = "";
+      counter = counter + 1;
+    }
   }
-
-
+  datasetInfoPack[2] = datasetInfo;
 
   if(!initialValues.numberOfElements){ initialValues.numberOfElements = 100 };
 

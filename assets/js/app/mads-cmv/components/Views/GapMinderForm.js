@@ -29,7 +29,7 @@ import Input from '../FormFields/Input';
 import _ from 'lodash';
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
-import { cmMax, colorMapOptions } from './FormUtils';
+import { getDropdownOptions } from './FormUtils';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -39,9 +39,6 @@ import { cmMax, colorMapOptions } from './FormUtils';
 // attention to its content
 //-------------------------------------------------------------------------------------------------
 
-//=======================
-// const getDropdownOptions = (list) => list.map((i) => ({ key: i, text: i, value: i }));
-//=======================
 
 //=======================
 const setSubmitButtonDisable = (disableState) => {
@@ -55,46 +52,25 @@ const errors = {};
 const errorValidate = (value, values, props, fieldName) => {
   let error = undefined;
 
-  // Clean away possible leftover from a previous PCA render
-  // if(values.options && values.options.axisTitles && values.options.axisTitles[0] == "PC 1"){
-  //   values.options.axisTitles = [];
-  // }
+  //Is required
+  if ((values.tempq)){
+    if(!value || _.isEmpty(value)){
+      error = 'Required';
+    }
+    else { errors[fieldName] = false; }
+  }
 
-  // // Make sure the correct dataset is loaded
-  // const testColumn = values.targetColumn || (values.options?(values.options.axisTitles?values.options.axisTitles[0]:undefined):undefined)
-  // if(testColumn && !props.columns.some(e => e.value === testColumn)){
-  //   if(values.featureColumns){ values.featureColumns = undefined; }
-  //   if(values.targetColumn){ values.targetColumn = undefined; }
-  //   if(values.options && values.options.axisTitles){ values.options.axisTitles = []; }
-  //   if (fieldName.toLowerCase().includes("column") || fieldName.toLowerCase().includes("axistitles")){     value = undefined; }
-  //   if(values.mappings && values.mappings.color){ values.mappings.color = undefined; }
-  //   if(values.mappings && values.mappings.size){ values.mappings.size = undefined; }
-  // }
-
-  // //Is required
-  // if ((values.method && ((values.method == "PCA" && fieldName.toLowerCase().includes("column")) || (values.method == "Manual" && fieldName.toLowerCase().includes("axistitles")))) ||
-  //     ((values.colorAssignmentEnabled && fieldName == "mappings.color") || (values.sizeAssignmentEnabled && fieldName == "mappings.size"))){
-  //   if(!value || _.isEmpty(value)){
-  //     error = 'Required';
-  //   }
-  //   else { errors[fieldName] = false; }
-  // }
-
-  // //Must be at least 3
-  // if(values.method && values.method == "PCA" && fieldName == "featureColumns"){
-  //   if(value && value.length < 3){
-  //     error = 'At least three(3) featured columns have to be selected for 3D PCA to work';
-  //   }
-  // }
-
-  // errors[fieldName] = (error != undefined);
-  // setSubmitButtonDisable(!value || error || (Object.values(errors)).includes(true));
+  errors[fieldName] = (error != undefined);
+  setSubmitButtonDisable(!value || error || (Object.values(errors)).includes(true));
 
   return error;
 }
 //=======================
 //-------------------------------------------------------------------------------------------------
 
+//=======================
+const tempQOpts = ['Happy', 'Sad', 'Tired', 'Pillimarisk'];
+//=======================
 
 //-------------------------------------------------------------------------------------------------
 // The ReduxForm Module for this specific view and Visualisation Component
@@ -112,43 +88,26 @@ const GapMinderForm = (props) => {
     targetId,
     colorTags,
   } = props;
-  const cTags = colorTags.map((c) => ({
-    text: c.color,
-    value: c.id,
-    props: { style: '' },
-  }));
 
-  // const methods = ['Manual', 'PCA'];
-  // const preprocMethods = ['StandardScaling', 'Normalization'];
+  // if(!initialValues.options.tempq){ initialValues.options.tempq = "Happy" };
 
-  // input managers
-  // const [fieldsAreShowing, toggleVisibleFields] = useState(
-  //   initialValues.method != methods[1]
-  // );
-
-  // const [colorDisabled, setColorDisabled] = useState(
-  //   !initialValues.colorAssignmentEnabled
-  // );
-
-  // const [sizeDisabled, setSizeDisabled] = useState(
-  //   !initialValues.sizeAssignmentEnabled
-  // );
-
-  // const [preprocDisabled, setPreprocDisabled] = useState(
-  //   !initialValues.preprocessingEnabled
-  // );
-
-  // const [currentCMVal, setValue] = useState(
-  //   initialValues.options.colorMap
-  // );
-
-  // const onCMChange = (event) => {
-  //   setValue(event);
-  // };
+  // const [currentTempQVal, setValue] = useState( initialValues.options.tempq );
+  // const onTQChange = (event) => { setValue(event); };
 
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
+
+{/* <Form.Field>
+          <label>Mood:</label>
+          <Field
+            name="options.tempq"
+            component={SemanticDropdown}
+            placeholder="Mood"
+            options={getDropdownOptions(tempQOpts)}
+            validate={[ errorValidate ]}
+          />
+        </Form.Field> */}
 
       {/* {fieldsAreShowing && <div>
         <Form.Field>
@@ -219,7 +178,7 @@ const GapMinderForm = (props) => {
         </div>
       </div>} */}
 
-      {/* <hr /> */}
+      <hr />
       {/* <Form.Field>
         <label>Size Assignment:</label>
         <Field

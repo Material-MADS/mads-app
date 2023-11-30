@@ -44,8 +44,8 @@ ALLOWED_HOSTS = []
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# UPLOAD LIMITS
-FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
+# UPLOAD LIMITS (10MB)   ...5242880 (5MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -193,4 +193,6 @@ MARKDOWNX_MARKDOWNIFY_FUNCTION = "markdownx.utils.markdownify"
 
 
 DISABLE_SIGNUP = config("APP_DISABLE_SIGNUP") == "True"
+
+MAX_FILE_SIZE = config("MAX_FILE_SIZE")
 #-------------------------------------------------------------------------------------------------

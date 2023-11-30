@@ -87,6 +87,41 @@
       }
     }
 
+    /* Basic styles for the accordion */
+    .accordion {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .accordion li {
+        margin-bottom: 5px;
+    }
+
+    .accordion .toggle {
+        cursor: pointer;
+    }
+
+    .accordion .toggle::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    /* Styles for nested lists */
+    .nested {
+        display: none;
+        margin-left: 20px;
+    }
+
+    /* Show nested list when the toggle is clicked */
+    .accordion .toggle.active::before {
+        content: '▼';
+    }
+
+    .accordion .toggle.active + .nested {
+        display: block;
+    }
+
   </style>
 
   {% block local_style %}{% endblock %}
@@ -115,8 +150,8 @@
       href="{% url 'prediction:index' %}" href="{% url 'prediction:index' %}">Prediction</a>
     <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}" href="{% url 'docs:index' %}"
       href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-    {% comment %} <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}" href="{% url 'more:index' %}"
-      href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
+    <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}" href="{% url 'more:index' %}"
+      href="{% url 'more:index' %}">Download & More</a>
 
 
 
@@ -154,8 +189,8 @@
         href="{% url 'prediction:index' %}">Prediction</a>
       <a class="item {% if request.resolver_match.namespace == 'docs' %}active{% endif %}"
         href="{% url 'docs:index' %}" target="_blank">Online Docs</a>
-      {% comment %} <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
-        href="{% url 'more:index' %}">Download & More</a> {% endcomment %}
+      <a class="item {% if request.resolver_match.namespace == 'more' %}active{% endif %}"
+        href="{% url 'more:index' %}">Download & More</a>
 
 
       <div class="right item">

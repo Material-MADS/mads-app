@@ -26,6 +26,19 @@ export function getStandarizedColor(str){
 
 
 //-------------------------------------------------------------------------------------------------
+// Get Hex Colors from Number colors
+// Returns an array of colors as Hex strings from an array of color numbers
+//-------------------------------------------------------------------------------------------------
+export function getHexColorsFromNumColors(numColorsArray){
+  var hexColorsArray = numColorsArray.map((color, index) => { return ("#"+color.toString(16).slice(0, -2).padStart(6, '0')); });
+  return hexColorsArray;
+}
+//-------------------------------------------------------------------------------------------------
+
+
+
+
+//-------------------------------------------------------------------------------------------------
 // Get RGBA Color String From Any Color
 // Returns a RGBA color based on any color input
 //-------------------------------------------------------------------------------------------------
