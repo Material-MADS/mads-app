@@ -54,15 +54,26 @@ import Molecule3DView from './Molecule3DView';
 import StatisticsView from './StatisticsView';
 
 // Other
+import CadsiesView from './CadsiesView.js';
 import CustomView from './CustomView';
 
+// Template
+import Cads_Component_TemplateView from './Cads_Component_TemplateView.js';
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Special Settings for controlling component access
+//-------------------------------------------------------------------------------------------------
+export const specialPass = ['micke.kuwahara@gmail.com', 'micke.kuwahara@sci.hokudai.ac.jp', 'keisuke.takahashi@sci.hokudai.ac.jp', 'lauren.takahashi@sci.hokudai.ac.jp'];
 //-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
 // The Catalog Config
 //-------------------------------------------------------------------------------------------------
-const config = [
+export const config = [
 
   // VISUALIZATION CATEGORY
   //=======================
@@ -680,7 +691,33 @@ const config = [
   // OTHER CATEGORY
   //===============
 
+  // Cadsies - A customizable Mini Web App System
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
   //------------------------------------------
+  {
+    type: 'cadsies',
+    name: 'CADS Custom Mini App',
+    category: 'Other',
+    version: 0.1,
+    devStage: "Draft",
+    component: CadsiesView,
+    settings: {
+      options: {
+        extent: {
+          width: 98,
+          height: 68,
+        },
+        extentUnit: {
+          width: 'vw',
+          height: 'vh',
+        },
+        ws: "",
+      },
+    },
+    enabled: false,
+  },
+  //------------------------------------------
+
   // Custom - A collection of all VisComps that can be added via a smart 'Wizard'-form
   // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
   //------------------------------------------
@@ -702,6 +739,31 @@ const config = [
     enabled: false,
   },
   //------------------------------------------
+
+
+  // TEMPLATE (Not for production use, development only)
+  //===============
+
+  // THIS IS A TEMPLATE COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'cads_component_template',
+    name: 'Cads_Component_Template',
+    category: 'Template',
+    version: 0.1,
+    devStage: "Draft",
+    component: Cads_Component_TemplateView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+      },
+    },
+    enabled: false,
+  },
+  //------------------------------------------
 ];
 //-------------------------------------------------------------------------------------------------
-export default config;
+// export default config;

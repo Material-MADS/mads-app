@@ -199,7 +199,7 @@ const BarForm = (props) => {
     <Form onSubmit={handleSubmit}>
 
       <Form.Field width={4}>
-        <label>Enable Transpose View  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This allows to engage with the data in a custom transposed state for better control of how to visualize the data.' size='small' />:</label>
+        <label>Enable Transpose View  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This allows to engage with the data in a custom transposed state for better control of how to visualize the data.' size='small' />:</label>
         <Field
           name="options.transposeEnabled"
           component={SemCheckbox}
@@ -209,7 +209,7 @@ const BarForm = (props) => {
       </Form.Field>
       {tvEnabled && <div>
         <Form.Field>
-          <label>Transpose Group Members <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Select Columns from the original data and group them for a transposed view.' size='small' />:</label>
+          <label>Transpose Group Members <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Select Columns from the original data and group them for a transposed view.' size='small' />:</label>
           <Field
             name="options.transposeGroup"
             component={MultiSelectDropdown}
@@ -220,7 +220,7 @@ const BarForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Transpose Group Label <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='A collective name for the columns chosen above for the Transpose view (e.g. "Years", "Names" etc.' size='small' />:</label>
+          <label>Transpose Group Label <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='A collective name for the columns chosen above for the Transpose view (e.g. "Years", "Names" etc.' size='small' />:</label>
           <Field
             fluid
             name="options.transposeGroupLabel"
@@ -230,7 +230,7 @@ const BarForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Transpose Split Column <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The column that will be split up into Transpose "rows" in the new view and available as measure columns. If this column contains duplicate values, the measuremnts will need to be calculated accordingly.' size='small' /></label>
+          <label>Transpose Split Column <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The column that will be split up into Transpose "rows" in the new view and available as measure columns. If this column contains duplicate values, the measuremnts will need to be calculated accordingly.' size='small' /></label>
           <Field
             name="options.transposeSplitColumn"
             component={SemanticDropdown}
@@ -244,7 +244,7 @@ const BarForm = (props) => {
 
       <hr />
       <Form.Field>
-        <label>Dimension <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This has to be a list of unique categorical values of string type (if numerical in nature it will be treated as strings) (If not unique, then some form of average of the measurements will be calculated in order to get one measurement per dimension)' size='small' /></label>
+        <label>Dimension <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This has to be a list of unique categorical values of string type (if numerical in nature it will be treated as strings) (If not unique, then some form of average of the measurements will be calculated in order to get one measurement per dimension)' size='small' /></label>
         <Field
           name="mappings.dimension"
           component={SemanticDropdown}
@@ -256,7 +256,7 @@ const BarForm = (props) => {
       </Form.Field>
       {dimensionHasDuplicates && <div>
         <Form.Field>
-        <label>Value Calculation Method <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Since your Dimension category value is not unique we need to do some calculations on those measurements which fall into the same category. Pick the one you prefer.' size='small' /></label>
+        <label>Value Calculation Method <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Since your Dimension category value is not unique we need to do some calculations on those measurements which fall into the same category. Pick the one you prefer.' size='small' /></label>
         <Field
           name="options.valCalcMethod"
           component={SemanticDropdown}
@@ -271,7 +271,7 @@ const BarForm = (props) => {
       />
 
       <Form.Field>
-        <label>Mesures  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='One or many lists of numerical measurements for the selected dimension' size='small' /></label>
+        <label>Mesures  <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='One or many lists of numerical measurements for the selected dimension' size='small' /></label>
         <Field
           name="mappings.measures"
           component={MultiSelectDropdown}

@@ -125,7 +125,7 @@ const renderFeature = ({ fields, meta: { touched, error, warning }, column, hand
           options={column}
           onChange={(e, data) => handleFeatureName(index, data)}
         />
-        <Popup style={{whiteSpace: 'pre-wrap', fontSize: "10px"}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
+        <Popup style={{whiteSpace: 'pre-wrap', fontSize: "10px"}} trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content={
             <>Min and Max represent the range in which the user wants the machine to make predictions. <br />----------------------------------<br />
             {/* {datasetInfo} */}
             <Grid centered divided columns={3}>
@@ -285,7 +285,7 @@ const GaussianProcessForm = (props) => {
       <Form.Field>
         <label>Feature Columns:</label>
         <Form.Field width={7}>
-          <label>Number of elements <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='This represents how many elements the machine divides that range into, thereby allowing the user to control how detailed or accurate the predictions may be. Maximum value is 500.' size='small' />:</label>
+          <label>Number of divisions <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This represents how many divisions the machine divides that range into, thereby allowing the user to control how detailed or accurate the predictions may be. Maximum value is 500.' size='small' />:</label>
           <Field
             name="numberOfElements"
             component={Input}
@@ -317,7 +317,7 @@ const GaussianProcessForm = (props) => {
         />
       </Form.Field>
       <Form.Field>
-      <label>Target EI <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='To maximize or minimize depends on how the acquisition function is defined. If using Expected Improvement acquisition function, then you should maximize.' size='small' />:</label>
+      <label>Target EI <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='To maximize or minimize depends on how the acquisition function is defined. If using Expected Improvement acquisition function, then you should maximize.' size='small' />:</label>
         <Field
           name="targetEI"
           component={SemanticDropdown}
@@ -329,7 +329,7 @@ const GaussianProcessForm = (props) => {
       <hr />
 
       <Form.Field>
-        <label>Kernel <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The kernel function essentially tells the model how similar two data points (xₙ, xₘ) are. Several kernel functions are available for use with different types of data.' size='small' />:</label>
+        <label>Kernel <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The kernel function essentially tells the model how similar two data points (xₙ, xₘ) are. Several kernel functions are available for use with different types of data.' size='small' />:</label>
         <Field
           name="kernel"
           component={SemanticDropdown}
@@ -347,7 +347,7 @@ const GaussianProcessForm = (props) => {
         >
           Get Score
         </Button>
-        <Popup style={{whiteSpace: 'pre-wrap'}} trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content={
+        <Popup style={{whiteSpace: 'pre-wrap'}} trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content={
             <>Returns R² score from cross validation, where data set is randomly split to 20% test and 80% train data. <br />(This calculations might take more then a minute with a large data set.)</>
           } size='small' wide />
 
@@ -358,7 +358,7 @@ const GaussianProcessForm = (props) => {
       <hr/>
 
       <Form.Field>
-        <label>Information <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Select what you want to visualize.' size='small' />:</label>
+        <label>Information <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Select what you want to visualize.' size='small' />:</label>
         <Field
           name="information"
           component={SemanticDropdown}

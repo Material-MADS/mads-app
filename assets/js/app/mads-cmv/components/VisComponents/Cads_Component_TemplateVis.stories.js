@@ -4,42 +4,48 @@
 //          Last Update: Q3 2023
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Visual Component 'Factory' that calls for the creation of a VisComp
-//              when a user selects Add View
+// Description: This is the Storybook test displays for the React Component for the Visualization
+//              View of the 'Cads_Component_Template' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Factory' gets a View Type and ID and then creates a new View of that type as found in
-//        the ViewCatalog.
+// Notes: 'Cads_Component_Template' is a visualization component that do nothing really.
 // ------------------------------------------------------------------------------------------------
-// References: Internal 'View' & 'ViewCatalog'
+// References: React & storybook Libs, image test data, component Vis
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import View from '../../models/View';
-import { config } from './ViewCatalog';
+import React from 'react';
+import { storiesOf } from '@storybook/react';
+
+import Cads_Component_Template from './Cads_Component_TemplateVis';
 
 //-------------------------------------------------------------------------------------------------
 
 
 //-------------------------------------------------------------------------------------------------
-// Create View
-// Method that creates a instance of the 'View' Class and returns it
-//-------------------------------------------------------------------------------------------------
-const createView = (type, id, duplicateSettings) => {
-  const viewSettings = {...(config.find((v) => v.type === type))};
-  if (id) {
-    viewSettings.id = id;
-  }
-
-  if (duplicateSettings) {
-    viewSettings.settings = {...duplicateSettings}
-  }
-  const v = new View(viewSettings);
-  return v;
-};
+// Available VizComp setups/configs for this specific VizComp to be displayed inside storybook
+// environment.
 //-------------------------------------------------------------------------------------------------
 
-export default createView;
+
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
+// Adding the various stories configured above to the storybook environment.
+//-------------------------------------------------------------------------------------------------
+const stories = storiesOf('Cads_Component_Template', module);
+stories
+  .add('...Empty', () => <Cads_Component_Template />)
+  .add('...With Something', () => (
+    <Cads_Component_Template
+      data = { {} }
+      options = { {
+        something: "Something",
+        anotherThing: 7
+      } }
+    />
+  ));
+  //-------------------------------------------------------------------------------------------------

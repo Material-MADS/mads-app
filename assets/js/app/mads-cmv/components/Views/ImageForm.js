@@ -428,7 +428,7 @@ const ImageViewForm = (props) => {
       <Form.Group>
         <Form.Field width={4}>
           <label>Enable SciKit Image Processing<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -451,7 +451,7 @@ const ImageViewForm = (props) => {
           <Form.Field>
             <label>Apply to current (and not original)
               <Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>}
                 size='small'
                 wide='very'
               >
@@ -476,7 +476,7 @@ const ImageViewForm = (props) => {
         <Form.Group>
           <Form.Field width={3}>
             <label>Grayscale<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#skimage.color.rgb2gray" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#skimage.color.rgb2gray" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -499,7 +499,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Rotate<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#rotate" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#rotate" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -545,7 +545,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Edge Detection<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#canny" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#canny" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -584,7 +584,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Color Tint<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_tinting_grayscale_images.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_tinting_grayscale_images.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -618,7 +618,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Invert Colors<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.util.html#invert" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.util.html#invert" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -644,7 +644,7 @@ const ImageViewForm = (props) => {
         <Form.Group>
           <Form.Field width={3}>
             <label>Gamma Change<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#adjust-gamma" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#adjust-gamma" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -668,7 +668,7 @@ const ImageViewForm = (props) => {
             />
             {skImgGammaChangeEnabled && <div>
               <Form.Field>
-                <label>Gamma <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Lower than 1 = Lighter, Higher than 1 = Darker' size='small' />:</label>
+                <label>Gamma <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Lower than 1 = Lighter, Higher than 1 = Darker' size='small' />:</label>
                 <Field
                   fluid
                   name="options.skImg.gammaValue"
@@ -681,7 +681,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Enhance Contrast<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#equalize-adapthist" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#equalize-adapthist" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -704,7 +704,7 @@ const ImageViewForm = (props) => {
             />
             {skImgEnhanceContrastEnabled && <div>
               <Form.Field>
-                <label>Clip Limit <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Value Between 0 and 1. The highet, the stronger contrast.' size='small' />:</label>
+                <label>Clip Limit <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Value Between 0 and 1. The highet, the stronger contrast.' size='small' />:</label>
                 <Field
                   fluid
                   name="options.skImg.enhanceContrastClipLimitValue"
@@ -717,7 +717,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Sharpen<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.filters.html#unsharp-mask" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.filters.html#unsharp-mask" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -741,7 +741,7 @@ const ImageViewForm = (props) => {
             />
             {skImgSharpenEnabled && <div>
               <Form.Field>
-                <label>Radius <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Determines how many pixels should be included to enhance the contrast.' size='small' />:</label>
+                <label>Radius <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Determines how many pixels should be included to enhance the contrast.' size='small' />:</label>
                 <Field
                   fluid
                   name="options.skImg.sharpenRadiusValue"
@@ -752,7 +752,7 @@ const ImageViewForm = (props) => {
                 />
               </Form.Field>
               <Form.Field>
-                <label>Amount <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Details will be amplified with this factor. The factor could be 0 or negative. Typically, it is a small positive number, e.g. 1.0' size='small' />:</label>
+                <label>Amount <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Details will be amplified with this factor. The factor could be 0 or negative. Typically, it is a small positive number, e.g. 1.0' size='small' />:</label>
                 <Field
                   fluid
                   name="options.skImg.sharpenAmountValue"
@@ -765,7 +765,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Denoise<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.restoration.html#denoise-bilateral" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.restoration.html#denoise-bilateral" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -788,7 +788,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={4}>
             <label>Erosion, Holes & Peaks<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#reconstruction" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#reconstruction" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -822,7 +822,7 @@ const ImageViewForm = (props) => {
         <Form.Group>
           <Form.Field width={3}>
             <label>HSV<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#rgb2hsv" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.color.html#rgb2hsv" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -890,7 +890,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Regional Maxima<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_regional_maxima.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/color_exposure/plot_regional_maxima.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -912,7 +912,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Convex Hull<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#convex-hull-image" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#convex-hull-image" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -935,7 +935,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Ridge Detection<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/edges/plot_ridge_filter.html#sphx-glr-auto-examples-edges-plot-ridge-filter-py" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/edges/plot_ridge_filter.html#sphx-glr-auto-examples-edges-plot-ridge-filter-py" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -968,7 +968,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Swirl<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#swirl" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.transform.html#swirl" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1018,7 +1018,7 @@ const ImageViewForm = (props) => {
         <Form.Group>
           <Form.Field width={3}>
             <label>RAG<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_rag_mean_color.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/segmentation/plot_rag_mean_color.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1049,7 +1049,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Thresholding<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_thresholding.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_thresholding.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1081,7 +1081,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Chan-Vese Segmentation<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.segmentation.html#chan-vese" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.segmentation.html#chan-vese" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1104,7 +1104,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Switch Color<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/transforming_image_data.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/transforming_image_data.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1146,7 +1146,7 @@ const ImageViewForm = (props) => {
                 />
               </Form.Field>
               <Form.Field>
-                <label>Extend Range Value<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='If you want to affect nearby colors on the RGB scale (0-255) provide a number of how many colors above and below for each R, G and B. (ex. value = 2, affects max 125 colors).' size='small' />:</label>
+                <label>Extend Range Value<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='If you want to affect nearby colors on the RGB scale (0-255) provide a number of how many colors above and below for each R, G and B. (ex. value = 2, affects max 125 colors).' size='small' />:</label>
                 <Field
                   fluid
                   name="options.skImg.switchColorExtendRangeValue"
@@ -1161,7 +1161,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Flip<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/numpy_images.html" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/user_guide/numpy_images.html" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1205,7 +1205,7 @@ const ImageViewForm = (props) => {
         <Form.Group>
          <Form.Field width={3}>
             <label>Circle Frame<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/numpy_operations/plot_camera_numpy.html#sphx-glr-auto-examples-numpy-operations-plot-camera-numpy-py" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/stable/auto_examples/numpy_operations/plot_camera_numpy.html#sphx-glr-auto-examples-numpy-operations-plot-camera-numpy-py" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1270,7 +1270,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Skeletonize<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#skeletonize" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.morphology.html#skeletonize" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1293,7 +1293,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>HOG - Object Detect<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#hog" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.feature.html#hog" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1316,7 +1316,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Contour Finding<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.measure.html#find-contours" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.measure.html#find-contours" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >
@@ -1371,7 +1371,7 @@ const ImageViewForm = (props) => {
           </Form.Field>
           <Form.Field width={3}>
             <label>Florescent Colors<Popup
-                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#rescale-intensity" target="_blank">🛈</a></span>}
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/api/skimage.exposure.html#rescale-intensity" target="_blank">ⓘ</a></span>}
                 size='small'
                 wide='very'
               >

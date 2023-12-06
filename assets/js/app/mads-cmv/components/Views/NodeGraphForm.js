@@ -154,7 +154,7 @@ const NodeGraphForm = (props) => {
       <Form.Group widths="equal">
         <label>Link Settings:</label>
         <Form.Field>
-          <label>Base Length <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Link Base Length without any weights" size='small' />:</label>
+          <label>Base Length <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Link Base Length without any weights" size='small' />:</label>
           <Field
             fluid
             name="options.links.baseLength"
@@ -164,7 +164,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Min Length <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Link Minimum Length when weights are applied (Higher Weight = Shorter Link)" size='small' />:</label>
+          <label>Min Length <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Link Minimum Length when weights are applied (Higher Weight = Shorter Link)" size='small' />:</label>
           <Field
             fluid
             name="options.links.minLength"
@@ -196,7 +196,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Bezier Curve Enabled <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Curved links are permanent blue and will not be affected by the static color settings" size='small' />:</label>
+          <label>Bezier Curve Enabled <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Curved links are permanent blue and will not be affected by the static color settings" size='small' />:</label>
           <Field
             name="options.links.bezierCurveEnabled"
             component={SemCheckbox}
@@ -211,7 +211,7 @@ const NodeGraphForm = (props) => {
       <Form.Group widths="equal">
         <label>Layout:</label>
         <Form.Field>
-          <label>SpringCoeff <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Hook's law coefficient. 1 = solid spring." size='small' />:</label>
+          <label>SpringCoeff <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Hook's law coefficient. 1 = solid spring." size='small' />:</label>
           <Field
             fluid
             name="options.graphLayout.springCoeff"
@@ -223,7 +223,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>DragCoeff <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Drag force coefficient. Used to slow down system, thus should be less than 1. The closer it is to 0 the less tight system will be." size='small' />:</label>
+          <label>DragCoeff <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Drag force coefficient. Used to slow down system, thus should be less than 1. The closer it is to 0 the less tight system will be." size='small' />:</label>
           <Field
             fluid
             name="options.graphLayout.dragCoeff"
@@ -235,7 +235,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Gravity <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Coulomb's law coefficient. It's used to repel nodes thus should be negative. If you make it positive, nodes start to attract each other." size='small' />:</label>
+          <label>Gravity <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Coulomb's law coefficient. It's used to repel nodes thus should be negative. If you make it positive, nodes start to attract each other." size='small' />:</label>
           <Field
             fluid
             name="options.graphLayout.gravity"
@@ -245,7 +245,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>Theta <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Theta coefficient from Barnes Hut simulation. Ranged between 0-1. The closer it's to 1 the more nodes algorithm will have to go through. Setting it to one makes Barnes Hut simulation no different from brute-force forces calculation (each node is considered)." size='small' />:</label>
+          <label>Theta <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Theta coefficient from Barnes Hut simulation. Ranged between 0-1. The closer it's to 1 the more nodes algorithm will have to go through. Setting it to one makes Barnes Hut simulation no different from brute-force forces calculation (each node is considered)." size='small' />:</label>
           <Field
             fluid
             name="options.graphLayout.theta"
@@ -257,7 +257,7 @@ const NodeGraphForm = (props) => {
           />
         </Form.Field>
         <Form.Field>
-          <label>TimeStep <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content="Default time step (dt) for forces integration." size='small' />:</label>
+          <label>TimeStep <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content="Default time step (dt) for forces integration." size='small' />:</label>
           <Field
             fluid
             name="options.graphLayout.timeStep"

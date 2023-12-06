@@ -36,7 +36,21 @@ export function getHexColorsFromNumColors(numColorsArray){
 //-------------------------------------------------------------------------------------------------
 
 
-
+//-------------------------------------------------------------------------------------------------
+// Get Hex Colors from RGB colors
+// Returns a Hex color string from an rgb string
+//-------------------------------------------------------------------------------------------------
+export function rgbToHex(rgb) {
+  // Convert RGB format to Hex format
+  const hex = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+  return hex
+      ? '#' +
+            ('0' + parseInt(hex[1], 10).toString(16)).slice(-2) +
+            ('0' + parseInt(hex[2], 10).toString(16)).slice(-2) +
+            ('0' + parseInt(hex[3], 10).toString(16)).slice(-2)
+      : '';
+}
+//-------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------
 // Get RGBA Color String From Any Color

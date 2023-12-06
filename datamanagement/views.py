@@ -156,13 +156,15 @@ class FilteredDataSourceListView(SingleTableMixin, FilterView):
         qs = self.get_queryset()
         if self.request.user.is_anonymous:
             num_of_owned = 0
+            num_of_private_owned = 0
         else:
             num_of_owned = qs.filter(owner=self.request.user).count()
+            num_of_private_owned = qs.filter(owner=self.request.user, accessibility=DataSource.ACCESSIBILITY_PRIVATE).count()
 
         num_of_all = qs.count()
         context["num_of_owned"] = num_of_owned
         context["num_of_shared"] = num_of_all - num_of_owned
-        context["num_of_private_owned"] = qs.filter(owner=self.request.user, accessibility=DataSource.ACCESSIBILITY_PRIVATE).count()
+        context["num_of_private_owned"] = num_of_private_owned
         context["max_owned"] = int(config("MAX_PRIVATE_DATA_FILES"))
 
         context["lll"] = context["object_list"].count()
