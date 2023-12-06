@@ -27,6 +27,10 @@ import * as deepEqual from 'deep-equal';
 import _ from 'lodash';
 import * as Bokeh from '@bokeh/bokehjs';
 
+
+import api from '../../api';
+
+
 //To Surpress unwanted warnings
 Bokeh.logger.set_level("error");
 
@@ -166,8 +170,11 @@ class BokehTable extends Component {
       options,
     } = this.props;
 
-    const df = new DataFrame(data);
+    let colNamesInProperOrder = [];
+    if(columns.length > 0){ colNamesInProperOrder = [...columns]; }
+    else{ if(data.length > 0){ colNamesInProperOrder = Object.keys(data[0]); } }
 
+    const df = new DataFrame(data);
     const tmpData = {};
     df.columns.toArray().map((v) => {
       tmpData[v] = df.get(v).to_json({ orient: 'records' });
@@ -193,28 +200,33 @@ class BokehTable extends Component {
     `;
     const formatter = new Bokeh.Tables.HTMLTemplateFormatter({ template });
 
-    let displayColumns;
-
-    // columns
-    if (columns.length > 0) {
-      displayColumns = columns.map((v) => {
-        const c = new Bokeh.Tables.TableColumn({
-          field: v,
-          title: v,
-          formatter,
-        });
-        return c;
+    let displayColumns = colNamesInProperOrder.map((v) => {
+      const c = new Bokeh.Tables.TableColumn({
+        field: v,
+        title: v,
+        formatter,
       });
-    } else {
-      displayColumns = df.columns.toArray().map((v) => {
-        const c = new Bokeh.Tables.TableColumn({
-          field: v,
-          title: v,
-          formatter,
-        });
-        return c;
-      });
-    }
+      return c;
+    });
+    // if (columns.length > 0) {
+    //   displayColumns = columns.map((v) => {
+    //     const c = new Bokeh.Tables.TableColumn({
+    //       field: v,
+    //       title: v,
+    //       formatter,
+    //     });
+    //     return c;
+    //   });
+    // } else {
+    //   displayColumns = colNamesInOriginalOrder.map((v) => {
+    //     const c = new Bokeh.Tables.TableColumn({
+    //       field: v,
+    //       title: v,
+    //       formatter,
+    //     });
+    //     return c;
+    //   });
+    // }
 
     // selection
     if (selectedIndices.length > 0) {

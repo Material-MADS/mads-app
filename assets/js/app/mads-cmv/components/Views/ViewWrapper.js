@@ -255,7 +255,7 @@ export default function withCommandInterface(
           <Modal open={propSheetOpen} onClose={this.close} onMouseDown={ e => e.stopPropagation() }> {/* FORTEST: [onMouseDown={ e => e.stopPropagation() }] */}
             <Modal.Header>
               {view.name} {`[${view.id}]`}
-              {/* <label><Popup trigger={<span style={{fontSize: "14px", color: "blue"}}>🛈</span>} size='small' wide='very'>
+              {/* <label><Popup trigger={<span style={{fontSize: "14px", color: "blue"}}>ⓘ</span>} size='small' wide='very'>
                 <p>
                   Designed and Developed by XXX.<br />
                   Under the Guidance and Supervision of YYY.
