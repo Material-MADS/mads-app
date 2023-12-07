@@ -191,7 +191,7 @@ export default function CmvBase({
         <Button toggle active={mobilityEnabling} onClick={handleMEClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Enable Mobility</Button>
         {mobilityEnabling && <div style={{display: "inline"}}>
           <Button toggle active={borderVisibility} onClick={handleBVClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Show Border</Button>
-          <AddViewButton views={views} />
+          <AddViewButton views={views} userInfo={userInfo} />
         </div>}
       </div>
 
