@@ -56,7 +56,7 @@ def signup(request):
                         mail_subject, message, to=[to_email]
             )
             email.send()
-            return HttpResponse('Please confirm your email address to complete the registration')
+            return HttpResponse('Please confirm your email address to complete the registration. Make sure you look in your spam folder as well, if you do not find any mail in your inbox.')
     else:
         form = SignupForm()
     return render(request, 'registration/signup.html', {'form': form})
