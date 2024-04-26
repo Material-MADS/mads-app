@@ -26,7 +26,7 @@ import PropTypes from 'prop-types';
 import ColorTags from '../../containers/ColorTags';
 import AddViewButton from '../../containers/AddView';
 import { Button } from 'semantic-ui-react';
-import config from '../Views/ViewCatalog';
+import { config } from '../Views/ViewCatalog';
 
 import { createNewId } from '../compUtils';
 import createView from '../Views/factory';
@@ -191,7 +191,7 @@ export default function CmvBase({
         <Button toggle active={mobilityEnabling} onClick={handleMEClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Enable Mobility</Button>
         {mobilityEnabling && <div style={{display: "inline"}}>
           <Button toggle active={borderVisibility} onClick={handleBVClick} style={{marginTop: "5px", marginLeft: "0px", marginRight: "20px"}}>Show Border</Button>
-          <AddViewButton views={views} />
+          <AddViewButton views={views} userInfo={userInfo} />
         </div>}
       </div>
 
@@ -214,7 +214,7 @@ export default function CmvBase({
           </ResponsiveGridLayout>
         ) : viewContainers
         }
-        {!mobilityEnabling && <AddViewButton views={views} />}
+        {!mobilityEnabling && <AddViewButton views={views} userInfo={userInfo} />}
       </div>
     </div>
   );

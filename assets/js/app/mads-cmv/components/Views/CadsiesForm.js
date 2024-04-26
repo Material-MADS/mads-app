@@ -5,14 +5,15 @@
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'TensorFlow' View, driven by
-//              ReduxForm
+// Description: This is the Settings Configuration Form for the 'Cadsies - Custom Mini App' View,
+//              driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
-// Notes: 'TensorFlowForm' opens a customized form for the 'TensorFlow' visualization component and
-//        allows the user to edit its look, feel and behavior in multiple ways.
+// Notes: 'Cadsies - Custom Mini App Form' opens a customized form for the
+//        'Cadsies - Custom Mini App' visualization component and allows the user to edit its look,
+//        feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
-//             lodash lib, Internal default image
+//             lodash lib
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ import { Button, Form, Popup } from 'semantic-ui-react';
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
 import inputTrad from '../FormFields/inputTraditional';
-// import SemCheckbox from '../FormFields/Checkbox';
+import SemCheckbox from '../FormFields/Checkbox';
 
 import { getDropdownOptions } from './FormUtils';
 
@@ -40,12 +41,7 @@ import { getDropdownOptions } from './FormUtils';
 //-------------------------------------------------------------------------------------------------
 
 //=======================
-const tensorFlowUsageOpts = ['WebCam Object Detection', 'Image Classification'];
-const modeArgs = [
-  [
-    { name: 'Number of Object Classes', defVal: 2 },
-  ],
-];
+const extentOpts = ['px', 'vw', 'vh', 'em', 'rem'];
 
 //=======================
 
@@ -75,7 +71,7 @@ const validate = (values) => {
 //-------------------------------------------------------------------------------------------------
 // The ReduxForm Module for this specific view and Visualisation Component
 //-------------------------------------------------------------------------------------------------
-const TensorFlowForm = (props) => {
+const CadsiesForm = (props) => {
 
   // parameters and such
   const {
@@ -90,69 +86,55 @@ const TensorFlowForm = (props) => {
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
 
-  const [currentModeVal, setValue] = useState(
-    initialValues.options.tfMode
-  );
-
-  const onModeChange = (event) => {
-    setValue(event);
-    if(event == tensorFlowUsageOpts[0]){
-      props.change('options.modeArgs.arg1', modeArgs[0][0].defVal);
-    }
-    else if(event == tensorFlowUsageOpts[1]){
-
-    }
-  };
-
-
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
 
       <Form.Field>
-        <label>TensorFlow Mode<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Currently Available Tensorflow Modes and Usage Areas for this CADS component. Pick the one you want to use.' size='small' /></label>
+        <label>Enable Demo Sample Data:</label>
         <Field
-          name="options.tfMode"
-          placeholder="Select TensorFlow Usage Mode"
-          component={SemanticDropdown}
-          options={getDropdownOptions(tensorFlowUsageOpts)}
-          onChange={onModeChange}
+          name="options.enableDemoSampleData"
+          component={SemCheckbox}
+          toggle
         />
       </Form.Field>
 
-      {(currentModeVal == tensorFlowUsageOpts[0]) && <div>
-        <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentModeVal} Parameters:</label>
-        <Form.Group widths="equal" style={{paddingTop: "6px"}}>
-          <Form.Field>
-            <label>{modeArgs[0][0].name}:</label>
-            <Field
-              name="options.modeArgs.arg1"
-              component={inputTrad}
-              type="number"
-              step={1}
-              min={2}
-              max={10}
-            />
-          </Form.Field>
-        </Form.Group>
-      </div>}
-
       <hr />
 
-      <Form.Group widths="equal">
+      <Form.Group>
         <label>Extent:</label>
-        <Field
-          fluid
-          name="options.extent.width"
-          component={Input}
-          placeholder="Width"
-        />
-        <Field
-          fluid
-          name="options.extent.height"
-          component={Input}
-          placeholder="Height"
-        />
+        <Form.Field width={6}>
+          <Field
+            fluid
+            name="options.extent.width"
+            component={Input}
+            placeholder="Width"
+          />
+        </Form.Field>
+        <Form.Field width={2}>
+          <Field
+            name="options.extentUnit.width"
+            placeholder="px"
+            component={SemanticDropdown}
+            options={getDropdownOptions(extentOpts)}
+          />
+        </Form.Field>
+        <Form.Field width={6}>
+          <Field
+            fluid
+            name="options.extent.height"
+            component={Input}
+            placeholder="Height"
+          />
+        </Form.Field>
+        <Form.Field width={2}>
+          <Field
+            name="options.extentUnit.height"
+            placeholder="px"
+            component={SemanticDropdown}
+            options={getDropdownOptions(extentOpts)}
+          />
+        </Form.Field>
       </Form.Group>
 
     </Form>
@@ -165,6 +147,6 @@ const TensorFlowForm = (props) => {
 // Exporting and sharing this ReduxForm Module
 //-------------------------------------------------------------------------------------------------
 export default reduxForm({
-  form: 'TensorFlow',
-})(TensorFlowForm);
+  form: 'Cadsies',
+})(CadsiesForm);
 //-------------------------------------------------------------------------------------------------

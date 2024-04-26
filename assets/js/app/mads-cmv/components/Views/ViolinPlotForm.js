@@ -171,7 +171,7 @@ const ViolinPlotForm = (props) => {
 
       {isNumericalCat && <div>
         <Form.Field style={{width: '250px'}}>
-          <label>Number of categories (ranges) <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The grouping category has numerical data, so it should be slimmed down into a set number of ranges.' size='small' />:</label>
+          <label>Number of categories (ranges) <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The grouping category has numerical data, so it should be slimmed down into a set number of ranges.' size='small' />:</label>
           <Field
             fluid
             name="options.numOfCats"
@@ -241,7 +241,7 @@ const ViolinPlotForm = (props) => {
       </div>
 
       <Form.Field>
-        <label>Personal Colors(Manual) <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Type the color names you wish to use with space or comma between.' size='small' />:</label>
+        <label>Personal Colors(Manual) <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Type the color names you wish to use with space or comma between.' size='small' />:</label>
         <Field
           fluid
           name="options.manualColors"

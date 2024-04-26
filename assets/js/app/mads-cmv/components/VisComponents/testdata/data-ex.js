@@ -33,7 +33,6 @@ const data = [
     Volume: 429.688,
     'Has Bandstructure': false,
     'Crystal System': 'monoclinic',
-    'Unnamed: 12': null,
   },
   {
     index: 1,
@@ -49,7 +48,6 @@ const data = [
     Volume: 42.78,
     'Has Bandstructure': true,
     'Crystal System': 'tetragonal',
-    'Unnamed: 12': null,
   },
   {
     index: 2,
@@ -65,7 +63,6 @@ const data = [
     Volume: 155.341,
     'Has Bandstructure': true,
     'Crystal System': 'cubic',
-    'Unnamed: 12': null,
   },
   {
     index: 3,
@@ -81,7 +78,6 @@ const data = [
     Volume: 105.43,
     'Has Bandstructure': true,
     'Crystal System': 'trigonal',
-    'Unnamed: 12': null,
   },
   {
     index: 4,
@@ -97,7 +93,6 @@ const data = [
     Volume: 817.943,
     'Has Bandstructure': false,
     'Crystal System': 'triclinic',
-    'Unnamed: 12': null,
   },
   {
     index: 5,
@@ -113,7 +108,6 @@ const data = [
     Volume: 312.638,
     'Has Bandstructure': true,
     'Crystal System': 'orthorhombic',
-    'Unnamed: 12': null,
   },
   {
     index: 6,
@@ -129,7 +123,6 @@ const data = [
     Volume: 312.904,
     'Has Bandstructure': true,
     'Crystal System': 'monoclinic',
-    'Unnamed: 12': null,
   },
   {
     index: 7,
@@ -145,7 +138,6 @@ const data = [
     Volume: 313.046,
     'Has Bandstructure': true,
     'Crystal System': 'trigonal',
-    'Unnamed: 12': null,
   },
   {
     index: 8,
@@ -161,7 +153,6 @@ const data = [
     Volume: 377.956,
     'Has Bandstructure': true,
     'Crystal System': 'triclinic',
-    'Unnamed: 12': null,
   },
   {
     index: 9,
@@ -177,7 +168,6 @@ const data = [
     Volume: 205.633,
     'Has Bandstructure': true,
     'Crystal System': 'triclinic',
-    'Unnamed: 12': null,
   },
   {
     index: 10,
@@ -193,7 +183,6 @@ const data = [
     Volume: 157.728,
     'Has Bandstructure': true,
     'Crystal System': 'orthorhombic',
-    'Unnamed: 12': null,
   },
 ];
 //-------------------------------------------------------------------------------------------------

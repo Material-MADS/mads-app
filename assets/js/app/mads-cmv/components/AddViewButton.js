@@ -23,7 +23,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Dropdown, Header, Modal, Icon } from 'semantic-ui-react';
 
-import config from './Views/ViewCatalog';
+// import { config, specialPass } from './Views/ViewCatalog';
+import { config, specialPass } from './Views/ViewCatalog';
 import createView from './Views/factory';
 import { createNewId } from './compUtils';
 
@@ -33,30 +34,34 @@ import { createNewId } from './compUtils';
 //-------------------------------------------------------------------------------------------------
 // Component properties and Initiation
 //-------------------------------------------------------------------------------------------------
-const uniqueCategories = [...new Set( config.map(v => v.category)) ];
-const allAvaialableViews = Array(uniqueCategories.length);
-for(var i = 0; i < allAvaialableViews.length; i++){
-  allAvaialableViews[i] = config.filter((v) => (v.category === uniqueCategories[i] && (v.enabled) ));
-}
-
 const startId = 1;
-const catStr = "Category: ";
-const catColors = ["MediumBlue", "OrangeRed", "HotPink", "DarkGreen", "DarkMagenta", "DarkRed", "GoldenRod", "Black", "Olive", "Sienna"];
-
-let key = 0;
-const options = [];
-for(let i = 0; i < uniqueCategories.length; i++){
-  if (allAvaialableViews[i].length > 0) {
-    key += 1;
-    options.push({ children: <i>{catStr + uniqueCategories[i]}</i>, disabled: true, key, style: {backgroundColor: catColors[i], color: "White", fontWeight: "bold", textDecoration: "underline", fontSize: "18px"} });
-    const list = allAvaialableViews[i].map((v) => ({
-      text: v.name + ((v.devStage != undefined && v.devStage != "" && v.devStage != "Stable Release") ? " (** " + v.devStage + " **)" : "") + ((v.version != undefined && v.version != 1) ? " [v." + v.version + "]" : ""),
-      value: v.type,
-      key: v.type,
-      style: {color: catColors[i]},
-    }));
-    Array.prototype.push.apply(options, list);
+const getAvailableComponentsList = function(hasSpecialPass){
+  const uniqueCategories = [...new Set( config.map(v => v.category)) ];
+  const allAvaialableViews = Array(uniqueCategories.length);
+  for(var i = 0; i < allAvaialableViews.length; i++){
+    allAvaialableViews[i] = config.filter((v) => (v.category === uniqueCategories[i] && (v.enabled || hasSpecialPass) ));
   }
+
+  const catStr = "Category: ";
+  const catColors = ["MediumBlue", "OrangeRed", "HotPink", "DarkGreen", "DarkMagenta", "DarkRed", "GoldenRod", "Black", "Olive", "Sienna"];
+
+  let key = 0;
+  const options = [];
+  for(let i = 0; i < uniqueCategories.length; i++){
+    if (allAvaialableViews[i].length > 0) {
+      key += 1;
+      options.push({ children: <i>{catStr + uniqueCategories[i]}</i>, disabled: true, key, style: {backgroundColor: catColors[i], color: "White", fontWeight: "bold", textDecoration: "underline", fontSize: "18px"} });
+      const list = allAvaialableViews[i].map((v) => ({
+        text: v.name + ((v.devStage != undefined && v.devStage != "" && v.devStage != "Stable Release") ? " (** " + v.devStage + " **)" : "") + ((v.version != undefined && v.version != 1) ? " [v." + v.version + "]" + ((!v.enabled)?"{Hidden to others}":""): ""),
+        value: v.type,
+        key: v.type,
+        style: {color: catColors[i]},
+      }));
+      Array.prototype.push.apply(options, list);
+    }
+  }
+
+  return options;
 }
 //-------------------------------------------------------------------------------------------------
 
@@ -96,6 +101,12 @@ class AddViewButton extends React.Component {
 
   render() {
     const { open, close } = this.state;
+
+    const { userInfo } = this.props;
+    const user_email = (userInfo.user && userInfo.user.email) ? userInfo.user.email : "Anonymous"
+    const hasSpecialPass = specialPass.includes(user_email);
+
+    const options = getAvailableComponentsList(hasSpecialPass);
 
     return (
       <Modal

@@ -37,6 +37,7 @@ SECURE_HSTS_PRELOAD = True
 DEBUG = True
 
 ADMINS = (("Admin", "material.mads@gmail.com"),)
+# ADMINS = (("Admin", "cads.team@sci.hokudai.ac.jp"),)
 
 AUTH_USER_MODEL = "users.User"
 

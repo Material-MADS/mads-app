@@ -19,6 +19,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
+import './TensorFlowVisStyles.css';
+
 import * as tf from '@tensorflow/tfjs';
 import $ from "jquery";
 
@@ -371,7 +373,7 @@ export default function TensorFlow({
   let internalOptions = {...defaultOptions, ...options};
 
   if(!tfFromCDNAlreadyLoaded){
-    imgClassify.loadTFFromCDN("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1", true);
+    imgClassify.loadTFFromCDN("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js", true);
   }
 
   // Create the VizComp based on the incomming parameters
@@ -512,104 +514,6 @@ export default function TensorFlow({
         <img src="https://ww2.freelogovectors.net/wp-content/uploads/2018/07/tensorflow-logo.png" alt="TensorFlow Logo" width="400" />
       `);
     }
-
-
-
-    // var thisImg = $(rootNode.current).find('#CadsWSUserImage' + id).on('load', function () {
-    //   thisImg.off('load');
-    //   var drawingContainer = $(rootNode.current).find("#drawingContainer" + id);
-    //   var borderSizeAddOn = internalOptions.border.size * 2;
-    //   drawingContainer.css({'width': (thisImg.width() + borderSizeAddOn) + "px", 'height': (thisImg.height() + borderSizeAddOn) + "px"});
-    //   $(rootNode.current).find('#CadsWSUserImageTitle' + id).text(internalOptions.title);
-    //   $(rootNode.current).find('#CadsWSUserImageCaption' + id).width(thisImg.width()).text(internalOptions.caption);
-
-    //   const viewWrapperCustomButton_SaveImg = $(rootNode.current).parent().parent().find('#saveImg' + id);
-    //   viewWrapperCustomButton_SaveImg.off('click');
-    //   const viewWrapperCustomButton_AnnotateImg = $(rootNode.current).parent().parent().find('#annotateImg' + id);
-    //   viewWrapperCustomButton_AnnotateImg.off('click');
-    //   viewWrapperCustomButton_AnnotateImg.css('margin-right', '20px;');
-    //   const viewWrapperCustomButton_AnnotationType = $(rootNode.current).parent().parent().find('#annotateBrushType' + id);
-    //   viewWrapperCustomButton_AnnotationType.off('change');
-    //   viewWrapperCustomButton_AnnotationType.hide();
-    //   const viewWrapperCustomButton_AnnotationColor = $(rootNode.current).parent().parent().find('#annotationColor' + id);
-    //   viewWrapperCustomButton_AnnotationColor.off('change');
-    //   viewWrapperCustomButton_AnnotationColor.hide();
-    //   const viewWrapperCustomButton_AnnotationSize = $(rootNode.current).parent().parent().find('#annotationSize' + id);
-    //   viewWrapperCustomButton_AnnotationSize.off('change');
-    //   viewWrapperCustomButton_AnnotationSize.hide();
-    //   const viewWrapperCustomButton_AnnotationOpacity = $(rootNode.current).parent().parent().find('#annotationOpacity' + id);
-    //   viewWrapperCustomButton_AnnotationOpacity.off('change');
-    //   viewWrapperCustomButton_AnnotationOpacity.hide();
-    //   const viewWrapperCustomButton_AnnotationReset = $(rootNode.current).parent().parent().find('#annotateImgReset' + id);
-    //   viewWrapperCustomButton_AnnotationReset.off('click');
-    //   viewWrapperCustomButton_AnnotationReset.hide();
-
-    //   // Annotation Feature
-    //   let annotateData = { uid: uid, lastMouse: {x: 0, y: 0}, imgData: [], lineData: {}, gco: "", toolType: 0, brushColor: "#ff0000", brushOpacity: 1, brushSize: 2 }
-    //   if(annotationMemory[uid] && typeof annotationMemory[uid][0] !== 'string' ){
-    //     annotateData = annotationMemory[uid];
-    //   }
-
-    //   var drawSurface = $(rootNode.current).find("#drawSurface" + id);
-    //   drawSurface.off('mouseup');
-    //   drawSurface[0].setAttribute("width", thisImg.width() + "px");
-    //   drawSurface[0].setAttribute("height", thisImg.height() + "px");
-    //   drawSurface[0].setAttribute("annodata", JSON.stringify(annotateData));
-
-    //   viewWrapperCustomButton_SaveImg.on( "click", function () { saveBase64AsFile(activeImgSrc, (filenamePrefix + internalOptions.title), thisImg[0], drawSurface[0], (internalOptions.cssFilters.isEnabled ? cssFilters : undefined)); });
-    //   viewWrapperCustomButton_AnnotateImg.on( "click", function (e) {
-    //     if(annotationEnabled){
-    //       viewWrapperCustomButton_AnnotateImg.css("background-color", '');
-    //       viewWrapperCustomButton_AnnotationColor.hide();
-    //       viewWrapperCustomButton_AnnotationSize.hide();
-    //       viewWrapperCustomButton_AnnotationType.hide();
-    //       viewWrapperCustomButton_AnnotationOpacity.hide();
-    //       viewWrapperCustomButton_AnnotationReset.hide();
-    //     }
-    //     else{
-    //       viewWrapperCustomButton_AnnotateImg.css("background-color", "green");
-    //       viewWrapperCustomButton_AnnotationColor.show();
-    //       viewWrapperCustomButton_AnnotationSize.show();
-    //       viewWrapperCustomButton_AnnotationType.show();
-    //       viewWrapperCustomButton_AnnotationOpacity.show();
-    //       viewWrapperCustomButton_AnnotationReset.show();
-    //     }
-    //     annotationEnabled = !annotationEnabled;
-    //   });
-    //   viewWrapperCustomButton_AnnotationType.on('change', function (e) {
-    //     const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
-    //     annodata.toolType = e.target.value;
-    //     drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-    //   });
-    //   viewWrapperCustomButton_AnnotationColor.on('change', function (e) {
-    //     const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
-    //     annodata.brushColor = e.target.value;
-    //     drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-    //   });
-    //   viewWrapperCustomButton_AnnotationSize.on('change', function (e) {
-    //     const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
-    //     annodata.brushSize = e.target.value;
-    //     drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-    //   });
-    //   viewWrapperCustomButton_AnnotationOpacity.on('change', function (e) {
-    //     const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
-    //     annodata.brushOpacity = e.target.value;
-    //     drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-    //   });
-    //   viewWrapperCustomButton_AnnotationReset.on('click', function (e) {
-    //     var ctx = drawSurface[0].getContext("2d");
-    //     ctx.clearRect(0,0,thisImg.width(),thisImg.height());
-    //     const annodata = JSON.parse(drawSurface[0].getAttribute("annodata"));
-    //     annodata.imgData = [];
-    //     drawSurface[0].setAttribute("annodata", JSON.stringify(annodata));
-    //     annotationMemory[uid].imgData = annodata.imgData;
-    //   });
-
-    //   drawSurface.on('mousedown', onMouseDown);
-    //   if(annotationMemory[uid]){
-    //     redrawPreviousImg(drawSurface[0], annotateData.imgData);
-    //   }
-    // }).attr("src", activeImgSrc);
   };
 
    // Clear away the VizComp

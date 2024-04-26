@@ -1,0 +1,146 @@
+/*=================================================================================================
+// Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
+//          Hokkaido University (2018)
+//          Last Update: Q3 2023
+// ________________________________________________________________________________________________
+// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// ________________________________________________________________________________________________
+// Description: This is the CSS styles for the 'Cadsies - Custom Mini App' component
+// ------------------------------------------------------------------------------------------------
+// Notes: 'Cadsies - Custom Mini App' is a component that draws a network of nodes, and this css
+//        file control some of the display aspects of that graph.
+// ------------------------------------------------------------------------------------------------
+// References: None
+=================================================================================================*/
+
+/*-----------------------------------------------------------------------------------------------*/
+.cadsiesBody {
+  font-family: helvetica, arial, sans-serif;
+  border: 3px double rgb(26, 24, 24);
+  margin: 0;
+  overflow: hidden;
+}
+
+
+#container {
+  display: flex;
+  height: 100vh;
+}
+
+#smallerArea {
+  border: 1px solid #ccc;
+  overflow: auto;
+  width: auto; /* Allow it to adjust based on content */
+}
+
+#largerArea {
+  flex: 7;
+  border: 1px solid #ccc;
+}
+
+.draggable {
+  width: 50px;
+  height: 50px;
+  margin: 10px;
+  cursor: move;
+  user-select: none;
+}
+
+.context-menu {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+
+.context-menu div:hover {
+  background-color: #e6e6e6;
+}
+
+.has-scrollbar {
+  width: auto !important;
+}
+
+#largerArea,
+#largerArea * {
+  margin: 0;
+  padding: 0;
+}
+
+.button-container {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button-container button {
+  margin-left: 10px;
+}
+
+.modal {
+  position: absolute;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+  z-index: 1001; /* Ensure the modal is above other elements */
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent dark overlay */
+  z-index: 1000; /* Ensure the overlay is above other elements but below the modal */
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 10px; /* Adjust as needed for spacing between label and input */
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Adjust as needed for spacing between rows */
+}
+
+.label-width {
+  width: 180px; /* Set the desired width for the labels */
+}
+
+.form-input {
+  flex-grow: 1;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear, opacity 1s linear;
+
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 11px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  bottom: 110%;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s linear 0.5s, opacity 1s linear 0.5s;
+}

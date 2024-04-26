@@ -159,7 +159,7 @@ const LineForm = (props) => {
       </Form.Field>
 
       <Form.Field>
-        <label>Y-Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='One column, or many (if data is of same type), of numerical data' size='small' />:</label>
+        <label>Y-Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='One column, or many (if data is of same type), of numerical data' size='small' />:</label>
         <Field
           name="mappings.yData"
           component={MultiSelectDropdown}
@@ -172,7 +172,7 @@ const LineForm = (props) => {
 
       <hr />
       <Form.Field>
-        <label>Title <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The Chart title. If none is provided, one will be created from the data information' size='small' />:</label>
+        <label>Title <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The Chart title. If none is provided, one will be created from the data information' size='small' />:</label>
         <Field
           fluid
           name="options.title"
@@ -183,7 +183,7 @@ const LineForm = (props) => {
       <Form.Group widths="equal">
         <label>Labels:</label>
         <Form.Field>
-          <label>X Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The X Axis Label. If none is provided, the x-axis column name will be used' size='small' />:</label>
+          <label>X Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The X Axis Label. If none is provided, the x-axis column name will be used' size='small' />:</label>
           <Field
             fluid
             name="options.XAxisLabel"
@@ -193,7 +193,7 @@ const LineForm = (props) => {
         </Form.Field>
 
         <Form.Field>
-        <label>Y Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='The Y Axis Label. If none is provided, the first y-axis column name will be used' size='small' />:</label>
+        <label>Y Axis <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='The Y Axis Label. If none is provided, the first y-axis column name will be used' size='small' />:</label>
           <Field
             fluid
             name="options.YAxisLabel"
@@ -203,7 +203,7 @@ const LineForm = (props) => {
         </Form.Field>
 
         <Form.Field>
-          <label>Legend <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='If multiple lines are displayed, what will be the collective Label for them? (Time, Temp, Value, Price, Day etc?)' size='small' />:</label>
+          <label>Legend <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='If multiple lines are displayed, what will be the collective Label for them? (Time, Temp, Value, Price, Day etc?)' size='small' />:</label>
           <Field
             fluid
             name="options.legendLabel"
@@ -256,7 +256,7 @@ const LineForm = (props) => {
       <Form.Group widths="equal">
         <label>Styles:</label>
         <Form.Field>
-          <label>Enable Different Line Styles <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Such as Solid, Dotted, Dashed etc.' size='small' />:</label>
+          <label>Enable Different Line Styles <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Such as Solid, Dotted, Dashed etc.' size='small' />:</label>
           <Field
             name="options.lineStylesEnabled"
             component={SemCheckbox}
@@ -265,7 +265,7 @@ const LineForm = (props) => {
         </Form.Field>
 
         <Form.Field>
-          <label>Enable Data point Markers <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>🛈</span>} content='Draw a circle at each data point in the line.' size='small' />:</label>
+          <label>Enable Data point Markers <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Draw a circle at each data point in the line.' size='small' />:</label>
           <Field
             name="options.lineMarkersEnabled"
             component={SemCheckbox}

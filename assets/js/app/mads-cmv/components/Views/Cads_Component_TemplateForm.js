@@ -5,14 +5,15 @@
 // ________________________________________________________________________________________________
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'TensorFlow' View, driven by
-//              ReduxForm
+// Description: This is the Settings Configuration Form for the 'cads_component_template' View,
+//              driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
-// Notes: 'TensorFlowForm' opens a customized form for the 'TensorFlow' visualization component and
-//        allows the user to edit its look, feel and behavior in multiple ways.
+// Notes: 'cads_component_template Form' opens a customized form for the
+//        'cads_component_template' visualization component and allows the user to edit its look,
+//        feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
-//             lodash lib, Internal default image
+//             lodash lib
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
@@ -40,12 +41,7 @@ import { getDropdownOptions } from './FormUtils';
 //-------------------------------------------------------------------------------------------------
 
 //=======================
-const tensorFlowUsageOpts = ['WebCam Object Detection', 'Image Classification'];
-const modeArgs = [
-  [
-    { name: 'Number of Object Classes', defVal: 2 },
-  ],
-];
+const cads_component_templateOpts = ['Something', 'Something Else'];
 
 //=======================
 
@@ -75,7 +71,7 @@ const validate = (values) => {
 //-------------------------------------------------------------------------------------------------
 // The ReduxForm Module for this specific view and Visualisation Component
 //-------------------------------------------------------------------------------------------------
-const TensorFlowForm = (props) => {
+const Cads_Component_TemplateForm = (props) => {
 
   // parameters and such
   const {
@@ -90,48 +86,57 @@ const TensorFlowForm = (props) => {
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
 
-  const [currentModeVal, setValue] = useState(
-    initialValues.options.tfMode
+  const [currentChoice, setValue] = useState(
+    initialValues.options.something
   );
 
-  const onModeChange = (event) => {
+  const onSomeChange = (event) => {
     setValue(event);
-    if(event == tensorFlowUsageOpts[0]){
-      props.change('options.modeArgs.arg1', modeArgs[0][0].defVal);
-    }
-    else if(event == tensorFlowUsageOpts[1]){
-
-    }
   };
 
+  if(!initialValues.options.anotherThing){ initialValues.options.anotherThing = 1 };
 
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
 
       <Form.Field>
-        <label>TensorFlow Mode<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Currently Available Tensorflow Modes and Usage Areas for this CADS component. Pick the one you want to use.' size='small' /></label>
+        <label>Whatever<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' /></label>
         <Field
-          name="options.tfMode"
-          placeholder="Select TensorFlow Usage Mode"
+          name="options.something"
+          placeholder="Select Something"
           component={SemanticDropdown}
-          options={getDropdownOptions(tensorFlowUsageOpts)}
-          onChange={onModeChange}
+          options={getDropdownOptions(cads_component_templateOpts)}
+          onChange={onSomeChange}
         />
       </Form.Field>
 
-      {(currentModeVal == tensorFlowUsageOpts[0]) && <div>
-        <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentModeVal} Parameters:</label>
+      {(currentChoice == cads_component_templateOpts[0]) && <div>
+        <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentChoice} Parameters:</label>
         <Form.Group widths="equal" style={{paddingTop: "6px"}}>
           <Form.Field>
-            <label>{modeArgs[0][0].name}:</label>
+            <label>Another thing:</label>
             <Field
-              name="options.modeArgs.arg1"
+              name="options.anotherThing"
               component={inputTrad}
               type="number"
               step={1}
-              min={2}
+              min={0}
               max={10}
+            />
+          </Form.Field>
+        </Form.Group>
+      </div>}
+
+      {(currentChoice == cads_component_templateOpts[1]) && <div>
+        <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentChoice} Parameters:</label>
+        <Form.Group widths="equal" style={{paddingTop: "6px"}}>
+          <Form.Field>
+            <label>Completely different:</label>
+            <Field
+              name="options.diff"
+              component={inputTrad}
+              type="text"
             />
           </Form.Field>
         </Form.Group>
@@ -165,6 +170,6 @@ const TensorFlowForm = (props) => {
 // Exporting and sharing this ReduxForm Module
 //-------------------------------------------------------------------------------------------------
 export default reduxForm({
-  form: 'TensorFlow',
-})(TensorFlowForm);
+  form: 'Cads_Component_Template',
+})(Cads_Component_TemplateForm);
 //-------------------------------------------------------------------------------------------------
