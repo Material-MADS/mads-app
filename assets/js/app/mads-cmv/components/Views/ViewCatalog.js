@@ -47,6 +47,7 @@ import NodeGraphView from './NodeGraphView';
 
 // Machine Learning
 import RegressionView from './RegressionView';
+import DescriptorsView from './DescriptorsView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
@@ -672,6 +673,29 @@ export const config = [
 
   // MACHINE LEARNING CATEGORY
   //==========================
+
+  // Descriptors - A Customizable Descriptors calculator for molecules
+  //------------------------------------------
+  {
+    type: 'descriptors',
+    name: 'Descriptors',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: DescriptorsView,
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 0
+      },
+      featureColumns: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // Regression - A Customizable Regression Scatter Line Plot
   //------------------------------------------
