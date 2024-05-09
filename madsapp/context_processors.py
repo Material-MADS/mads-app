@@ -17,21 +17,23 @@
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
 import os
+from dotenv import load_dotenv
+load_dotenv()
 #-------------------------------------------------------------------------------------------------
 
 
 #-------------------------------------------------------------------------------------------------
 def export_vars(request):
     data = {}
-    data['PROJECT_NAME'] = os.environ.get('PROJECT_NAME')
-    data['PROJECT_NAME_ABBR'] = os.environ.get('PROJECT_NAME_ABBR')
-    data['PROJECT_MAIN_LOGO_PATH'] = os.environ.get('PROJECT_MAIN_LOGO_PATH')
-    data['PROJECT_FAVICON_PATH'] = os.environ.get('PROJECT_FAVICON_PATH')
-    data['PROJECT_ICON32_PATH'] = os.environ.get('PROJECT_ICON32_PATH')
-    data['PROJECT_ICON64_PATH'] = os.environ.get('PROJECT_ICON64_PATH')
+    data['PROJECT_NAME'] = os.getenv('PROJECT_NAME')
+    data['PROJECT_NAME_ABBR'] = os.getenv('PROJECT_NAME_ABBR')
+    data['PROJECT_MAIN_LOGO_PATH'] = os.getenv('PROJECT_MAIN_LOGO_PATH')
+    data['PROJECT_FAVICON_PATH'] = os.getenv('PROJECT_FAVICON_PATH')
+    data['PROJECT_ICON32_PATH'] = os.getenv('PROJECT_ICON32_PATH')
+    data['PROJECT_ICON64_PATH'] = os.getenv('PROJECT_ICON64_PATH')
 
-    data['APP_DISABLE_SIGNUP'] = os.environ.get('APP_DISABLE_SIGNUP') == 'True'
-    data['GOOGLE_ANALYTICS_TRACKING_ID'] = os.environ.get('GOOGLE_ANALYTICS_TRACKING_ID')
+    data['APP_DISABLE_SIGNUP'] = os.getenv('APP_DISABLE_SIGNUP') == 'True'
+    data['GOOGLE_ANALYTICS_TRACKING_ID'] = os.getenv('GOOGLE_ANALYTICS_TRACKING_ID')
 
     return data
 #-------------------------------------------------------------------------------------------------
