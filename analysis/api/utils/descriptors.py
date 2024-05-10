@@ -20,8 +20,10 @@
 #-------------------------------------------------------------------------------------------------
 import logging
 from cheminfotools.chem_features import ChythonCircus as Augmentor
+from optimizer.optimizer import launch_study
 from chython import smiles
 import pandas as pd
+from scipy.sparse import csr_matrix
 
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
@@ -50,8 +52,13 @@ def get_descriptors(data):
         desc = pd.DataFrame(aa)
         desc2 = desc.to_dict('records')
 
-    data = {'data': data, 'data_desc': desc2}
+    result = {'data': data, 'data_desc': desc2}
 
-    return data
+    for_opt = {'Circus': csr_matrix(aa.values)}
+    st = launch_study(for_opt, pd.DataFrame(df_target), "outdir", "SVR", 100, 5,
+                 1, 5, 60, (0, 1), False)
+    print("STUDY RES", st)
+
+    return result
 
 #-------------------------------------------------------------------------------------------------
