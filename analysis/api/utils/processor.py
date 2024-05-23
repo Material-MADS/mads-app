@@ -32,6 +32,7 @@ from .scikit_image_manip import get_scikit_image_manip
 from .node_graph import get_node_graph
 from .gaussian_process import get_gaussian_process
 from .cadsies import get_cadsies_stuff
+from .feature_engineering import get_feature_engineering
 
 from .cads_component_template import get_cads_component_template_stuff
 
@@ -58,6 +59,7 @@ processor_map = {
     'nodeGraph': get_node_graph,
     'gaussianProcess': get_gaussian_process,
     'cadsies': get_cadsies_stuff,
+    'featureEngineering': get_feature_engineering,
 
     'cads_component_template': get_cads_component_template_stuff,
 }

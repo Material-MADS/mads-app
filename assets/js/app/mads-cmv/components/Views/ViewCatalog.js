@@ -32,6 +32,7 @@ import GapMinderView from './GapMinderView';
 
 // Data Processing
 import ImageViewView from './ImageView';
+import FeatureEngineeringView from './FeatureEngineeringView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -350,6 +351,30 @@ export const config = [
           florescentColorsEnabled: false,
         },
         annotation: [],
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+    // Feature Engineering - A Customizable Feature Engienering
+  //----------------------------------------------------------------
+  {
+    type: 'featureEngineering',
+    name: 'FeatureEngineering',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: FeatureEngineeringView,
+    settings: {
+      descriptorColumns: [],
+      targetColumns: [],
+      firstOrderDescriptors: [],
+      options: {
+        extent: {
+          width: 400,
+          height: 200,
+        },
       },
     },
     enabled: true,
