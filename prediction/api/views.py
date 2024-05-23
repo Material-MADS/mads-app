@@ -151,15 +151,16 @@ class PretrainedModelAPIViewSet(
         pm.metadata = metadata
 
         # file
-        model = get_model({
-            'data': viewSettings['data'],
-            'view': viewSettings['view'],
-        })
+        arg_get_model = {'data': viewSettings['data'],
+                         'view': viewSettings['view'], }
+        if 'params' in viewSettings.keys():  # for optimizer component
+            arg_get_model['params'] = viewSettings['params']
+        model = get_model(arg_get_model)
+        print(model[:1])
         logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
             f.seek(0)
-
             pm.file = SimpleUploadedFile('test.pkl', f.read())
 
         serializer = PretrainedModelSerializer(pm)

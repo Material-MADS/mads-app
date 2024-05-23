@@ -48,6 +48,7 @@ import NodeGraphView from './NodeGraphView';
 // Machine Learning
 import RegressionView from './RegressionView';
 import DescriptorsView from './DescriptorsView';
+import OptimizerView from './OptimizerView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
@@ -689,6 +690,33 @@ export const config = [
         arg1: 0,
         arg2: 0
       },
+      featureColumns: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // Optimizer - A Customizable Descriptors calculator + model optimizer for molecules
+  //------------------------------------------
+  {
+    type: 'optimizer',
+    name: 'Optimizer',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: OptimizerView,
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 5
+      },
+      MLmethod: 'SVR',
+      CVsplits: '5',
+      CVrepeats: '3',
+      trials: '100',
       featureColumns: '',
       targetColumn: '',
       mappings: {},

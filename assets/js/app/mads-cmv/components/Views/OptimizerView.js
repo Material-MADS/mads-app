@@ -6,10 +6,10 @@
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 //          Jun Fujima (Former Lead Developer) [2018-2021]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'Regression' View
+// Description: This is the Inner workings and Content Manager Controler of the 'Optimizer' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Regression' is the manager of all current input that controls the final view of the
-//         'RegressionVis' visualization component.
+// Notes: 'Optimizer' is the manager of all current input that controls the final view of the
+//         'OptimizerVis' visualization component.
 // ------------------------------------------------------------------------------------------------
 // References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
 //             Internal PieChart & PieForm libs,
@@ -77,11 +77,6 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     const fc = df.get(newValues.featureColumns);
     data[newValues.featureColumns] = fc.values.toArray();
 
-//    newValues.featureColumns.forEach((c) => {
-//      const fc = df.get(c);
-//      data[c] = fc.values.toArray();
-//    });
-
     // set mapping
     newValues.mappings = {
       x: values.targetColumn,
@@ -97,11 +92,15 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
   // Manages Save Model Requests
   handleModelSave = (name, overwrite, id) => {
     // Note: override this if necessary
-    const { actions } = this.props;
+    const { actions, dataset, view, data } = this.props;
 
-    // submit setting form
-    this.formReference.submit();
-    actions.saveModel(name, this.tmpViewParams, overwrite, id);
+    if(dataset[this.props.id]['params']) {
+      this.tmpViewParams.view['params'] = dataset[this.props.id]['params'];
+      actions.saveModel(name, this.tmpViewParams, overwrite, id);
+    }
+    else {
+      console.log("No params available")
+    }
   };
 
   composeSubmittingData = (values) => {};
@@ -109,20 +108,56 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
   // Manages data changes in the view
   mapData = (dataset) => {
     const { id, view, actions } = this.props;
-    const data = {data: [], data_desc: []};
+    const data = {data_desc: [], d1: {data: []}, d2: {data: []}};
 
-    console.log("DATASET", dataset)
     if (dataset[id]) {
-      if (dataset[id].data_desc == undefined) {
-        console.log("undef, return {}")
+      const targetName = view.settings.targetColumn;
+      const pName = `${targetName}--Predicted`;
+      let xx, yy, xx2, yy2;
+
+      // Make sure backwards compability is implemented so old regression components will still work
+      if(dataset[id]['d1']){
+        xx = dataset[id]['d1'][targetName];
+        yy = dataset[id]['d1'][pName];
+        xx2 = dataset[id]['d2'][targetName];
+        yy2 = dataset[id]['d2'][pName];
+      }
+      else if(dataset[id][targetName]){
+        xx = dataset[id][targetName];
+        yy = dataset[id][pName];
+        xx2 = [];
+        yy2 = [];
+      }
+
+      if (xx == undefined || !Array.isArray(xx) || yy == undefined || !Array.isArray(yy)) {
         return  {};
       }
-      if (dataset[id].data_desc) {
-        data.data_desc = dataset[id].data_desc
-        console.log("not undef, returns good")
+
+      xx.forEach((x, i) => {
+        const item = {};
+        item[targetName] = x;
+        item[pName] = yy[i];
+        data.d1.data.push(item);
+      });
+
+      xx2.forEach((x, i) => {
+        const item = {};
+        item[targetName] = x;
+        item[pName] = yy2[i];
+        data.d2.data.push(item);
+      });
+
+      if (!(dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn))) {
+        data.d1 = {data: []};
+        data.d2 = {data: []};
+        data["resetRequest"] = true;
+        data["resetTitle"] = "Optimizer";
+      }
+
+      if (dataset[id].scores) {
+        data["scores"] = dataset[id].scores;
       }
     }
-
 
     return data;
   };

@@ -56,9 +56,6 @@ const validate = (values) => {
   if (!values.featureColumns) {
     errors.featureColumns = 'Required';
   }
-//  if (values.featureColumns && values.featureColumns.length === 0) {
-//    errors.featureColumns = 'Required';
-//  }
   if (!values.targetColumn) {
     errors.targetColumn = 'Required';
   }
@@ -93,17 +90,61 @@ const OptimizerForm = (props) => {
     props: { style: '' },
   }));
 
-  const methods = ['Circus', 'Circus2',];
+  const methods = ['Circus', 'Circus2', 'Morgan_fingerprints', 'Morgan_features',
+                   'RDKit_Fingerprints', 'RDKit_Linear_Fingerprints', 'Layered', 'Avalon',
+                   'Torsion', 'Atom_Pairs', 'Linear_fragments', 'Mordred_2D'];
   const methodsArgs = {
     Circus: [
-      { name: 'Min', defVal: 0 },
-      { name: 'Max', defVal: 4 }
+      { name: 'Lower', defVal: 0 },
+      { name: 'Upper', defVal: 4 }
     ],
     Circus2: [
-      { name: 'Min', defVal: 0 },
-      { name: 'Max', defVal: 4 }
+      { name: 'Lower', defVal: 0 },
+      { name: 'Upper', defVal: 4 }
     ],
+    Morgan_fingerprints: [
+      { name: '#Bits', defVal: 1024 },
+      { name: 'Radius', defVal: 2 }
+    ],
+    Morgan_features: [
+      { name: '#Bits', defVal: 1024 },
+      { name: 'Radius', defVal: 2 }
+    ],
+    RDKit_Fingerprints: [
+      { name: '#Bits', defVal: 1024 },
+      { name: 'Radius', defVal: 3 }
+    ],
+    RDKit_Linear_Fingerprints: [
+      { name: '#Bits', defVal: 1024 },
+      { name: 'Radius', defVal: 3 }
+    ],
+    Layered: [
+      { name: '#Bits', defVal: 1024 },
+      { name: 'Radius', defVal: 3 }
+    ],
+    Avalon: [
+      { name: '#Bits', defVal: 1024 },
+    ],
+    Torsion: [
+      { name: '#Bits', defVal: 1024 },
+    ],
+    Atom_Pairs: [
+      { name: '#Bits', defVal: 1024 },
+    ],
+    Linear_fragments: [
+      { name: 'Lower', defVal: 2 },
+      { name: 'Upper', defVal: 5 }
+    ],
+    Mordred_2D: [],
   };
+
+  const MLmethods = ['SVR', 'RFR']; // ['SVR', 'RFR', 'XGBR'];
+  const cvMethodsArgs = {
+    TrainTestSplit: { name: 'test_size', defVal: 0.2 },
+    KFold: { name: 'n_splits', defVal: 5 },
+  };
+
+//  const isModelBuild = !elem
 
   // input managers
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -189,9 +230,11 @@ const OptimizerForm = (props) => {
 
   const onMethodChange = (event) => {
     setValue(event);
-    if(event != "Linear" && event != "Lasso"){
+    if(event != "Mordred_2D"){
       props.change('methodArguments.arg1', methodsArgs[event][0].defVal);
-      props.change('methodArguments.arg2', methodsArgs[event][1].defVal);
+      if(event != "Avalon" && event != "Torsion" && event != "Atom_Pairs"){
+        props.change('methodArguments.arg2', methodsArgs[event][1].defVal);
+      }
     }
     else{
       props.change('methodArguments.arg1', initialValues.methodArguments.arg1);
@@ -204,18 +247,7 @@ const OptimizerForm = (props) => {
   return (
     <>
       <Form onSubmit={handleSubmit} ref={formElement}>
-        <Form.Field>
-          <label>Method</label>
-          <Field
-            name="method"
-            component={SemanticDropdown}
-            placeholder="Method"
-            search
-            options={getDropdownOptions(methods)}
-            onChange={onMethodChange}
-          />
-        </Form.Field>
-
+        <h4>Descriptors</h4>
         <Form.Field>
           <label>SMILES column</label>
           <Field
@@ -228,6 +260,42 @@ const OptimizerForm = (props) => {
         </Form.Field>
 
         <Form.Field>
+          <label>Descriptors type</label>
+          <Field
+            name="method"
+            component={SemanticDropdown}
+            placeholder="Descriptors type"
+            search
+            options={getDropdownOptions(methods)}
+            onChange={onMethodChange}
+          />
+        </Form.Field>
+
+        {(currentMethodVal != 'Mordred_2D') && <div>
+          <Form.Group widths="equal" style={{paddingTop: "6px"}}>
+            <Form.Field>
+              <label>{methodsArgs[currentMethodVal][0].name}</label>
+              <Field
+                name="methodArguments.arg1"
+                component="input"
+                type="number"
+              />
+            </Form.Field>
+            {(currentMethodVal != 'Avalon' && currentMethodVal != 'Torsion' && currentMethodVal != 'Atom_Pairs') && <Form.Field>
+            <label>{methodsArgs[currentMethodVal][1].name}</label>
+              <Field
+                name="methodArguments.arg2"
+                component="input"
+                type="number"
+              />
+            </Form.Field>}
+          </Form.Group>
+        </div>}
+
+        <hr />
+        <h4>Modeling</h4>
+
+        <Form.Field>
           <label>Property/Target column</label>
           <Field
             name="targetColumn"
@@ -238,32 +306,47 @@ const OptimizerForm = (props) => {
           />
         </Form.Field>
 
-        {(currentMethodVal != 'Linear' && currentMethodVal != 'Lasso') && <div>
-          <label style={{fontWeight: "bold", textDecoration: "underline"}}>{currentMethodVal} Parameters:</label>
-          <Form.Group widths="equal" style={{paddingTop: "6px"}}>
-            <Form.Field>
-              <label>{methodsArgs[currentMethodVal][0].name}:</label>
-              <Field
-                name="methodArguments.arg1"
-                component="input"
-                type="number"
-              />
-            </Form.Field>
-            {(currentMethodVal != 'KernelRidge') && <Form.Field>
-            <label>{methodsArgs[currentMethodVal][1].name}:</label>
-              <Field
-                name="methodArguments.arg2"
-                component="input"
-                type="number"
-              />
-            </Form.Field>}
-          </Form.Group>
-        </div>}
+        <Form.Field>
+          <label>ML algorithm</label>
+          <Field
+            name="MLmethod"
+            component={SemanticDropdown}
+            placeholder="Machine Learning Method"
+            search
+            options={getDropdownOptions(MLmethods)}
+          />
+        </Form.Field>
 
-        <hr></hr>
+        <Form.Group widths="equal" style={{paddingTop: "6px"}}>
+          <Form.Field>
+            <label>#CV splits</label>
+            <Field
+              name="CVsplits"
+              component="input"
+              type="number"
+            />
+          </Form.Field>
+          <Form.Field>
+            <label>#CV repeats</label>
+            <Field
+              name="CVrepeats"
+              component="input"
+              type="number"
+            />
+          </Form.Field>
+          <Form.Field>
+            <label>#Trials</label>
+            <Field
+              name="trials"
+              component="input"
+              type="number"
+            />
+          </Form.Field>
+        </Form.Group>
 
-        <h4>Cross Validation:</h4>
+
         <hr />
+        <h4>Component aspect</h4>
 
         <Form.Group widths="equal">
           <label>Extent:</label>
