@@ -103,9 +103,15 @@ class PredictionForm(forms.ModelForm):
         pretrainedmodel = self.instance
         metadata = pretrainedmodel.metadata
         logger.debug(self.instance)
-        for inport in metadata['inports']:
-            self.fields[inport['name']] = forms.CharField(
-                max_length=100, label=inport['name'],
+        if not metadata['input_type'] or metadata['input_type'] == "descriptors_values":
+            for inport in metadata['inports']:
+                self.fields[inport['name']] = forms.CharField(
+                    max_length=100, label=inport['name'],
+                )
+        elif metadata['input_type'] == "SMILES":
+            self.fields["SMILES"] = forms.CharField(
+                widget=forms.Textarea,
+                label="SMILES (one per line)",
             )
 
     class Meta(object):

@@ -50,6 +50,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
   handleSubmit = (values) => {
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
     let newValues = { ...values };
+    console.log("VALUES TO SEND", values)
 
     // filter out non-existing columns & colorTags
     if (values.filter) {

@@ -25,6 +25,7 @@ import { Button, Confirm, Form, Modal } from 'semantic-ui-react';
 import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
+import Checkbox from '../FormFields/Checkbox';
 import ModelNameForm from './ModelNameForm';
 
 import api from '../../api';
@@ -346,6 +347,28 @@ const OptimizerForm = (props) => {
 
 
         <hr />
+        <h4>Prediction</h4>
+        <p>You can set a part of the data as external prediction set. In this case, this data will not be used to build the model,
+           but rather be predicted with the optimized, then rebuild, model.</p>
+        <Form.Group widths="equal">
+          <Form.Field>
+            <Field
+              name="external_validation"
+              component={Checkbox}
+              label="Use data for external validation"
+            />
+          </Form.Field>
+
+          <Field
+            fluid
+            name="external_validation_from"
+            component="input"
+            type="number"
+            placeholder="Use data from line #"
+          />
+        </Form.Group>
+
+        <hr />
         <h4>Component aspect</h4>
 
         <Form.Group widths="equal">
@@ -364,6 +387,11 @@ const OptimizerForm = (props) => {
             placeholder="Height"
           />
         </Form.Group>
+
+        <hr />
+        <h4>Save model</h4>
+        <p>This option allows to save a model (re)built with the parameters of the best model obtained by the optimizer.
+        Model optimization should be run once before being able to be saved.</p>
 
         <Button
           color="blue"

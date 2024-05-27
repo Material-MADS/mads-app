@@ -51,16 +51,10 @@ methods_dict = {'Morgan_fingerprints': ['morgan', {'nBits': 1024, 'radius': 2}],
                 }
 
 
-def raise_error(message):
-    result = {'status': 'error', 'detail': message}
-    return result, None
-
-
-def get_descriptors_and_transformer(data):
-    smiles_columns = data['view']['settings']['featureColumns']
+def get_descriptors_and_transformer(data, df, df_target):
     method = data['view']['settings']['method']
     if method not in methods_dict.keys():
-        return raise_error("Descriptors type is not allowed")
+        raise ValueError("Descriptors type is not allowed")
     descriptors_name = methods_dict[method][0]
 
     method_args = data['view']['settings']['methodArguments']
@@ -69,52 +63,75 @@ def get_descriptors_and_transformer(data):
     if 'arg2' in method_args.keys() and len(methods_dict[method][1]) >= 2:
         methods_dict[method][1][list(methods_dict[method][1].keys())[1]] = int(method_args['arg2'])
     parameters_dict = methods_dict[method][1]
+    if 'lower' in parameters_dict and 'upper' in parameters_dict \
+       and int(method_args['arg1']) > int(method_args['arg1']):
+        raise ValueError("Lower value is higher than Upper value in Descriptors settings")
 
-    df = pd.DataFrame(data['data'])
-    df_smiles = df[smiles_columns]
-    mols = []
-    for x in df_smiles:
-        mol = smiles(x)
-        if mol:
-            try:
-                mol.canonicalize(fix_tautomers=False)
-            except:
-                mol.canonicalize(fix_tautomers=False)
-            mols.append(mol)
-        else:
-            raise_error("The SMILES string " + str(x) + " could not be parsed")
+    mols = smiles2mols(df[data['view']['settings']['featureColumns']])
 
-    property_name = data['view']['settings']['targetColumn']
-    df_target = df[property_name]
     indices = list(df_target[pd.notnull(df_target)].index)
     df_target = np.array(df_target)
     if len(indices) != len(mols):
-        raise_error("Some molecule don't have a property value")
+        raise ValueError("Some molecule don't have a property value")
     input_dict = {'structures': np.array(mols),
                   'prop1': {'indices': indices,
                             'property': df_target,
-                            'property_name': property_name}}
+                            'property_name': data['view']['settings']['targetColumn']}}
 
     result = calculate_descriptor_table(input_dict, descriptors_name, parameters_dict)
     return result['prop1']['table'], result['prop1']['calculator']  # descriptors, transformer
 
 
-def get_model(data):
-    raw_desc, _ = get_descriptors_and_transformer(data)
-    desc = pd.DataFrame(raw_desc).to_dict('records')
-    for_opt = {'desc1': csr_matrix(raw_desc.values)}
-
+def split_dataset(data):
     df = pd.DataFrame(data['data'])
-    df_target = df[data['view']['settings']['targetColumn']]
-    y = df_target.values
+    if 'external_validation' in data['view']['settings'] and data['view']['settings']['external_validation'] \
+       and 'external_validation_from' in data['view']['settings'] \
+       and data['view']['settings']['external_validation_from']:
+        separate_from = int(data['view']['settings']['external_validation_from'])
+        if separate_from > int(len(df)):
+            raise ValueError("External validation stating ID is higher than the number of available data !")
+        df_train = df.iloc[:separate_from]
+        df_test = df.iloc[separate_from:]
+    else:
+        df_train = df
+        df_test = None
+    return df_train, df_test
 
+
+def smiles2mols(smiles_list):
+    mols = []
+    for x in smiles_list:
+        mol = smiles(x)
+        if mol:
+            try:
+                mol.canonicalize(fix_tautomers=False)
+            except:  # Magic trick of chython
+                mol.canonicalize(fix_tautomers=False)
+            mols.append(mol)
+        else:
+            raise ValueError("The SMILES string " + str(x) + " could not be parsed")
+    return mols
+
+
+def get_model(data):
     target_column = data['view']['settings']['targetColumn']
     p_name = target_column + '--Predicted'
 
+    df_train, df_test = split_dataset(data)
+    df_target = df_train[target_column]
+    y_train = df_target.values
+    y_test = df_test[target_column].values if df_test is not None else None
+
+    raw_desc, _ = get_descriptors_and_transformer(data, df_train, df_target)
+    desc = pd.DataFrame(raw_desc).to_dict('records')
+    for_opt = {'desc1': csr_matrix(raw_desc.values)}
+
     ml_method = data['view']['settings']['MLmethod']
     if ml_method not in ["SVR", "RFR"]:  # "XGBR"]:
-        raise_error("ML method not supported")
+        raise ValueError("ML method not supported")
     cv_splits = int(data['view']['settings']['CVsplits'])
+    if cv_splits > int(len(df_train)):
+        raise ValueError("The number of #CV splits is higher than the number of available data")
     cv_repeats = int(data['view']['settings']['CVrepeats'])
     trials = int(data['view']['settings']['trials'])
 
@@ -129,20 +146,25 @@ def get_model(data):
               "RMSE": format(scores_df.RMSE, '.3f'),
               "MAE": format(scores_df.MAE, '.3f'), }
 
-    # Training set (CV predictions)
-    d1 = {target_column: y,
-          p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1), }
-
-    # Test set
-    d2 = {target_column: [],
-          p_name: [], }
-
-    result = {'data': data, 'data_desc': desc, 'scores': scores, 'd1': d1, 'd2': d2}
-
-    params = rebuild_trial[rebuild_trial.index[list(rebuild_trial.index).index('method')+1:]].to_dict()
+    params = rebuild_trial[rebuild_trial.index[list(rebuild_trial.index).index('method') + 1:]].to_dict()
     params["method"] = rebuild_trial['method']
     params["scaling"] = rebuild_trial['scaling']
-    result['params'] = params
+    result = {'data': data, 'data_desc': desc, 'scores': scores, 'params': params}
+
+    # Training set (CV predictions)
+    result['d1'] = {target_column: y_train,
+                    p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1), }
+
+    # Test set if specified
+    if df_test is None:
+        result['d2'] = {target_column: [], p_name: [], }
+    else:
+        data_rebuild = data.copy()
+        data_rebuild['view']['params'] = params
+        _, model = get_model_rebuild(data_rebuild)
+        res = model.predict(smiles2mols(df_test[data['view']['settings']['featureColumns']]))
+        result['d2'] = {target_column: y_test,
+                        p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1), }
 
     return result, None
 
@@ -151,7 +173,12 @@ def get_model_rebuild(data):
     method = data['view']['params'].pop('method')
     scaling = data['view']['params'].pop('scaling')
 
-    raw_desc, desc_transformer = get_descriptors_and_transformer(data)
+    target_column = data['view']['settings']['targetColumn']
+    df_train, _ = split_dataset(data)
+    df_target = df_train[target_column]
+    y_train = df_target.values
+
+    raw_desc, desc_transformer = get_descriptors_and_transformer(data, df_train, df_target)
     pipeline_steps = [('descriptors_calculation', desc_transformer)]
 
     if scaling == 'scaled':
@@ -159,17 +186,11 @@ def get_model_rebuild(data):
     pipeline_steps.append(('variance', VarianceThreshold()))
 
     params = data['view']['params']
-    model = eval(methods[method])
-    pipeline_steps.append(('model', model))
+    pipeline_steps.append(('model', eval(methods[method])))
 
     pipeline = Pipeline(pipeline_steps)
 
-    df = pd.DataFrame(data['data'])
-    df_target = df[data['view']['settings']['targetColumn']]
-    y = df_target.values
-    pipeline[1:].fit(raw_desc, y)
-
-    print("Rebuild pipeline is", pipeline)
+    pipeline[1:].fit(raw_desc, y_train)
 
     return None, pipeline
 

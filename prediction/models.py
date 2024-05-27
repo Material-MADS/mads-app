@@ -29,6 +29,8 @@ from jsonfield import JSONField
 
 import joblib
 import numpy as np
+import pandas as pd
+from chython import smiles
 
 from common.models import OwnedResourceModel
 
@@ -119,18 +121,44 @@ class PretrainedModel(OwnedResourceModel):
         return PretrainedModel.objects.filter(accessibility=PretrainedModel.ACCESSIBILITY_PUBLIC)
 
     def predict(self, inports):
-
         outport = {}
         inputs = []
-        for key, value in inports.items():
-            inputs.append(float(value))    # TODO: support different types: str, etc,
-        logger.info(inputs)
         model = joblib.load(self.file)
-        out = model.predict([inputs])
 
-        outport = out[0]
+        if not self.metadata['input_type'] or self.metadata['input_type'] == "descriptors_values":
+            for key, value in inports.items():
+                inputs.append(float(value))
+            logger.info(inputs)
+            out = model.predict([inputs])
+            outport = out[0]
+            return outport
 
-        return outport
+        elif self.metadata['input_type'] == "SMILES":
+            print("raw inport:", inports, inports["SMILES"].split())
+            mols = []
+            real_props = []
+            for line in inports["SMILES"].splitlines():
+                items = line.split()
+                mol = smiles(items[0])
+                prop = float(items[1]) if len(items) > 1 else None
+                if mol:
+                    try:
+                        mol.canonicalize(fix_tautomers=False)
+                    except:
+                        mol.canonicalize(fix_tautomers=False)
+                mols.append(mol)
+                real_props.append(prop)
+            out = model.predict(mols)
+            # outport = "\n"+"\n".join([str(mol)+": "+str(y) for mol, y in zip(mols, out)])
+            df = pd.DataFrame()
+            df['SMILES'] = [str(mol) for mol in mols]
+            if any([x is not None for x in real_props]):
+                df['Real'] = real_props
+            df['Predicted'] = out
+            return df
+
+        else:
+            return outport
 
     @delete_previous_file
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):

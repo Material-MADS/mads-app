@@ -30,6 +30,7 @@ from django.views.generic import UpdateView
 from django.views.generic.edit import ModelFormMixin
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.http import HttpResponse
 
 from django_filters.views import FilterView
 from django_tables2.config import RequestConfig
@@ -44,6 +45,7 @@ from .models import PretrainedModel
 from .helpers import PretrainedModelTable
 from users.models import User
 
+import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
@@ -177,11 +179,12 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         context["metadata"] = context["object"].metadata
 
         context["outputs"] = {"name": context["metadata"]["outports"][0]["name"]}
+        context["input_type"] = context["metadata"]['input_type']
 
         if self.inputs:
             context["inputs"] = self.inputs
-        if self.outputs:
-            context["outputs"] = self.outputs
+        # if self.outputs:
+        context["outputs"] = self.outputs
 
         return context
 
@@ -189,11 +192,12 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         self.object = self.get_object()
         form = self.get_form()
         if form.is_valid():
-            return self.form_valid(form)
+            as_csv = True if 'predict_save' in request.POST else False
+            return self.form_valid(form, as_csv)
         else:
             return self.form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form, as_csv: bool = False):
         # put logic here
         logger.debug(form.fields)
         logger.debug(form.cleaned_data)
@@ -202,6 +206,11 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         logger.info(out)
         self.inputs = form.cleaned_data
         self.outputs = out
+        if as_csv and type(out) is pd.DataFrame:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=predictions.csv'  # alter as needed
+            out.to_csv(path_or_buf=response)  # with other applicable parameters
+            return response
 
         context = self.get_context_data(form=form)
         context["inputs"] = form.cleaned_data
