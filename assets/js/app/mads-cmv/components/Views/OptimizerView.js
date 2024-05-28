@@ -50,7 +50,6 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
   handleSubmit = (values) => {
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
     let newValues = { ...values };
-    console.log("VALUES TO SEND", values)
 
     // filter out non-existing columns & colorTags
     if (values.filter) {
@@ -83,10 +82,8 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
       x: values.targetColumn,
       y: `${values.targetColumn}--Predicted`,
     };
-
     newValues = convertExtentValues(newValues);
 
-    this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
   };
 
@@ -96,8 +93,12 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     const { actions, dataset, view, data } = this.props;
 
     if(dataset[this.props.id]['params']) {
-      this.tmpViewParams.view['params'] = dataset[this.props.id]['params'];
-      actions.saveModel(name, this.tmpViewParams, overwrite, id);
+      let newValues, data, params, tmpViewParams;
+      newValues = view.settings
+      data = dataset[this.props.id].data.data
+      view['params'] = dataset[this.props.id]['params'];
+      tmpViewParams = { view, newValues, data }
+      actions.saveModel(name, tmpViewParams, overwrite, id);
     }
     else {
       console.log("No params available")
@@ -157,6 +158,10 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
 
       if (dataset[id].scores) {
         data["scores"] = dataset[id].scores;
+      }
+
+      if (dataset[id].params) {
+        data["params"] = dataset[id].params;
       }
     }
 

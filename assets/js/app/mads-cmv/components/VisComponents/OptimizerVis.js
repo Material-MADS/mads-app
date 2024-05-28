@@ -104,6 +104,7 @@ export default class OptimizerVis extends Component {
 
   state = {
     scores: {},
+    params: {},
     dataShouldBeFine: false,
   };
 
@@ -134,6 +135,37 @@ export default class OptimizerVis extends Component {
   componentDidUpdate() {
     this.clearChart();
     this.createChart();
+  componentDidUpdate(prevProps, prevState) {
+    const {
+      filteredIndices,
+      colorTags,
+      data,
+      options,
+    } = this.props;
+
+    if (!deepEqual(prevProps.filteredIndices, filteredIndices)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.colorTags, colorTags)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.data, data)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.options, options)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
   }
 
   componentWillUnmount() {
@@ -297,19 +329,11 @@ export default class OptimizerVis extends Component {
 
       const scores = {};
       if (internalData.scores) {
-        const ss = internalData.scores;
-        if (ss['R2']) {
-          scores.R2 = ss['R2'];
-        }
-        if (ss['MAE']) {
-          scores.MAE = ss['MAE'];
-        }
-        if (ss['RMSE']) {
-          scores.RMSE = ss['RMSE'];
-        }
+        this.setState({ scores: internalData.scores });
       }
-      if((scores.R2 || scores.MAE || scores.RMSE) && (scores.R2 !== this.state.scores.R2 || scores.MAE !== this.state.scores.MAE || scores.RMSE !== this.state.scores.RMSE)){
-        this.setState({ scores: scores });
+
+      if (internalData.params) {
+        this.setState({ params: internalData.params });
       }
 
       this.mainFigure.add_glyph(line, source);
@@ -345,6 +369,12 @@ export default class OptimizerVis extends Component {
                 <li>Mean R2: {this.state.scores.R2}</li>
                 <li>Mean MAE: {this.state.scores.MAE}</li>
                 <li>Mean RMSE: {this.state.scores.RMSE}</li>
+              </ul>
+              <h3>Optimized parameters:</h3>
+              <ul>
+                {Object.keys(this.state.params).map((key, id) => (
+                    <li key={id}>{key}: {this.state.params[key]}</li>
+                ))}
               </ul>
             </Card.Content>
           </Card>

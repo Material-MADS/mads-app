@@ -157,7 +157,6 @@ class PretrainedModelAPIViewSet(
         if 'params' in viewSettings.keys():  # for optimizer component
             arg_get_model['params'] = viewSettings['params']
         model = get_model(arg_get_model)
-        print(model[:1])
         logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
