@@ -45,7 +45,6 @@ const settings = {
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
 export default class OptimizerView extends withCommandInterface( OptimizerVis, OptimizerForm, settings ) {
-
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
@@ -92,7 +91,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     // Note: override this if necessary
     const { actions, dataset, view, data } = this.props;
 
-    if(dataset[this.props.id]['params']) {
+    if(dataset[this.props.id] && dataset[this.props.id]['params']) {
       let newValues, data, params, tmpViewParams;
       newValues = view.settings
       data = dataset[this.props.id].data.data
@@ -101,7 +100,11 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
       actions.saveModel(name, tmpViewParams, overwrite, id);
     }
     else {
-      console.log("No params available")
+      this.props.actions.showMessage({
+          header: 'MODEL NOT OPTIMIZED',
+          content: 'This module was not run, therefore the model is not optimized yet and cannot be saved. Please submit the module first.',
+          type: 'warning',
+        });
     }
   };
 

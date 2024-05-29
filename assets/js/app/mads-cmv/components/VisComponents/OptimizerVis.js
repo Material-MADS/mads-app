@@ -82,6 +82,20 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
 }
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Save predictions to the local computer
+//-------------------------------------------------------------------------------------------------
+function downloadCSV(csvStr, fileName) {
+  const link = document.createElement("a");
+  link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvStr));
+  link.setAttribute("target", "_blank");
+  link.setAttribute("download", fileName);
+  link.click();
+  try {
+    document.body.removeChild(link)
+  } catch (error) {}
+}
+//-------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
@@ -132,9 +146,6 @@ export default class OptimizerVis extends Component {
     return true;
   }
 
-  componentDidUpdate() {
-    this.clearChart();
-    this.createChart();
   componentDidUpdate(prevProps, prevState) {
     const {
       filteredIndices,
@@ -215,6 +226,7 @@ export default class OptimizerVis extends Component {
   async createChart() {
     const {
       data,
+      id,
       mappings,
       options,
       colorTags,
@@ -230,6 +242,14 @@ export default class OptimizerVis extends Component {
     let x = [];
     let y = [];
     const cols = df.columns;
+
+    // Custom Download CSV button
+    var tableDataString = "empty";
+    console.log("CURRENT:",this.rootNode.current, this)
+    const viewWrapperCustomButton_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData' + id);
+    viewWrapperCustomButton_DLCSV.off('click');
+    viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
+    tableDataString = df.to_csv('tmp.csv')+df2.to_csv('tmp.csv');
 
     this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined && !this.state.dataShouldBeFine));
 
@@ -328,6 +348,7 @@ export default class OptimizerVis extends Component {
       });
 
       const scores = {};
+
       if (internalData.scores) {
         this.setState({ scores: internalData.scores });
       }

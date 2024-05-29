@@ -707,6 +707,9 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     component: OptimizerView,
+    customBtns: [
+      {name: 'saveCSVData', icon: 'download', text: 'Download predictions as CSV'},
+    ],
     settings: {
       method: 'Circus',
       methodArguments: {
