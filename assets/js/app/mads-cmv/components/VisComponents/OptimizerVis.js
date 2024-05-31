@@ -75,8 +75,6 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
     fig.title.text_color = "#303030";
     fig.title.text_font_size = "13px";
   }
-  //fig.title.text_font_size = "40px";
-  //fig.title.text_font = "Times New Roman";
 
   return fig;
 }
@@ -105,13 +103,13 @@ export default class OptimizerVis extends Component {
   constructor(props) {
     super(props);
     this.cds = null;
+    this.cds2 = null;
 
     this.rootNode = React.createRef();
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange =
-      this.handleSelectedIndicesChange.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
   }
@@ -138,7 +136,9 @@ export default class OptimizerVis extends Component {
 
     if (diff.selectedIndices) {
       if (this.cds) {
-        this.cds.selected.indices = diff.selectedIndices;
+        this.cds.selected.indices = diff.selectedIndices.filter(v => (v < this.props.data.d2.first_test));
+        this.cds2.selected.indices = diff.selectedIndices.filter(v =>
+                  (v >= this.props.data.d2.first_test)).map(v=> v - this.props.data.d2.first_test);
       }
       return false;
     }
@@ -186,15 +186,17 @@ export default class OptimizerVis extends Component {
   handleSelectedIndicesChange() {
     const { onSelectedIndicesChange } = this.props;
     const { indices } = this.cds.selected;
+    const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
+    const all_indices = [...new Set([...indices, ...indices2])];
 
     if (this.selecting) {
       return;
     }
 
-    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, all_indices)) {
       this.selecting = true;
-      this.lastSelections = [...indices];
-      onSelectedIndicesChange(indices);
+      this.lastSelections = all_indices;
+      onSelectedIndicesChange(all_indices);
       this.selecting = false;
     }
   }
@@ -234,7 +236,7 @@ export default class OptimizerVis extends Component {
       filteredIndices,
     } = this.props;
 
-    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: []}};
+    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: [], first_test: 0}};
 
     const { x: xName, y: yName } = mappings;
     const df = new DataFrame(internalData.d1.data);
@@ -245,7 +247,6 @@ export default class OptimizerVis extends Component {
 
     // Custom Download CSV button
     var tableDataString = "empty";
-    console.log("CURRENT:",this.rootNode.current, this)
     const viewWrapperCustomButton_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData' + id);
     viewWrapperCustomButton_DLCSV.off('click');
     viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
@@ -265,7 +266,7 @@ export default class OptimizerVis extends Component {
 
       // selection
       if (selectedIndices.length > 0) {
-        this.cds.selected.indices = selectedIndices;
+        this.cds.selected.indices = selectedIndices.filter(v=> (v < internalData.d2.first_test));
         this.lastSelections = selectedIndices;
       }
 
@@ -307,12 +308,12 @@ export default class OptimizerVis extends Component {
         let y2 = df2.get(xName).to_json({ orient: 'records' });
         let x2 = df2.get(yName).to_json({ orient: 'records' });
         const colors2 = new Array(x2.length).fill("red");
-        let cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2 } });
+        this.cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2 } });
         let circles2 = this.mainFigure.triangle(
           { field: 'x2' },
           { field: 'y2' },
           {
-            source: cds2,
+            source: this.cds2,
             fill_alpha: 0.6,
             fill_color: colors2,
             line_alpha: 0.7,
@@ -320,6 +321,15 @@ export default class OptimizerVis extends Component {
             legend: 'Test',
           }
         );
+        this.mainFigure.legend.location = 'bottom_right'
+
+        // setup callback
+        this.cds2.connect(this.cds2.selected.change, () => {
+          this.handleSelectedIndicesChange();
+        });
+        if (selectedIndices.length > 0) {
+          this.cds2.selected.indices = selectedIndices.filter(v=> (v > internalData.d2.first_test)).map(v=> v - internalData.d2.first_test);
+        }
       }
 
       // filter
@@ -347,7 +357,6 @@ export default class OptimizerVis extends Component {
         line_width: 1,
       });
 
-      const scores = {};
 
       if (internalData.scores) {
         this.setState({ scores: internalData.scores });

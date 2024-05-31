@@ -113,7 +113,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
   // Manages data changes in the view
   mapData = (dataset) => {
     const { id, view, actions } = this.props;
-    const data = {data_desc: [], d1: {data: []}, d2: {data: []}};
+    const data = {data_desc: [], d1: {data: []}, d2: {data: [], first_test: 0}};
 
     if (dataset[id]) {
       const targetName = view.settings.targetColumn;
@@ -151,10 +151,11 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
         item[pName] = yy2[i];
         data.d2.data.push(item);
       });
+      data.d2.first_test = dataset[id]['first_test']
 
       if (!(dataset.main.schema.fields.some(e => e.name === this.props.view.settings.targetColumn))) {
         data.d1 = {data: []};
-        data.d2 = {data: []};
+        data.d2 = {data: [], first_test: []};
         data["resetRequest"] = true;
         data["resetTitle"] = "Optimizer";
       }

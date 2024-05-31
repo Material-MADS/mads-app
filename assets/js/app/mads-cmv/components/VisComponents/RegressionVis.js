@@ -251,6 +251,8 @@ export default class RegressionVis extends Component {
           legend: (internalData.d2.data.length != 0)?'Train':undefined,
         }
       );
+      let xMax = Math.max.apply(null, x);
+      let xMin = Math.min.apply(null, x);
 
       // Plot Separate Test data if such exists
       if(internalData.d2.data.length != 0){
@@ -284,8 +286,6 @@ export default class RegressionVis extends Component {
         circles.view = view;
       }
 
-      const xMax = Math.max.apply(null, x);
-      const xMin = Math.min.apply(null, x);
 
       const source = new Bokeh.ColumnDataSource({
         data: { x: [xMin, xMax], y: [xMin, xMax] },

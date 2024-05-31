@@ -120,7 +120,6 @@ def get_model(data):
     df_train, df_test = split_dataset(data)
     df_target = df_train[target_column]
     y_train = df_target.values
-    y_test = df_test[target_column].values if df_test is not None else None
 
     raw_desc, _ = get_descriptors_and_transformer(data, df_train, df_target)
     desc = pd.DataFrame(raw_desc).to_dict('records')
@@ -158,13 +157,18 @@ def get_model(data):
     # Test set if specified
     if df_test is None:
         result['d2'] = {target_column: [], p_name: [], }
+        result['first_test'] = len(y_train)
+
     else:
         data_rebuild = data.copy()
         data_rebuild['view']['params'] = params
         _, model = get_model_rebuild(data_rebuild)
         res = model.predict(smiles2mols(df_test[data['view']['settings']['featureColumns']]))
-        result['d2'] = {target_column: y_test,
-                        p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1), }
+        y_test = df_test[target_column].values
+        result['d2'] = {target_column: y_test, p_name: res, }
+        result['params']["method"] = rebuild_trial['method']  # Has to give it again since removed by rebuilder
+        result['params']["scaling"] = rebuild_trial['scaling']
+        result['first_test'] = int(data['view']['settings']['external_validation_from'])
 
     return result, None
 
