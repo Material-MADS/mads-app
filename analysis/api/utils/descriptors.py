@@ -19,11 +19,9 @@
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
 import logging
-from cheminfotools.chem_features import ChythonCircus as Augmentor
-from optimizer.optimizer import launch_study
+from doptools.chem import ChythonCircus
 from chython import smiles
 import pandas as pd
-from scipy.sparse import csr_matrix
 
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
@@ -46,7 +44,7 @@ def get_descriptors(data):
     y = df_target.values
 
     if method == 'Circus':
-        augmentor = Augmentor(int(method_args['arg1']), int(method_args['arg2']))
+        augmentor = ChythonCircus(int(method_args['arg1']), int(method_args['arg2']))
         aa = augmentor.fit_transform(mols)
         print("Features names", augmentor.get_feature_names())
         desc = pd.DataFrame(aa)
@@ -54,10 +52,6 @@ def get_descriptors(data):
 
     result = {'data': data, 'data_desc': desc2}
 
-    for_opt = {'Circus': csr_matrix(aa.values)}
-    st = launch_study(for_opt, pd.DataFrame(df_target), "outdir", "SVR", 100, 5,
-                 1, 5, 60, (0, 1), False)
-    print("STUDY RES", st)
 
     return result
 

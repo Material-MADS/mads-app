@@ -20,9 +20,7 @@
 #-------------------------------------------------------------------------------------------------
 import logging
 import numpy as np
-from optimizer.optimizer import launch_study
-from optimizer.config import methods
-from optimizer.preparer import calculate_descriptor_table
+from doptools.optimizer import launch_study, methods, calculate_descriptor_table
 from chython import smiles
 import pandas as pd
 from scipy.sparse import csr_matrix
@@ -67,13 +65,13 @@ def get_descriptors_and_transformer(data, df, df_target):
        and int(method_args['arg1']) > int(method_args['arg1']):
         raise ValueError("Lower value is higher than Upper value in Descriptors settings")
 
-    mols = smiles2mols(df[data['view']['settings']['featureColumns']])
+    mols = pd.DataFrame({data['view']['settings']['featureColumns']: smiles2mols(df[data['view']['settings']['featureColumns']])})
 
     indices = list(df_target[pd.notnull(df_target)].index)
     df_target = np.array(df_target)
     if len(indices) != len(mols):
         raise ValueError("Some molecule don't have a property value")
-    input_dict = {'structures': np.array(mols),
+    input_dict = {'structures': mols,
                   'prop1': {'indices': indices,
                             'property': df_target,
                             'property_name': data['view']['settings']['targetColumn']}}
