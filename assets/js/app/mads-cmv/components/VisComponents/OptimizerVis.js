@@ -422,7 +422,6 @@ export default class OptimizerVis extends Component {
 OptimizerVis.propTypes = {
   data: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.object),
-    data_desc: PropTypes.arrayOf(PropTypes.object),
     parameters: PropTypes.arrayOf(PropTypes.object),
   }),
   mappings: PropTypes.shape({
@@ -451,7 +450,6 @@ OptimizerVis.propTypes = {
 OptimizerVis.defaultProps = {
   data: {
     data: [],
-    data_desc: [],
     parameters: [],
   },
   mappings: {},

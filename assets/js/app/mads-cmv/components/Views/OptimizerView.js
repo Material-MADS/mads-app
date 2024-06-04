@@ -15,8 +15,6 @@
 //             Internal PieChart & PieForm libs,
 =================================================================================================*/
 
-//*** TODO: This is not structured the same way as other Views, should probably be adjusted to do that
-
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
@@ -52,20 +50,20 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
 
     // filter out non-existing columns & colorTags
     if (values.filter) {
-//      const colorTagIds = colorTags.map((c) => c.id);
-//      const filteredFilters = values.filter.filter((f) =>
-//        colorTagIds.includes(f)
-//      );
-      newValues.filter = values.filter;
+      const colorTagIds = colorTags.map((c) => c.id);
+      const filteredFilters = values.filter.filter((f) =>
+        colorTagIds.includes(f)
+      );
+      newValues.filter = filteredFilters;
     }
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
     if (values.featureColumns) {
-//      const filteredColumns = values.featureColumns.filter((f) =>
-//        columns.includes(f)
-//      );
-      newValues.featureColumns = values.featureColumns;
+      const filteredColumns = values.featureColumns.filter((f) =>
+        columns.includes(f)
+      );
+      newValues.featureColumns = filteredColumns;
     }
 
     // extract data
@@ -74,7 +72,10 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     const tc = df.get(newValues.targetColumn);
     data[newValues.targetColumn] = tc.values.toArray();
     const fc = df.get(newValues.featureColumns);
-    data[newValues.featureColumns] = fc.values.toArray();
+    newValues.featureColumns.forEach((c) => {
+      const fc = df.get(c);
+      data[c] = fc.values.toArray();
+    });
 
     // set mapping
     newValues.mappings = {
@@ -102,7 +103,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     else {
       this.props.actions.showMessage({
           header: 'MODEL NOT OPTIMIZED',
-          content: 'This module was not run, therefore the model is not optimized yet and cannot be saved. Please submit the module first.',
+          content: 'The model is not optimized yet and cannot be saved. Please submit the module first.',
           type: 'warning',
         });
     }

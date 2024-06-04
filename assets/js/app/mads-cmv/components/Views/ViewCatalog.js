@@ -714,7 +714,7 @@ export const config = [
       method: 'Circus',
       methodArguments: {
         arg1: 0,
-        arg2: 5
+        arg2: 3
       },
       MLmethod: 'SVR',
       CVsplits: '5',

@@ -250,11 +250,11 @@ const OptimizerForm = (props) => {
       <Form onSubmit={handleSubmit} ref={formElement}>
         <h4>Descriptors</h4>
         <Form.Field>
-          <label>SMILES column</label>
+          <label>SMILES column(s)</label>
           <Field
             name="featureColumns"
-            component={SemanticDropdown}
-            placeholder="Column"
+            component={MultiSelectDropdown}
+            placeholder="Column(s) encoding structures by SMILES"
             search
             options={columns}
           />

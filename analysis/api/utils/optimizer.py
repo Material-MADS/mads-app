@@ -65,8 +65,7 @@ def get_descriptors_and_transformer(data, df, df_target):
        and int(method_args['arg1']) > int(method_args['arg1']):
         raise ValueError("Lower value is higher than Upper value in Descriptors settings")
 
-    mols = pd.DataFrame({data['view']['settings']['featureColumns']: smiles2mols(df[data['view']['settings']['featureColumns']])})
-
+    mols = pd.DataFrame({x: smiles2mols(df[x].to_list()) for x in data['view']['settings']['featureColumns']})
     indices = list(df_target[pd.notnull(df_target)].index)
     df_target = np.array(df_target)
     if len(indices) != len(mols):
@@ -120,7 +119,7 @@ def get_model(data):
     y_train = df_target.values
 
     raw_desc, _ = get_descriptors_and_transformer(data, df_train, df_target)
-    desc = pd.DataFrame(raw_desc).to_dict('records')
+    # desc = pd.DataFrame(raw_desc).to_dict('records')
     for_opt = {'desc1': csr_matrix(raw_desc.values)}
 
     ml_method = data['view']['settings']['MLmethod']
@@ -146,7 +145,7 @@ def get_model(data):
     params = rebuild_trial[rebuild_trial.index[list(rebuild_trial.index).index('method') + 1:]].to_dict()
     params["method"] = rebuild_trial['method']
     params["scaling"] = rebuild_trial['scaling']
-    result = {'data': data, 'data_desc': desc, 'scores': scores, 'params': params}
+    result = {'data': data, 'scores': scores, 'params': params}
 
     # Training set (CV predictions)
     result['d1'] = {target_column: y_train,
@@ -161,7 +160,12 @@ def get_model(data):
         data_rebuild = data.copy()
         data_rebuild['view']['params'] = params
         _, model = get_model_rebuild(data_rebuild)
-        res = model.predict(smiles2mols(df_test[data['view']['settings']['featureColumns']]))
+        if len(data['view']['settings']['featureColumns']) > 1:
+            mols = pd.DataFrame({x: smiles2mols(df_test[x].to_list()) for x in data['view']['settings']['featureColumns']})
+        else:
+            mols = smiles2mols(df_test[data['view']['settings']['featureColumns'][0]].to_list())
+
+        res = model.predict(mols)
         y_test = df_test[target_column].values
         result['d2'] = {target_column: y_test, p_name: res, }
         result['params']["method"] = rebuild_trial['method']  # Has to give it again since removed by rebuilder
