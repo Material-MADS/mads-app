@@ -70,7 +70,7 @@ table {
 
 
 {% if pretrainedmodel.description %}
-<div>{{pretrainedmodel.description}}</div>
+<div>{{pretrainedmodel.description|linebreaks}}</div>
 {% endif %}
 
 <div class="ui secondary stackable menu">
@@ -90,7 +90,10 @@ table {
 </div>
 
 {% if input_type == "SMILES" %}
-  <p>Please input on each line: SMILES [**OR**] SMILES Experimental_value</p>
+  <p>Please input on each line:
+    {% for fieldname in input_spec %}{{fieldname}} {% endfor %}
+    [**OR**]
+    {% for fieldname in input_spec %}{{fieldname}} {% endfor %}Experimental_value</p>
 {% else %}
   <p>Please input the feature values</p>
 {% endif %}

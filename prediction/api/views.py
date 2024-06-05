@@ -35,6 +35,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 import joblib
+from sklearn.pipeline import Pipeline
+from doptools import ComplexFragmentor
 
 from ..models import PretrainedModel
 from .serializers import PretrainedModelSerializer
@@ -149,21 +151,30 @@ class PretrainedModelAPIViewSet(
         pm = PretrainedModel()
         pm.name = data['name']
         pm.owner = request.user
-        pm.metadata = metadata
 
         # file
         arg_get_model = {'data': viewSettings['data'],
                          'view': viewSettings['view'], }
-        if 'params' in viewSettings.keys():  # for optimizer component
-            arg_get_model['params'] = viewSettings['params']
+        if 'params' in viewSettings['view'].keys():  # for optimizer component
+            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn']) + "\n"
+            description += "Descriptors: "+str(viewSettings['view']['settings']['method']) + " ("
+            for v in viewSettings['view']['settings']['methodArguments'].values():
+                description += str(v)+"; "
+            description = description[:-2] + ")\n Parameters: "
+            for x, y in viewSettings['view']['params'].items():
+                description += str(x) + "=" + str(y) + "; "
+            pm.description = description[:-2]
         model = get_model(arg_get_model)
-        logger.info(model)
+        if type(model) is Pipeline:
+            metadata['input_spec'] = list(model[0].associator.keys()) if type(model[0]) is ComplexFragmentor else ["SMILES"]
+        # logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
             f.seek(0)
             pm.file = SimpleUploadedFile('test.pkl', f.read())
 
         serializer = PretrainedModelSerializer(pm)
+        pm.metadata = metadata
         pm.save()
 
         return Response(serializer.data)

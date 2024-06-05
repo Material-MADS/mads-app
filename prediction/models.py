@@ -36,6 +36,7 @@ from common.models import OwnedResourceModel
 
 import os
 import uuid
+from itertools import zip_longest
 
 import logging
 
@@ -134,28 +135,41 @@ class PretrainedModel(OwnedResourceModel):
             return outport
 
         elif self.metadata['input_type'] == "SMILES":
-            print("raw inport:", inports, inports["SMILES"].split())
+            mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys()else ["SMILES"]
+            nb_mol_fields = len(mol_fields)
             mols = []
             real_props = []
             for line in inports["SMILES"].splitlines():
                 items = line.split()
-                mol = smiles(items[0])
-                prop = float(items[1]) if len(items) > 1 else None
-                if mol:
-                    try:
-                        mol.canonicalize(fix_tautomers=False)
-                    except:
-                        mol.canonicalize(fix_tautomers=False)
-                mols.append(mol)
-                real_props.append(prop)
-            out = model.predict(mols)
-            # outport = "\n"+"\n".join([str(mol)+": "+str(y) for mol, y in zip(mols, out)])
-            df = pd.DataFrame()
-            df['SMILES'] = [str(mol) for mol in mols]
+                line_dict = {}
+                line_error = False
+
+                for val, col in zip_longest(items, mol_fields):
+                    if not val or not col:
+                        if not val:  # required col
+                            line_error = True
+                        break
+                    mol = smiles(val)
+                    if mol:
+                        try:
+                            mol.canonicalize(fix_tautomers=False)
+                        except:
+                            mol.canonicalize(fix_tautomers=False)
+                        line_dict[col] = mol
+                    else:
+                        line_error = True
+                        break
+                if not line_error:
+                    mols.append(line_dict)
+                    real_props.append(float(items[-1]) if len(items) > nb_mol_fields else None)
+            mols = pd.DataFrame.from_records(mols)
+            predictions = model.predict(mols['SMILES'].to_list() if nb_mol_fields == 1 else mols)
+            for col in mol_fields:
+                mols[col] = [str(x) for x in mols[col]]
             if any([x is not None for x in real_props]):
-                df['Real'] = real_props
-            df['Predicted'] = out
-            return df
+                mols['Real'] = real_props
+            mols['Predicted'] = predictions
+            return mols
 
         else:
             return outport

@@ -179,7 +179,8 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         context["metadata"] = context["object"].metadata
 
         context["outputs"] = {"name": context["metadata"]["outports"][0]["name"]}
-        context["input_type"] = context["metadata"]['input_type']
+        context["input_type"] = context["metadata"]['input_type'] if 'input_type' in context["metadata"].keys() else str()
+        context["input_spec"] = context["metadata"]['input_spec'] if 'input_spec' in context["metadata"].keys() else str()
 
         if self.inputs:
             context["inputs"] = self.inputs
