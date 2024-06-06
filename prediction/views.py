@@ -194,26 +194,30 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         form = self.get_form()
         if form.is_valid():
             as_csv = True if 'predict_save' in request.POST else False
-            return self.form_valid(form, as_csv)
+            coloratom = True if 'predict_coloratom' in request.POST else False
+            return self.form_valid(form, as_csv, coloratom)
         else:
             return self.form_invalid(form)
 
-    def form_valid(self, form, as_csv: bool = False):
+    def form_valid(self, form, as_csv: bool = False, coloratom: bool = False):
         # put logic here
         logger.debug(form.fields)
         logger.debug(form.cleaned_data)
 
-        out = self.object.predict(form.cleaned_data)
+        context = self.get_context_data(form=form)
+
+        if 'input_type' in context["metadata"].keys():  # doptools optimizer
+            out = self.object.predict(form.cleaned_data, coloratom)
+        else:
+            out = self.object.predict(form.cleaned_data)
         logger.info(out)
         self.inputs = form.cleaned_data
         self.outputs = out
-        if as_csv and type(out) is pd.DataFrame:
+        if as_csv and not coloratom and type(out) is pd.DataFrame:
             response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename=predictions.csv'  # alter as needed
-            out.to_csv(path_or_buf=response)  # with other applicable parameters
-            return response
+            response['Content-Disposition'] = 'attachment; filename=predictions.csv'
+            return out.to_csv(path_or_buf=response)
 
-        context = self.get_context_data(form=form)
         context["inputs"] = form.cleaned_data
         context["outputs"] = {
             "name": self.object.metadata["outports"][0]["name"],

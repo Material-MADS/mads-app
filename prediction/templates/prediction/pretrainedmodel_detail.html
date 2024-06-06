@@ -104,6 +104,7 @@ table {
     <input class="ui button" type="submit" name="predict" value="Predict">
     {% if input_type == "SMILES" %}
       <input class="ui button" type="submit" name="predict_save" value="Predict and export as csv">
+      <input class="ui button" type="submit" name="predict_coloratom" value="Predict and color">
     {% endif %}
 </form>
 
@@ -123,7 +124,7 @@ table {
           <tr>
             {% for cell in row %}
               <td>
-                {{cell}}
+                {{cell|safe}}
               </td>
             {% endfor %}
           </tr>

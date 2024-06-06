@@ -31,6 +31,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from chython import smiles
+from doptools.chem.coloratom import ColorAtom
 
 from common.models import OwnedResourceModel
 
@@ -121,7 +122,7 @@ class PretrainedModel(OwnedResourceModel):
     def get_public_models(self):
         return PretrainedModel.objects.filter(accessibility=PretrainedModel.ACCESSIBILITY_PUBLIC)
 
-    def predict(self, inports):
+    def predict(self, inports, coloratom:bool = False):
         outport = {}
         inputs = []
         model = joblib.load(self.file)
@@ -135,7 +136,7 @@ class PretrainedModel(OwnedResourceModel):
             return outport
 
         elif self.metadata['input_type'] == "SMILES":
-            mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys()else ["SMILES"]
+            mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys() else ["SMILES"]
             nb_mol_fields = len(mol_fields)
             mols = []
             real_props = []
@@ -163,12 +164,28 @@ class PretrainedModel(OwnedResourceModel):
                     mols.append(line_dict)
                     real_props.append(float(items[-1]) if len(items) > nb_mol_fields else None)
             mols = pd.DataFrame.from_records(mols)
-            predictions = model.predict(mols['SMILES'].to_list() if nb_mol_fields == 1 else mols)
-            for col in mol_fields:
-                mols[col] = [str(x) for x in mols[col]]
             if any([x is not None for x in real_props]):
                 mols['Real'] = real_props
+
+            mols_predictor = mols['SMILES'].to_list() if nb_mol_fields == 1 else mols
+            predictions = model.predict(mols_predictor)
             mols['Predicted'] = predictions
+
+            if coloratom:
+                if nb_mol_fields == 1:
+                    clr = ColorAtom()
+                    clr.set_pipeline(model)
+                    colored = [clr.output_html(mols.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor))]
+                else:
+                    colored = []
+                    # clr = ColorAtom(is_complex=True)
+                    # clr.set_pipeline(model)
+                    # for n in range(len(mols_predictor)):
+                    #     colored.append(clr.output_html(mols.iloc[n]))
+                mols['ColorAtom'] = colored
+
+            for col in mol_fields:
+                mols[col] = [str(x) for x in mols[col]]
             return mols
 
         else:
