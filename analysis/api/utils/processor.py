@@ -33,6 +33,7 @@ from .node_graph import get_node_graph
 from .gaussian_process import get_gaussian_process
 from .cadsies import get_cadsies_stuff
 from .feature_engineering import get_feature_engineering
+from .monte_cat import get_monte_cat
 
 from .cads_component_template import get_cads_component_template_stuff
 
@@ -60,6 +61,7 @@ processor_map = {
     'gaussianProcess': get_gaussian_process,
     'cadsies': get_cadsies_stuff,
     'featureEngineering': get_feature_engineering,
+    'monteCat': get_monte_cat,
 
     'cads_component_template': get_cads_component_template_stuff,
 }

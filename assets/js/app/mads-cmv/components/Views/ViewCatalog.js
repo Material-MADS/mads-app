@@ -33,6 +33,7 @@ import GapMinderView from './GapMinderView';
 // Data Processing
 import ImageViewView from './ImageView';
 import FeatureEngineeringView from './FeatureEngineeringView';
+import MonteCatView from './MonteCatView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -357,7 +358,7 @@ export const config = [
   },
   //------------------------------------------
 
-    // Feature Engineering - A Customizable Feature Engienering
+  // Feature Engineering - A Customizable Feature Engienering
   //----------------------------------------------------------------
   {
     type: 'featureEngineering',
@@ -374,6 +375,32 @@ export const config = [
         extent: {
           width: 400,
           height: 200,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // THIS IS A Monte Cat COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'monteCat',
+    name: 'MonteCat',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: MonteCatView,
+    settings: {
+      descriptorsList: [],
+      machineLearningModel: '',
+      temperature: 0,
+      targetColumn: '',
+      descriptorsFileName: "Nothing loaded.",
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
         },
       },
     },

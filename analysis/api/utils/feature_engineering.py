@@ -4,6 +4,7 @@
 #          Last Update: Q3 2023
 # ________________________________________________________________________________________________
 # Authors:Yoshiki Hasukawa (Student Developer and Component Design) [2024] 
+#         Fernando Garcia-Escobar, (Developer Of Feature Engineering Code) [2024] 
 #         Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
