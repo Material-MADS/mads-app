@@ -115,11 +115,9 @@ export default function FeatureEngineering({
 
   // Add the VizComp to the DOM
   return (
-    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box'}}>
+    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box', textAlign: 'center' }}>
+      <Header as='h2' style={{ marginBottom: '20px' }}>Feature Engineering</Header>
       <Grid centered >
-        <GridRow >
-            <Header as='h2' >Feature Engineering</Header>
-        </GridRow >
         <GridRow >
             <Button 
               positive
@@ -152,7 +150,7 @@ export default function FeatureEngineering({
           </Modal>
         </GridRow>
       </Grid> 
-      <div> Run Time : {data.Run_Time}</div>
+      {/* <div> Run Time : {data.Run_Time}</div> */}
     </div>
   );
 }

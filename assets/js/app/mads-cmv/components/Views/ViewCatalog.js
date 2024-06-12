@@ -397,10 +397,11 @@ export const config = [
       temperature: 0,
       targetColumn: '',
       descriptorsFileName: "Nothing loaded.",
+      randomSeed: false,
       options: {
         extent: {
           width: 400,
-          height: 400,
+          height: 200,
         },
       },
     },

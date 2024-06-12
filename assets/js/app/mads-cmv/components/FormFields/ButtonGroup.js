@@ -13,7 +13,7 @@
 //        'ButtonGroup' is of classic type, look and feel.
 //        As the example of ButtonGroup , you can refer to temperature field of MonteCat Component.
 // ------------------------------------------------------------------------------------------------
-// Importance: If developer use this componet, pass 'buttonList' as props.
+// Importance: If developer use this component, pass 'buttonList' as props.
 //------------------------------------------------------------------------------------------------
 // References: React, prop-types & semantic-ui-react Libs
 =================================================================================================*/
@@ -39,11 +39,11 @@ const SemButtonGroup = ({
   meta: { touched, error, warning },
   ...props
 }) => {
-  const [activeButton, setActiveButton] = useState(null)
+  const [activeButton, setActiveButton] = useState(input.value)
   const {buttonList} = props;
 
-  const handleClick = (value, index) => {
-  setActiveButton(index);
+  const handleClick = (value) => {
+  setActiveButton(value);
   input.onChange(value);
   }
   return (
@@ -53,8 +53,8 @@ const SemButtonGroup = ({
           <Button
             type="button"
             key={index}
-            onClick={() => handleClick(element, index)}
-            active={index === activeButton}>{element}</Button>
+            onClick={() => handleClick(element)}
+            active={element === activeButton}>{element}</Button>
                 ))}
       </ButtonGroup>
       <Form.Field>

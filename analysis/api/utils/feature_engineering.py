@@ -72,7 +72,7 @@ def inverse_ln(descriptor):
 
 #-------------------------------------------------------------------------------------------------
 def get_feature_engineering(data):
-    logger.info(data)
+    # logger.info(data)
     #Dataset loading
     descriptor_columns_list = data['view']['settings']['descriptorColumns']
     target_columns_list = data['view']['settings']['targetColumns']

@@ -101,12 +101,12 @@ def get_monte_cat(data):
     for i in range(iterations):
 
         if len(descriptors_bank) > 0: # Addition proposals do not occur if there are no Descriptors in the bank
-            addition_result = random_addition(df_descriptors, df_target, descriptors_in_model, descriptors_bank, model_tested) # ランダムに追加した記述子とそのスコアを撮ってくる
+            addition_result = random_addition(df_descriptors, df_target, descriptors_in_model, descriptors_bank, model_tested)
         else:
             addition_result = None
 
         if len(descriptors_in_model) > 1: # Removal proposals do not occur if there is one or less Descriptors
-            removal_result = random_removal(df_descriptors, df_target, descriptors_in_model, descriptors_bank, model_tested) #ランダムに削除した記述子とそのスコアを撮ってくる
+            removal_result = random_removal(df_descriptors, df_target, descriptors_in_model, descriptors_bank, model_tested) 
         else:
             removal_result = None
 
@@ -170,8 +170,6 @@ def get_monte_cat(data):
     end_time = round(time.time(), 5)
     ## ===================================================================================================================
     result = {}
-    logger.info(process_df)
-    logger.info(output_df)
     result['process'] = process_df
     result['output'] = output_df
         
