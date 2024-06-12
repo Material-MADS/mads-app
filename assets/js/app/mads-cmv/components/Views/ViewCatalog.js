@@ -41,6 +41,7 @@ import ClusteringView from './ClusteringView';
 import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
+import NetworkAnalysisView from './NetworkAnalysisView.js';
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -496,6 +497,32 @@ export const config = [
   },
   //------------------------------------------
 
+  // NetworkAnalysis - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  //------------------------------------------
+  {
+    type: 'networkAnalysis',
+    name: 'NetworkAnalysis',
+    category: 'Analysis',
+    version: 0.1,
+    devStage: "Draft",
+    component: NetworkAnalysisView,
+    settings: {
+      centrality: '',
+      markNode: '',
+      clusteringEnabled: false,
+      clusterForse: 0.0025,
+      options: {
+        links: {},
+        graphLayout: {},
+        nodes: {},
+        colorMap: 'Category20c',
+        extent: { width: 700, height: 700 },
+      }
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
   // MACHINE LEARNING CATEGORY
   //==========================
 
@@ -761,7 +788,7 @@ export const config = [
         },
       },
     },
-    enabled: false,
+    enabled: true,
   },
   //------------------------------------------
 ];
