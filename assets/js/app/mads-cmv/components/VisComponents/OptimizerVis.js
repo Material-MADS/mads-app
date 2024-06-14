@@ -57,14 +57,17 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   const params = Object.assign({}, defaultOptions, options);
   if(isThisOld){ params.title = "Out of date. Old Settings! Replace with New!" }
 
-  const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
+  const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,tap,reset,save';
+  const tips = "<div><p>Index: $index <br /> True: $data_y <br /> Predicted: $data_x </p>"
   const fig = Bokeh.Plotting.figure({
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
+    tooltips: tips,
   });
+  fig.add_tools(new Bokeh.HoverTool({tooltips: tips}))
 
   fig.title.text = params.title; //title object must be set separately or it will become a string (bokeh bug)
   if(isThisOld){
@@ -137,8 +140,10 @@ export default class OptimizerVis extends Component {
     if (diff.selectedIndices) {
       if (this.cds) {
         this.cds.selected.indices = diff.selectedIndices.filter(v => (v < this.props.data.d2.first_test));
-        this.cds2.selected.indices = diff.selectedIndices.filter(v =>
-                  (v >= this.props.data.d2.first_test)).map(v=> v - this.props.data.d2.first_test);
+        if (this.cds2) {
+          this.cds2.selected.indices = diff.selectedIndices.filter(v =>
+                    (v >= this.props.data.d2.first_test)).map(v=> v - this.props.data.d2.first_test);
+        }
       }
       return false;
     }
@@ -186,8 +191,11 @@ export default class OptimizerVis extends Component {
   handleSelectedIndicesChange() {
     const { onSelectedIndicesChange } = this.props;
     const { indices } = this.cds.selected;
-    const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
-    const all_indices = [...new Set([...indices, ...indices2])];
+    let all_indices = indices;
+    if (this.cds2) {
+      const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
+      all_indices = [...new Set([...indices, ...indices2])];
+    }
 
     if (this.selecting) {
       return;

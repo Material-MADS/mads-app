@@ -362,7 +362,7 @@ const OptimizerForm = (props) => {
           <Field
             fluid
             name="external_validation_from"
-            component="input"
+            component={Input}
             type="number"
             placeholder="Use data from line #"
           />
