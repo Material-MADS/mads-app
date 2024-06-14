@@ -18,6 +18,7 @@
 #-------------------------------------------------------------------------------------------------
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
+from .smiles_table import get_mol_svg
 from .histogram import get_histograms
 from .feature_importance import get_feature_importance
 from .clustering import get_clusters
@@ -49,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 processor_map = {
+    'moltable': get_mol_svg,
     'histogram': get_histograms,
     'feature-importance': get_feature_importance,
     'clustering': get_clusters,

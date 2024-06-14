@@ -22,6 +22,7 @@
 
 // Visualization
 import TableView from './TableView';
+import MolTableView from './MolTableView';
 import ScatterView from './ScatterView';
 import BarView from './BarView';
 import PieView from './PieView';
@@ -122,6 +123,28 @@ export const config = [
     description: "This component is a basic table that gets filled by the current loaded data and allows various interaction.",
     devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: TableView,
+    settings: {
+      columns: [],
+      options: {
+        extent: {
+          width: 800,
+          height: 400,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // MolTable - A Customizable Data Table with 2D molecular visualisation
+  //------------------------------------------
+  {
+    type: 'moltable',
+    name: 'Table with molecules',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: MolTableView,
     settings: {
       columns: [],
       options: {
