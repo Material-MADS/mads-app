@@ -60,6 +60,7 @@ jsonfield2 = "*"
 six = "*"
 django-webpack-loader = "~=1.1.0"
 scikit-image = "*"
+nltk = "*"
 
 [requires]
 python_version = "3.9"
