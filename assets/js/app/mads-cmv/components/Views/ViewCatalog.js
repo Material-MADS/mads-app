@@ -32,6 +32,7 @@ import GapMinderView from './GapMinderView';
 
 // Data Processing
 import ImageViewView from './ImageView';
+import CatalystGeneView from './CatalystGeneView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -355,7 +356,32 @@ export const config = [
     enabled: true,
   },
   //------------------------------------------
-
+  
+  // Catalyst Gene View - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
+  //------------------------------------------
+  {
+    type: 'catalystGene',
+    name: 'CatalystGene',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: CatalystGeneView,
+    settings: {
+      options: {
+        scaling:{
+          max: 1,
+          min: 0,
+        },
+        extent: {
+          width: 400,
+          height: 400,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================
