@@ -41,6 +41,7 @@ import ClusteringView from './ClusteringView';
 import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
+import XAFSAnalysisView from './XAFSAnalysisView';
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -490,6 +491,29 @@ export const config = [
         },
         bkgCol: "#ffffff",
         txtCol: "#000000",
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // THIS IS A XAFS Analysis COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'XAFSAnalysis',
+    name: 'XAFSAnalysis',
+    category: 'Analysis',
+    version: 0.1,
+    devStage: "Draft",
+    component: XAFSAnalysisView,
+    settings: {
+      element: '',
+      energy: '',
+      abs: '',
+      XANES_Data: '',
+      EXAFS_Data: '',
+      options: {
+        extent: {width: 400, height: 400},
       },
     },
     enabled: true,
