@@ -103,7 +103,7 @@ class PredictionForm(forms.ModelForm):
         pretrainedmodel = self.instance
         metadata = pretrainedmodel.metadata
         logger.debug(self.instance)
-        if not metadata['input_type'] or metadata['input_type'] == "descriptors_values":
+        if 'input_type' not in metadata.keys() or not metadata['input_type'] or metadata['input_type'] == "descriptors_values":
             for inport in metadata['inports']:
                 self.fields[inport['name']] = forms.CharField(
                     max_length=100, label=inport['name'],
