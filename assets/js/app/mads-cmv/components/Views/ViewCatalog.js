@@ -374,8 +374,8 @@ export const config = [
           min: 0,
         },
         extent: {
-          width: 400,
-          height: 400,
+          width: 600,
+          height: 600,
         },
       },
     },
