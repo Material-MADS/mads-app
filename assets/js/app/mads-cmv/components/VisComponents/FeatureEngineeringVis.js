@@ -18,7 +18,7 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, Table } from 'semantic-ui-react'
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, Table, GridColumn } from 'semantic-ui-react'
 import PropTypes from "prop-types";
 
 import $ from "jquery";
@@ -51,48 +51,59 @@ const transposeData = (data) => {
   return { headers: fields, data: transposedData };
 };
 
+//Download
+const csvDownload  = (csvData, fileName) => {
+  const link = document.createElement("a");
+  link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData));
+  link.setAttribute("target", "_blank");
+  link.setAttribute("download", fileName);
+  link.click();
+  try {
+    document.body.removeChild(link)
+  } catch (error) {}
+}
+
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
 export default function FeatureEngineering({
   data,
-  mappings,
   options,
-  originalOptions,
-  id,
 }) {
 
-
   const [disabled, setdisabled] = useState(true);
+  console.log(disabled)
   const [open, setOpen] = useState(false);
   const [dataT, setDataT] = useState({})
   // Initiation of the VizComp
   let internalOptions = {...defaultOptions, ...options};
 
   //Buttun Clicked Funtuion
-  const downloadButtonClick = (e, data) => {
+  const resultButtonClick = (e, data) => {
     const headersCSV = dataT['headers'].join(',') + '\n';
     const dataCSV = dataT['data'].map(row => row.join(',')).join('\n');
 
-    const datasetCSV = headersCSV + dataCSV
+    const csvData = headersCSV + dataCSV
     
     //fileName
     const fileName = "Feature_Engineering.csv";
 
-    //Download 
-    const link = document.createElement("a");
-    link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(datasetCSV));
-    link.setAttribute("target", "_blank");
-    link.setAttribute("download", fileName);
-    link.click();
-    try {
-      document.body.removeChild(link)
-    } catch (error) {}
+    csvDownload(csvData, fileName)
+  }
+
+  const baseDesctriptorsButtonClick = (e, data) => {
+    const { basedescriptors } = data 
+    if (basedescriptors && basedescriptors.length !== 0) {
+      const csvData = basedescriptors.join(',');
+      const fileName = 'base_descriptors.csv';
+      csvDownload(csvData, fileName);
+    }
+
   }
 
   // Create the VizComp based on the incomming parameters
   const createChart = () => {
-    if (data.data) {
+    if (data.data && data.base_descriptors && data.base_descriptors !== 0) {
       setdisabled(false);
       setDataT(transposeData(data.data));
     }
@@ -118,44 +129,64 @@ export default function FeatureEngineering({
     <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box', textAlign: 'center' }}>
       <Header as='h2' style={{ marginBottom: '20px' }}>Feature Engineering</Header>
       <Grid centered >
-        <GridRow >
+        <GridRow columns={3} centered>
+          <GridColumn textAlign={'center'} verticalAlign={"middle"}>
+            <Header as='h4'>Result Data</Header>
+          </GridColumn>
+          <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
             <Button 
               positive
               disabled={disabled}
-              onClick={(e, data) => {downloadButtonClick(e, data)}}
+              onClick={(e, data) => {resultButtonClick(e, data)}}
               csvdata = {data}
             >Download
             </Button>
+          </GridColumn>
+          <GridColumn textAlign={'justified'} verticalAlign={"middle"} >
+            <Modal
+              basic
+              onClose={() => setOpen(false)}
+              onOpen={() => setOpen(true)}
+              open={open}
+              trigger={<Button 
+                        positive
+                        disabled={disabled}
+                        >View
+                      </Button>}
+              centered
+              size="fullscreen"
+            >
+              <ModalContent  scrolling>
+                <ViewTable dataset = {dataT}/>
+              </ModalContent>
+              <ModalActions>
+                <Button negative onClick={() => setOpen(false)}>Close</Button>
+              </ModalActions>
+            </Modal>
+          </GridColumn>
         </GridRow>
-        <GridRow>
-          <Modal
-            basic
-            onClose={() => setOpen(false)}
-            onOpen={() => setOpen(true)}
-            open={open}
-            trigger={<Button 
-                      positive
-                      disabled={disabled}
-                      >View
-                    </Button>}
-            centered
-            size="fullscreen"
-          >
-            <ModalContent  scrolling>
-              <ViewTable dataset = {dataT}/>
-            </ModalContent>
-            <ModalActions>
-              <Button negative onClick={() => setOpen(false)}>Close</Button>
-            </ModalActions>
-          </Modal>
+        <GridRow columns={3} centered>
+          <GridColumn textAlign={'center'} verticalAlign={"middle"}>
+            <Header as='h4'>Base Descriptors</Header>
+          </GridColumn>
+          <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
+            <Button 
+              positive
+              disabled={disabled}
+              onClick={(e, data) => {baseDesctriptorsButtonClick(e, data)}}
+              basedescriptors = {data.base_descriptors}
+            >Download
+            </Button>           
+          </GridColumn>
+          <GridColumn />
         </GridRow>
       </Grid> 
-      {/* <div> Run Time : {data.Run_Time}</div> */}
     </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
 
+//This is a component which show result data as table
 const ViewTable = ({dataset}) => {
   const { headers, data } = dataset
   return (

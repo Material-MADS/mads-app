@@ -126,7 +126,10 @@ const MonteCatForm = (props) => {
       reader.readAsText(file);
       reader.onload = (e) => {
         const text = e.target.result;
-        props.change('descriptorsList', text.split(/\r\n|\n|\r/).filter(Boolean));
+        console.log(e.target)
+        console.log(text.split(/,|\r\n|\n|\r/).filter(Boolean));
+        console.log(text.split(/,|\r\n|\n|\r/))
+        props.change('baseDescriptors', text.split(',').filter(Boolean));
         props.change('descriptorsFileName', `${file.name}`);
       };
     }
@@ -194,12 +197,12 @@ const MonteCatForm = (props) => {
 
       <Form.Group>
         <Form.Field width={4}>
-          <label>Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='----------------' size='small' />:</label>
+          <label>Base Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='----------------' size='small' />:</label>
           <Button type="button" onClick={handleClick} style={{width: '100%'}}>Load File</Button>
           <input type="file" ref={fileInputRef} accept=".csv" onChange={handleFileChange} style={{ display: 'none' }}/>
           <input
             type="hidden"
-            name="descriptorsList"
+            name="baseDescriptors"
           />
         </Form.Field>
         <Form.Field width={12} style={{marginTop: 'auto'}}>

@@ -34,6 +34,7 @@ import GapMinderView from './GapMinderView';
 import ImageViewView from './ImageView';
 import FeatureEngineeringView from './FeatureEngineeringView';
 import MonteCatView from './MonteCatView';
+import CatalystPropertyConversionView from './CatalystPropertyConversionView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -392,7 +393,7 @@ export const config = [
     devStage: "Draft",
     component: MonteCatView,
     settings: {
-      descriptorsList: [],
+      baseDescriptors: [],
       machineLearningModel: '',
       temperature: 0,
       targetColumn: '',
@@ -409,6 +410,30 @@ export const config = [
   },
   //------------------------------------------
 
+  // THIS IS A Catalyst Property Conversion COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'catalystPropertyConversion',
+    name: 'CatalystPropertyConversion',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: CatalystPropertyConversionView ,
+    settings: {
+      conversionMethod: '',
+      catalyst: [],
+      targetColumns: [],
+      compositionColumns: [],
+      options: {
+        extent: {
+          width: 400,
+          height: 300,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================

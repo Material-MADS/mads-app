@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 def get_monte_cat(data):
     #Dataset and General Script Parameters loading-----------------------------------------------
-    descriptors_list = data['view']['settings']['descriptorsList']
+    base_descriptors = data['view']['settings']['baseDescriptors']
     model_to_tested = data['view']['settings']['machineLearningModel']
     temperature = data['view']['settings']['temperature'] # Temperature parameter used to tune the Acceptance Probability curve behavior
     iterations  = int(data['view']['settings']['iterations']) # Number of steps / iterations
@@ -68,13 +68,7 @@ def get_monte_cat(data):
 
     s_time = round(time.time(), 5)
 
-    reference_dictionary = create_descriptor_reference_dictionary(df_descriptors, descriptors_list)
-
-    # Output Filename (can be freely changed by the user)
-
-    filename = f'{model_to_tested}_T{temperature}'
-
-    output_filename = 'Test_Output'
+    reference_dictionary = create_descriptor_reference_dictionary(df_descriptors, base_descriptors)
 
     counter = 1
 
@@ -187,9 +181,9 @@ and all derived analogues (zeroth and first order Descriptors) stored as lists t
 family addition and removals from the descriptor bank and model during algorithm execution.
 """
 
-def create_descriptor_reference_dictionary(df_descriptors, descriptors_list):
+def create_descriptor_reference_dictionary(df_descriptors, base_descriptors):
     dataset_true_descriptors = df_descriptors.columns.tolist()
-    base_descriptors = descriptors_list
+    base_descriptors = base_descriptors
     first_order_list = ['Simple', 'Inverse', 'Square', 'I_Square', 
                         'Cube', 'I_Cube', 'Sqrt', 'I_Sqrt', 'Exp', 'I_Exp', 'Ln', 'I_Ln']
     descriptor_families = []

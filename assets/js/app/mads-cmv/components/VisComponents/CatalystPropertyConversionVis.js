@@ -5,11 +5,11 @@
 // ________________________________________________________________________________________________
 // Authors:Yoshiki Hasukawa (Student Developer and Component Design) [2024]
 //　　　　　 Mikael Nicander Kuwahara (Lead Developer) [2021-]
-// ____________________________________________________________________________________________________
+// ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
-//              'MonteCat' module
+//              'CatalystPropertyConversion' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'MonteCat' is a component that makes amazing things.
+// Notes: 'CatalystPropertyConversion' is a component that makes amazing things.
 // ------------------------------------------------------------------------------------------------
 // References: React & prop-types Libs, 3rd party jquery, internal support methods fr. VisCompUtils
 =================================================================================================*/
@@ -18,11 +18,12 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image } from 'semantic-ui-react'
 import PropTypes from "prop-types";
-
+import { useSelector } from "react-redux";
 import $ from "jquery";
-import { Button, Header, Grid, GridRow, GridColumn, Modal, ModalActions, ModalContent, Table } from 'semantic-ui-react'
 
+import csvformat from './images/catalystPropertyConversion/csvformat.png';
 //-------------------------------------------------------------------------------------------------
 
 
@@ -30,48 +31,61 @@ import { Button, Header, Grid, GridRow, GridColumn, Modal, ModalActions, ModalCo
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: "Empty 'MonteCat' Component",
-  extent: { width: 400, height: 200 },
+  title: "Empty 'CatalystPropertyConversion' Component",
+  extent: { width: undefined, height: undefined },
 };
 
 //-------------------------------------------------------------------------------------------------
-
-//Format culcurated data from python
-const transposeData = (data) => {
-  const fields = Object.keys(data);
-  const valuesLength = Object.values(data)[0].length;
-  const transposedData = [];
-
-  for (let i = 0; i < valuesLength; i++) {
-    const rowData = fields.map(field => data[field][i]);
-    transposedData.push(rowData);
-  }
-  // console.log('headers', fields)
-  // console.log('content',transposedData)
-
-  return { headers: fields, data: transposedData };
-};
 
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
-export default function MonteCat({
+export default function CatalystPropertyConversion({
   data,
+  mappings,
   options,
-  temperature,
-  machineLearningModel,
+  colorTags,
+  originalOptions,
+  id,
+  conversionMethod,
 }) {
-  const [disabled, setdisabled] = useState(true);
-
-  // Initiation of the VizComp
   let internalOptions = {...defaultOptions, ...options};
+  
+  //function to manage state of each buttons
+  const manageButton= (saBoolean, waaBoolean, wabBoolean) => {
+    setsaDisabled(saBoolean);
+    setwaaDisabled(waaBoolean);
+    setwabDisabled(wabBoolean);
+  }
+  
+  const [formatOpen, setFormatOpen] = useState(false);
+  const [saDisabled, setsaDisabled] = useState(true); // manage button of simple average
+  const [waaDisabled, setwaaDisabled] = useState(true); // manage button of weighted average format A
+  const [wabDisabled, setwabDisabled] = useState(true); // manage button of weighted average format B
+  const [currentDataSource, setCurrentDataSource] = useState({id: '', name: ''}); //manage data souerce change
 
+  try {
+    const availableDataSources = useSelector((state) => state.dataSources);
+    if (availableDataSources.selectedDataSource != currentDataSource.id) {
+      if(currentDataSource.id != '') {
+        manageButton(true, true, true);
+      }
+      setCurrentDataSource({id: availableDataSources.selectedDataSource, name: ((availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name)})
+    }
+  } catch (error) { /*Just ignore and move on*/ }
+  
   // Create the VizComp based on the incomming parameters
   const createChart = () => {
-    if (data['output'] && data['output'] !== 0 && data['process'] && data['process'] !== 0) {
-      setdisabled(false);
+    if (data.data) {
+      if (conversionMethod === 'Simple Average') {
+        manageButton(false, true, true);
+      } else if (conversionMethod === 'Weighted Average (Format A)') {
+        manageButton(true, false, true);
+      } else {
+        manageButton(true, true, false);
+      }
     }
-  };
+  }
 
    // Clear away the VizComp
    const clearChart = () => {
@@ -90,40 +104,60 @@ export default function MonteCat({
 
   // Add the VizComp to the DOM
   return (
-    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box', textAlign: 'center' }}>
-      <Header as='h2' style={{ marginBottom: '20px' }}>Monte Cat</Header>
-      <DataItemActions data={data['process']} content='Process Result' disabled={disabled} filename='montecat_process'/>
-      <DataItemActions data={data['output']} content='Best Model' disabled={disabled} filename={`${machineLearningModel}_T${temperature}`}/>
+    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
+      <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between'}}>
+        <Header as='h2' style={{margin:'15px 0px 30px 0.5em',}}>Catalyst Property Conversion</Header>
+        <Modal
+              onClose={() => setFormatOpen(false)}
+              onOpen={() => setFormatOpen(true)}
+              open={formatOpen}
+              trigger={<Button size="mini" style={{margin:'15px 0.5em 30px 0px'}} color='red'>ⓘ</Button>}
+              centered
+              size="large"
+            >
+              <ModalHeader >Simple Average Dataset Format</ModalHeader>
+              <ModalContent image style={{ display: 'flex', justifyContent: 'center' }}>
+                <Image size='huge' src={csvformat} wrapped />
+              </ModalContent>
+              <ModalActions>
+                <Button negative onClick={() => setFormatOpen(false)}>Close</Button>
+              </ModalActions>
+            </Modal>
+      </div>
+      <DataItemActions data={data} conversionmethod={conversionMethod} disabled={saDisabled} name={'Simple Average'}/>
+      <DataItemActions data={data} conversionmethod={conversionMethod} disabled={waaDisabled} name={'Format A'}/>
+      <DataItemActions data={data} conversionmethod={conversionMethod} disabled={wabDisabled} name={'Format B'}/>
     </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
 
 //Dawnload and view button Component
-const DataItemActions = ({data, content, disabled, filename}) => {
-  const [open, setOpen] = useState(false);
-  const [dataT, setDataT] = useState({});
+const DataItemActions = ({data, conversionmethod, disabled, name}) => {
 
-  useEffect(() => {
-    if (data) {
-      setDataT(transposeData(data))
-    }
-  }, [data])
+  const [open, setOpen] = useState(false);
 
   //Buttun Clicked Funtuion
-  const downloadButtonClick = (e, data) => {
-    const {filename} = data
-    const headersCSV = dataT['headers'].join(',') + '\n';
-    const dataCSV = dataT['data'].map(row => row.join(',')).join('\n');
+  const downloadButtonClick = (e, value) => {
+    const {conversionmethod} = value
 
-    const datasetCSV = headersCSV + dataCSV
+    //generate csv dataset
+    // console.log(value);
+    // console.log(data);
+    let csv = data.header.join(',') + '\n';
+    Object.keys(data.data).forEach(key => {
+      csv += data.data[key].join(',') + '\n';
+      });
+    // console.log(csv)
     
     //fileName
-    const fileName =  filename + ".csv";
+    const fileName =  conversionmethod === 'Simple Average' ? 'simple_averages.csv' : conversionmethod === 'Weighted Average (Format A)' ? 
+    'weighted_average_A' : 'weighted_average_B';
+    // console.log(fileName)
 
     //Download 
     const link = document.createElement("a");
-    link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(datasetCSV));
+    link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
     link.setAttribute("target", "_blank");
     link.setAttribute("download", fileName);
     link.click();
@@ -136,14 +170,13 @@ const DataItemActions = ({data, content, disabled, filename}) => {
     <Grid >
       <GridRow columns={3} centered>
         <GridColumn textAlign={'center'} verticalAlign={"middle"}>
-          <Header as='h4'>{content}</Header>
+          <Header as='h4'>{name}</Header>          
         </GridColumn>
         <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
           <Button 
-            positive
             disabled={disabled}
-            onClick={(e, data) => {downloadButtonClick(e, data)}}
-            filename = {filename}
+            onClick={(e, value) => {downloadButtonClick(e, value)}}
+            conversionmethod = {conversionmethod}
           >Download
           </Button>
         </GridColumn>
@@ -154,15 +187,15 @@ const DataItemActions = ({data, content, disabled, filename}) => {
             onOpen={() => setOpen(true)}
             open={open}
             trigger={<Button 
-                      positive
                       disabled={disabled}
+                      type="button"
                       >View
                     </Button>}
             centered
             size="fullscreen"
           >
             <ModalContent  scrolling>
-              <ViewTable dataset = {dataT}/>
+              <ViewTable dataset = {data}/>
             </ModalContent>
             <ModalActions>
               <Button negative onClick={() => setOpen(false)}>Close</Button>
@@ -174,23 +207,29 @@ const DataItemActions = ({data, content, disabled, filename}) => {
   )
 }
 
+//This is a component which show required format in each conversion method
+
+
 //This is a component which show result data as table
 const ViewTable = ({dataset}) => {
-  const { headers, data } = dataset
+  // console.log(dataset)
+  const { header, data } = dataset
   return (
     <div>
-      <Table celled>
+      <Table celled compact>
         <Table.Header>
           <Table.Row>
-            {headers.map((header, index) => (
-              <Table.HeaderCell key={index}>{header}</Table.HeaderCell>
+            <Table.HeaderCell>#</Table.HeaderCell>
+            {header.map((cell, index) => (
+              <Table.HeaderCell key={index}>{cell}</Table.HeaderCell>
             ))}
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {data.map((row, rowIndex) => (
-            <Table.Row key={rowIndex}>
-              {row.map((cell, cellIndex) => (
+          {Object.keys(data).map((key) => (
+            <Table.Row key={key}>
+              <Table.Cell>{key}</Table.Cell>
+              {data[key].map((cell, cellIndex) => (
                 <Table.Cell key={cellIndex}>{cell}</Table.Cell>
               ))}
             </Table.Row>
@@ -202,12 +241,10 @@ const ViewTable = ({dataset}) => {
 
 }
 
-
-
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's Allowed and expected Property Types
 //-------------------------------------------------------------------------------------------------
-MonteCat.propTypes = {
+CatalystPropertyConversion.propTypes = {
   data: PropTypes.shape({ }),
   options: PropTypes.shape({
     extent: PropTypes.shape({
@@ -222,8 +259,8 @@ MonteCat.propTypes = {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's default initial start Property Values
 //-------------------------------------------------------------------------------------------------
-MonteCat.defaultProps = {
-  data: {process: [], output: []},
+CatalystPropertyConversion.defaultProps = {
+  data: {},
   options: defaultOptions,
 };
 //-------------------------------------------------------------------------------------------------
