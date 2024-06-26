@@ -21,7 +21,7 @@
 //-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm, Label } from 'redux-form';
-import { Button, Form } from 'semantic-ui-react';
+import { Button, Form, Dropdown } from 'semantic-ui-react';
 
 import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import SemanticDropdown from '../FormFields/Dropdown';
@@ -64,7 +64,7 @@ const errorValidate = (value, values, props, fieldName) => {
 
 
   //Is required
-  if (values && (fieldName == "rootCatalst") || (fieldName == "featureColumns") || (fieldName == "visualizationMethod")){
+  if (values && (fieldName == "rootCatalyst") || (fieldName == "featureColumns") || (fieldName == "visualizationMethod")){
     if(!value || _.isEmpty(value)){
       error = 'Required';
     }
@@ -80,6 +80,52 @@ const errorValidate = (value, values, props, fieldName) => {
 //=======================
 
 //=======================
+const CatalystSemanticDropdown = ({
+  input,
+  type,
+  label,
+  placeholder,
+  renderLabel,
+  styleMaker = styleMaker || (() => { return {}; }),
+  meta: { touched, error, warning },
+  ...props
+}) => {
+  const [options, setOptions] = React.useState(props.options || []);
+
+  const handleSearchChange = (e, { searchQuery }) => {
+    const filteredOptions = props.options.filter(option =>
+      option.text.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setOptions(filteredOptions);
+  };
+
+  return (
+    <Form.Field>
+      <label>{label}</label>
+      <Dropdown
+        style={styleMaker(input.value)}
+        fluid
+        selection
+        search
+        {...input}
+        {...props}
+        onBlur={() => input.onBlur()}
+        value={input.value}
+        onChange={(param, data) => input.onChange(data.value)}
+        onSearchChange={handleSearchChange}
+        options={options}
+        placeholder={placeholder}
+      />
+      {warning && <div>{JSON.stringify(error)}</div>}
+      <Form.Field>
+        {touched && 
+          ((error && <i style={{ color: '#9f3a38', fontWeight: 'bold' }}>{error}</i>) ||
+          (warning && <i style={{ color: '#e07407', fontWeight: 'bold' }}>{warning}</i>))}
+      </Form.Field>
+    </Form.Field>
+  );
+};
+
 function makeCatalystOptions(data, columnName) {
   var catalystOptions = [];
   if (data) {
@@ -188,8 +234,8 @@ const CatalystGeneForm = (props) => {
       <Form.Field>
         <label>Catalyst</label>
         <Field
-          name="rootCatalst"
-          component={SemanticDropdown}
+          name="rootCatalyst"
+          component={CatalystSemanticDropdown}
           placeholder="catalysts"
           options={makeCatalystOptions(dataset.main.data, 'Catalyst')}
           validate={[ errorValidate ]}

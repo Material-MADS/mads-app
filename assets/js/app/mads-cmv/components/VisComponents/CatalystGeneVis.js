@@ -38,6 +38,7 @@ import QuadBarChart from "./QuadBarChartVis";
 import RegressionVis from "./RegressionVis";
 import Scatter from "./ScatterVis";
 import Scatter3D from './Scatter3DVis';
+import { root } from "postcss";
 
 
 // CONSTANTS AND VARIABLES
@@ -133,6 +134,8 @@ function Clustering({
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
     console.log(rootNode)
+    const rootCatalyst = data["rootCatalyst"];
+    const similarGeneCatalyst = data["similarGeneCatalyst"]
     const { extent, margin } = internalOptions;
     const { width, height } = extent;
     const { l: left, r: right, t: top, b: bottom } = margin;
@@ -145,22 +148,25 @@ function Clustering({
   
     const scaleX = plotWidth / maxXPoint;
     const scaleY = plotHeight / maxYPoint;
+    console.log("yscale of clustering is" + scaleY.toString())
 
 
     const source = new Bokeh.ColumnDataSource({
       data: {
-        x0: linePoints.map(p => (p[0] * scaleX * 0.9 + plotHeight*0.01)),
-        y0: linePoints.map(p => (p[1] * scaleY * 0.9 + plotHeight*0.05)),
-        x1: linePoints.map(p => (p[2] * scaleX * 0.9 + plotHeight*0.01)),
-        y1: linePoints.map(p => (p[3] * scaleY * 0.9 + plotHeight*0.05)),
+        x0: linePoints.map(p => (p[0] * scaleX * 0.95 + plotWidth*0.05)),
+        y0: linePoints.map(p => (p[1] * scaleY * 0.95 + plotHeight*0.025)),
+        x1: linePoints.map(p => (p[2] * scaleX * 0.95 + plotWidth*0.05)),
+        y1: linePoints.map(p => (p[3] * scaleY * 0.95 + plotHeight*0.025)),
       }
     });
 
     const minY = Math.min(Math.min(...source.data.y0),Math.min(...source.data.y1))
     const maxY = Math.max(Math.max(...source.data.y0),Math.max(...source.data.y1))
     const yTickPoint = yTicklabels.map((label, index) => ((maxY - minY) / (yTicklabels.length - 1)) * index + minY)
+    const yTickDiff = yTickPoint[1] - yTickPoint[0]
     const xRange = new Bokeh.Range1d({ start: 0, end: plotWidth });
     const yRange = new Bokeh.Range1d({ start: 0, end: plotHeight });
+
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
       width: plotWidth,
@@ -169,7 +175,37 @@ function Clustering({
       y_range: yRange,
     });
 
-    plot.segment({ field: 'x0' }, { field: 'y0' }, { field: 'x1' }, { field: 'y1' }, { source });
+    const hierarchy = plot.segment({ field: 'x0' }, { field: 'y0' }, { field: 'x1' }, { field: 'y1' }, { source });
+
+    const similarGeneCatalystIndxs = similarGeneCatalyst.map((label,index) => yTicklabels.indexOf(label))
+    const similarGeneCatalystYPoints = similarGeneCatalystIndxs.map((index) => yTickPoint[index])
+    const circleX = Array.from({ length: similarGeneCatalystYPoints.length }, () => plotWidth*0.02);
+    const rootCatalystIndex =  yTicklabels.indexOf(rootCatalyst)
+    const yRootCatalyst = yTickPoint[rootCatalystIndex]
+    const circleColor = similarGeneCatalystYPoints.map((yPoint) => yPoint === yRootCatalyst ? 'green': 'yellow');
+    const ellipseheight = Array.from({ length: similarGeneCatalystYPoints.length }, () => yTickDiff*0.98);
+    const ellipsewidth = Array.from({ length: similarGeneCatalystYPoints.length }, () => 15);
+
+
+    const similarGeneSource = new Bokeh.ColumnDataSource({
+      data: {
+        xData: circleX,
+        yData: similarGeneCatalystYPoints,
+        height:ellipseheight,
+        width:ellipsewidth,
+        color:circleColor,
+      }
+    });
+
+    const circles = plot.ellipse({
+      x: { field: "xData" },
+      y: { field: "yData" },
+      width: { field: "width" },
+      height: { field: "height" },
+      fill_color:{ field: "color" },
+      line_color:{ field: "color" },
+      source: similarGeneSource,
+    });
 
     if (yTicklabels.length > 0) {
       const yaxis = plot.yaxis[0];
@@ -186,7 +222,7 @@ function Clustering({
 
     Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [internalData]);
+  }, [data]);
 
   return(
     <div>
@@ -195,8 +231,7 @@ function Clustering({
   );
 }
 
-
-function HeatMapGene({
+ function HeatMapGene({
   data,
   options,
   selectedIndices,
@@ -206,21 +241,26 @@ function HeatMapGene({
   const internalOptions = Object.assign({}, defaultOptions, options);
   const internalData = data.heatmapData;
   const rootNode = useRef(null);
+  
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
-    console.log(internalData)
+    const rootCatalyst = data["rootCatalyst"];
+    const similarGeneCatalyst = data["similarGeneCatalyst"]
     const { extent, margin } = internalOptions;
     const { width, height } = extent;
     const { l: left, r: right, t: top, b: bottom } = margin;
     const plotWidth = width - left - right;
     const plotHeight = height - top - bottom;
+    const yTicklabels =internalData['yTicks']
+    const xTicklabels =internalData['xTicks']
     const xAxisRange = Math.max(...internalData['xData']) - Math.min(...internalData['xData']);
     const yAxisRange = Math.max(...internalData['yData']) - Math.min(...internalData['yData']);
     const scaleX = plotWidth / (xAxisRange + 1);
     const scaleY = plotHeight / (yAxisRange + 1);
     const xRange = new Bokeh.Range1d({ start: 0, end: plotWidth });
     const yRange = new Bokeh.Range1d({ start: 0, end: plotHeight });
+  
 
     let colors = internalOptions.colors;
     if(!colors){
@@ -231,15 +271,41 @@ function HeatMapGene({
     var mapper = new Bokeh.LinearColorMapper({palette: colors, low: colMapMinMax[0], high: colMapMinMax[1]});
     const source = new Bokeh.ColumnDataSource({
       data: {
-        xData: internalData['xData'].map(x => x * scaleX * 0.9 + scaleX/2),
-        yData: internalData['yData'].map(y => y * scaleY * 0.9 + scaleY/2+ plotHeight*0.05),
-        heatVal: internalData['heatVal']
+        xData: internalData['xData'].map(x => x * scaleX * 0.95 + scaleX/2 + plotWidth*0.05),
+        yData: internalData['yData'].map(y => y * scaleY * 0.95 + scaleY/2+ plotHeight*0.025),
+        heatVal: internalData['heatVal'],
+        x0: internalData['xData'].map(x => 0),
+        y0: internalData['yData'].map(y => 0),
       }
     });
-    
-    source.connect(source.selected.change, () => {
-      handleSelectedIndicesChange(source)
-    })
+
+    const minY = Math.min(...source.data.yData);
+    const maxY = Math.max(...source.data.yData);
+    const yTickPoint = yTicklabels.map((label, index) => ((maxY - minY) / (yTicklabels.length - 1)) * index + minY)
+    const yTickDiff = yTickPoint[1]-yTickPoint[0]
+    const similarGeneCatalystIndxs = similarGeneCatalyst.map((label,index) => yTicklabels.indexOf(label))
+    const similarGeneCatalystYPoints = similarGeneCatalystIndxs.map((index) => yTickPoint[index])
+    const circleX = Array.from({ length: similarGeneCatalystYPoints.length }, () => plotWidth*0.02);
+    const ellipseheight = Array.from({ length: similarGeneCatalystYPoints.length }, () => yTickDiff*0.98);
+    const ellipsewidth = Array.from({ length: similarGeneCatalystYPoints.length }, () => 15);
+
+    const rootCatalystIndex =  yTicklabels.indexOf(rootCatalyst)
+    const yRootCatalyst = yTickPoint[rootCatalystIndex]
+    const circleColor = similarGeneCatalystYPoints.map((yPoint) => yPoint === yRootCatalyst ? 'green': 'yellow');
+
+    const similarGeneSource = new Bokeh.ColumnDataSource({
+      data: {
+        xData: circleX,
+        yData: similarGeneCatalystYPoints,
+        height:ellipseheight,
+        width:ellipsewidth,
+        color:circleColor,
+      }
+    });
+
+    // async source.connect(source.selected.change, () => {
+    //   handleSelectedIndicesChange(source)
+    // })
 
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
@@ -248,6 +314,17 @@ function HeatMapGene({
       x_range: xRange,
       y_range: yRange,
     });
+
+    const circles = plot.ellipse({
+      x: { field: "xData" },
+      y: { field: "yData" },
+      width: { field: "width" },
+      height: { field: "height" },
+      fill_color:{ field: "color" },
+      line_color:{ field: "color" },
+      source: similarGeneSource,
+    });
+
     const renderer = plot.rect({
       x: { field: "xData" },
       y: { field: "yData" },
@@ -260,27 +337,22 @@ function HeatMapGene({
       },
       line_color: "black",
     });
-    let activeToolTipTitles = internalOptions.toolTipTitles || defaultOptions.toolTipTitles;
-    let activeHeatValUnit = (internalOptions.heatValUnit || defaultOptions.heatValUnit);
-    if(activeHeatValUnit == "%%"){ activeHeatValUnit = "%" }
-    const tooltip = activeToolTipTitles.length == 2 ?
-    [
-      [activeToolTipTitles[0], '@'+"xData"+' @'+"yData"],
-      [activeToolTipTitles[1], '@'+"heatVal"+' '+activeHeatValUnit],
-    ] :
-    [
-      [activeToolTipTitles[0], '@'+"xData"],
-      [activeToolTipTitles[1], '@'+"yData"],
-      [activeToolTipTitles[2], '@'+"heatVal"+' '+activeHeatValUnit],
-    ];
-    plot.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
+    
 
-    const yTicklabels =internalData['yTicks']
-    const xTicklabels =internalData['xTicks']
-    const minY = Math.min(...source.data.yData);
-    const maxY = Math.max(...source.data.yData);
-    const yTickPoint = yTicklabels.map((label, index) => ((maxY - minY) / (yTicklabels.length - 1)) * index + minY)
-
+    // let activeToolTipTitles = internalOptions.toolTipTitles || defaultOptions.toolTipTitles;
+    // let activeHeatValUnit = (internalOptions.heatValUnit || defaultOptions.heatValUnit);
+    // if(activeHeatValUnit == "%%"){ activeHeatValUnit = "%" }
+    // const tooltip = activeToolTipTitles.length == 2 ?
+    // [
+    //   [activeToolTipTitles[0], '@'+"xData"+' @'+"yData"],
+    //   [activeToolTipTitles[1], '@'+"heatVal"+' '+activeHeatValUnit],
+    // ] :
+    // [
+    //   [activeToolTipTitles[0], '@'+"xData"],
+    //   [activeToolTipTitles[1], '@'+"yData"],
+    //   [activeToolTipTitles[2], '@'+"heatVal"+' '+activeHeatValUnit],
+    // ];
+    // plot.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
     const color_bar = new Bokeh.ColorBar({
       color_mapper: mapper,
       major_label_text_font_size: internalOptions.fontSize || defaultOptions.fontSize,
@@ -291,26 +363,48 @@ function HeatMapGene({
     });
 
     plot.add_layout(color_bar, 'right');
+    const labelColors = yTicklabels.map(label => label === rootCatalyst ? 'red' : 'black');
+    const x0 = yTickPoint.map(y => 0)
+    source.data['labelColors'] = labelColors;
 
     if (yTicklabels.length > 0) {
       const yaxis = plot.yaxis[0];
       yaxis.ticker = new Bokeh.FixedTicker({ ticks: yTickPoint });
       yaxis.major_label_orientation = 0;
       yaxis.formatter = new Bokeh.FuncTickFormatter({
-        args: { labels: yTicklabels, tickPoints: yTickPoint },
+        args: { labels: yTicklabels, tickPoints: yTickPoint, rootCatalyst: rootCatalyst},
         code: `
           const ind = tickPoints.indexOf(tick);
-          return labels[ind] ? labels[ind] : '';
-        `
+          return labels[ind]
+          `
       });    
     }
 
-    Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [internalOptions])
+
+
+    // const callback = new Bokeh.CustomJS({
+    //   args: { yaxis: plot.yaxis[0], rootCatalyst: rootCatalyst, yTicklabels: yTicklabels, yTickPoint: yTickPoint },
+    //   code: `
+    //       // y軸のラベル要素を取得
+    //       const labels = document.querySelectorAll('.bk-axis-tick');
+    //       labels.forEach((label, index) => {
+    //           const tickText = label.innerText.trim();
+    //           if (tickText === rootCatalyst) {
+    //               label.style.color = 'red';
+    //           } else {
+    //               label.style.color = 'black';
+    //           }
+    //       });
+    //   `
+    // });
+   Bokeh.Plotting.show(plot, rootNode.current);
+    // plot.js_event_callbacks = {'reset': [callback]};
+
+  }, [data])
 
   return(
-    <div>
+    <div id="containerHolder">
       <div ref={rootNode} />
     </div>
   );
@@ -390,27 +484,6 @@ export default function CatalystGene({
     </div>
   );
 
-  // const columnNumber = (data && data.scaledData) ? Object.keys(data.scaledData).length : 0
-  // const visualization = data["visualizationMethod"]
-  // let SelComp = emptyCatalystGeneVC;
-  // console.log(internalProps)
-  // let params = Object.assign({}, internalOptions, internalProps);
-  // // const visualization = data.setting.visualization
-  // if (columnNumber > 0 && visualization){
-  //   if (visualization === "Hierarchical Clustering"){
-  //     SelComp = clustering;
-  //     params.data = data
-  //   } else if (visualization === 'Heatmap'){
-  //     SelComp = heatMap;
-  //     params.data = data['heatmapData']
-  //   }
-  // }
-  // console.log(params)
-  // return (
-  //   <div id="containerHolder">
-  //     <SelComp {...params} />
-  //   </div>
-  // );
 }
 
 

@@ -44,12 +44,13 @@ def get_catalyst_gene(data):
     fields = data["data"]['main']["schema"]["fields"]
     columns = [fields[a]["name"] for a in range(len(fields))]
     dataset = data["data"]["main"]['data']
-    root_catalyst = data['view']['settings']['rootCatalst']
+    root_catalyst = data['view']['settings']['rootCatalyst']
     visualization = data['view']['settings']["visualizationMethod"]
+    distance_border = 2
 
     result = {}
     result['visualizationMethod'] = visualization
-    result['rootCatalst'] = root_catalyst
+    result['rootCatalyst'] = root_catalyst
     
     df_original = pd.DataFrame(dataset, columns =columns)
 
@@ -240,6 +241,10 @@ def get_catalyst_gene(data):
         df_distance_introduced.reset_index(drop = False, inplace = True)
 
         result['dfDistanceIntroduced'] = df_distance_introduced
+
+        df_similar_gene_catalyst = df_distance_introduced[df_distance_introduced["distance"] <= distance_border]["Catalyst"].values.tolist()
+
+        result['similarGeneCatalyst'] = df_similar_gene_catalyst
 
     return result
 #-------------------------------------------------------------------------------------------------
