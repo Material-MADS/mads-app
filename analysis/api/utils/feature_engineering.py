@@ -72,6 +72,8 @@ def inverse_ln(descriptor):
 
 #-------------------------------------------------------------------------------------------------
 def get_feature_engineering(data):
+    logger.info(data)
+    result = {}
     # logger.info(data)
     #Dataset loading
     descriptor_columns_list = data['view']['settings']['descriptorColumns']
@@ -81,20 +83,26 @@ def get_feature_engineering(data):
 
     s_time = round(time.time(), 2)
 
-    descriptors_data = {}
-    for i in descriptor_columns_list:
-        descriptors_data[i] = dataset[i]
-    descriptors = pd.DataFrame(descriptors_data)
+    # Dropping row with blank data
+    df = pd.DataFrame(dataset)
+    df = df.dropna().reset_index(drop=True)
+
+    descriptors = df[descriptor_columns_list]
+    #Check if the data is numeric
+    try :
+        descriptors = descriptors.astype('float')
+    except:
+        result['status'] = 'error'
+        result['detail'] = "could not convert string to float. Data contains strings. Please enter a numerical value."
+        return result
     # logger.info(descriptors)
 
-    target_data = {}
-    for i in target_columns_list:
-        target_data[i] = dataset[i]
-    targets = pd.DataFrame(target_data)
+    targets = df[target_columns_list]
     # logger.info(targets)
 
-    # # Dropping invariant columns
+    # Dropping invariant columns
     descriptors.drop(columns = [x for x in descriptors.loc[:,descriptors.nunique() == 1].columns], inplace = True)
+    # logger.info(descriptors)
 
     descriptors = descriptors.astype('float')
     first_order_descriptors = {'x': [simple_value],
@@ -133,19 +141,25 @@ def get_feature_engineering(data):
     first_order_descriptors.replace(to_replace = [-np.inf, np.inf], value = np.nan, inplace = True)
 
     # Dropping columns with nan values
-
     first_order_descriptors.dropna(axis = 1, inplace = True)
 
     first_order_descriptors = pd.concat([first_order_descriptors, targets], axis = 1)
+    # logger.info(first_order_descriptors)
+
+    #Header List and Cell Data For View Table of VisComp
+    header = first_order_descriptors.columns
+    result['header'] = header
+    data = first_order_descriptors.T.to_dict(orient='list')
+    result['data'] = data
+    # logger.info(header)
+    # logger.info(data)
+    
+    result['base_descriptors'] = descriptor_columns_list
 
     end_time = round(time.time(), 2)
-
     run_time = round(end_time - s_time, 3)
     # logger.info(run_time)
 
-    result = {}
-    result['base_descriptors'] = descriptor_columns_list
-    result['data'] = first_order_descriptors
 
     return result
 #-------------------------------------------------------------------------------------------------

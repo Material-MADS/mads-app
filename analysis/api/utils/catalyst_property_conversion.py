@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
 def get_catalyst_property_conversion(data):
     # logger.info(data)
+    result = {}
     start_time = round(time.time(), 2)
 
     #common dataset loading
@@ -42,6 +43,8 @@ def get_catalyst_property_conversion(data):
     target_columns_list = data['view']['settings']['targetColumns']
     catalyst = data['view']['settings']['catalyst']
 
+    input_df = pd.DataFrame(dataset)
+
     #load periodic table information
     ref_df = pd.read_json(json.dumps(periodic_table))
     ref_df.set_index('index', inplace=True)
@@ -49,21 +52,15 @@ def get_catalyst_property_conversion(data):
 
     #If Avalilable, Create Dataframe Of Targets
     if len(target_columns_list) != 0 and target_columns_list:
-        target_data = {}
-        for i in target_columns_list:
-            target_data[i] = dataset[i]
-        target_df = pd.DataFrame(target_data)
+        target_df = input_df[target_columns_list]
+        target_df.fillna('None', inplace=True)
         # logger.info(targets)
 
     # Simple Average Main Script-------------------------------------------------------------------
     if conversion_method == 'Simple Average':
         #create dataframe of catalsyt
-        catalyst_element = {}
-        for i in catalyst:
-            catalyst_element[i] = dataset[i]
-        df = pd.DataFrame(catalyst_element)
+        df = input_df[catalyst]
         df.fillna('None', inplace=True)
-        # logger.info(df)
 
         # Separation of catalyst components and composition segments into arrays.
 
@@ -72,66 +69,66 @@ def get_catalyst_property_conversion(data):
         # Information dimension setup.
 
         no_rows, no_columns = catalysts.shape
-        print(no_rows, no_columns)
         no_properties = len(ref_dict['None'])
-        print(no_properties)
-        """
-        The vectorized catalyst rows are flattened to be converted to the properties taken from the 
-        Periodic Table reference dictionary, then reshaped a row-column shape like catalyst list, 
-        with an additional third dimention coming from all the different Periodic Table properties. This 
-        tridimensional array is then added/collapsed over the 'column' axis, addint all the different 
-        properties for each catalyst at once.
-        """
+        try :
+            """
+            The vectorized catalyst rows are flattened to be converted to the properties taken from the 
+            Periodic Table reference dictionary, then reshaped a row-column shape like catalyst list, 
+            with an additional third dimention coming from all the different Periodic Table properties. This 
+            tridimensional array is then added/collapsed over the 'column' axis, addint all the different 
+            properties for each catalyst at once. And, check the error
+            """
+            converted_elements = np.array([ref_dict[x] for x in catalysts.flatten()]).reshape(no_rows, no_columns, no_properties)
+            elements_number = np.array([len([y for y in x if y != 'None']) for x in catalysts])
+            if 0 in elements_number:
+                raise ValueError()
+            """ 
+            A 1-D array is created that contains the number of elements in each catalyst row,
+            which are the values used to calculate the simple average.
+            """
+            no_elements = elements_number.reshape(no_rows, 1)
+            """
+            The converted catalyst array is added in the direction of each catalyst's components, 
+            and then divided by the number of elements in the row to calculate the simple average.
+            """
+            averaged_array = np.divide(converted_elements.sum(axis = 1), no_elements)
+            averaged_array = np.around(averaged_array, decimals = 4)
+        except :
+            result['status'] = 'error'
+            result['detail'] = "Detected elements that cannot be referenced. Please check format. Especially, is Element Name of catalyst component correct? If there is no element, assume None. Or there may be rows that are all None in listed."
+            return result
 
-        converted_elements = np.array([ref_dict.get(x) for x in catalysts.flatten()]).reshape(no_rows, no_columns, no_properties)
-
-        """
-        A 1-D array is created that contains the number of elements in each catalyst row,
-        which are the values used to calculate the simple average.
-        """
-        no_elements = np.array([len([y for y in x if y != 'None']) for x in catalysts]).reshape(no_rows, 1)
-
-        """
-        The converted catalyst array is added in the direction of each catalyst's components, 
-        and then divided by the number of elements in the row to calculate the simple average.
-        """
-
-        averaged_array = np.divide(converted_elements.sum(axis = 1), no_elements)
-
-        averaged_array = np.around(averaged_array, decimals = 4)
     # Simple Average Main Script ------------------------------------------------------------------------------
     # Weighted Average (Format A) Main Script------------------------------------------------------------------
     elif conversion_method == 'Weighted Average (Format A)':
-        logger.info('ABCDEFG')
-        catalyst_compositions = {}
-        for i in catalyst:
-            catalyst_compositions[i] = dataset[i]
-        df = pd.DataFrame(catalyst_compositions)
+        df = input_df[catalyst] #This is DataFrame of catalyst compositions
         df.fillna(0, inplace=True)
-        logger.info(df.values.shape)
+        # logger.info(df)
 
-        # Conversion of the catalysts' components into their respective properties.
-        catalyst_components_converted = np.array([ref_dict.get(x) for x in df.columns.to_numpy()], dtype=np.float64)
-        logger.info(catalyst_components_converted.shape)
-
-        # Dot product between the catalyst compositions and the converted components. 
-        # Each row's components' properties are automatically added.
-        averaged_array = np.dot(df.values, catalyst_components_converted)
-        logger.info(averaged_array.shape)
+        try :
+            # Conversion of the catalysts' components into their respective properties.
+            catalyst_components_converted = np.array([ref_dict[x] for x in df.columns.to_numpy()])
+            # logger.info(catalyst_components_converted.shape)
+            # Dot product between the catalyst compositions and the converted components. 
+            # Each row's components' properties are automatically added.
+            averaged_array = np.dot(df.values, catalyst_components_converted)
+            # logger.info(averaged_array.shape)
+        except KeyError:
+            result['status'] = 'error'
+            result['detail'] = "Detected elements that cannot be referenced in columns. Please check format. Especially, is Element Name of catalyst component correct?"
+            return result
+        except TypeError:
+            result['status'] = 'error'
+            result['detail'] = "can't multiply sequence by non-int of type 'float'. Please enter a number for Catalyst Compositions."
+            return result
     # Weighted Average (Format A) Main Script------------------------------------------------------------------
     # Weighted Average (Format B) Main Script------------------------------------------------------------------
     else :
-        catalyst_element = {}
-        for i in catalyst:
-            catalyst_element[i] = dataset[i]
-        df = pd.DataFrame(catalyst_element)
+        df = input_df[catalyst]
         df.fillna('None', inplace=True)
         catalysts = df.values
 
-        catalyst_compositions_data = {}
-        for i in data['view']['settings']['compositionColumns'] :
-            catalyst_compositions_data[i] = dataset[i]
-        df_catalyst_compositions = pd.DataFrame(catalyst_compositions_data)
+        df_catalyst_compositions = input_df[data['view']['settings']['compositionColumns']]
         df_catalyst_compositions.fillna(0, inplace=True)
         catalyst_compositions = df_catalyst_compositions.values
 
@@ -141,30 +138,36 @@ def get_catalyst_property_conversion(data):
 
         no_properties = len(ref_dict['None'])
 
-        """
-        The vectorized catalyst rows are flattened to be converted to the properties taken from the Periodic 
-        Table reference dictionary, then reshaped a row-column shape like catalyst list, 
-        with an additional third dimention coming from all the different Periodic Table properties.
-        This tridimensional array is then added/collapsed over the 'column' axis, addint all the different
-        properties for each catalyst at once.
-        """
+        try :
+            """
+            The vectorized catalyst rows are flattened to be converted to the properties taken from the Periodic 
+            Table reference dictionary, then reshaped a row-column shape like catalyst list, 
+            with an additional third dimention coming from all the different Periodic Table properties.
+            This tridimensional array is then added/collapsed over the 'column' axis, addint all the different
+            properties for each catalyst at once.
+            """
+            converted_elements = np.array([ref_dict[x] for x in catalysts.flatten()]).reshape(no_rows, no_columns, no_properties)
+            """
+            The catalyst composition matrix is extended to a third dimension the size of 
+            the number of Periodic Table properties the catalysts were converted
+            into, to compatibilize the dimensions in the multiplication of the converted elements with the compositions.
+            """
+            extended_catalyst_compositions = np.repeat(catalyst_compositions, no_properties).reshape(no_rows, no_columns, no_properties)
+            """
+            The matrices / arrays are then multiplied and added in the catalyst components (orginal dataset columns') axis,
+            to complete the weighted averagecomputation.
+            """
+            averaged_array = np.multiply(converted_elements, extended_catalyst_compositions).sum(axis = 1)
+        except KeyError:
+            result['status'] = 'error'
+            result['detail'] = "Detected elements that cannot be referenced. Please check format. Especially, is Element Name of catalyst component correct? If there is no element, assume None."
+            return result
+        except TypeError:
+            result['status'] = 'error'
+            result['detail'] = "can't multiply sequence by non-int of type 'float'. Please enter a number for Catalyst Compositions."
+            return result
 
-        converted_elements = np.array([ref_dict.get(x) for x in catalysts.flatten()]).reshape(no_rows, no_columns, no_properties)
-
-        """
-        The catalyst composition matrix is extended to a third dimension the size of 
-        the number of Periodic Table properties the catalysts were converted
-        into, to compatibilize the dimensions in the multiplication of the converted elements with the compositions.
-        """
-
-        extended_catalyst_compositions = np.repeat(catalyst_compositions, no_properties).reshape(no_rows, no_columns, no_properties)
-
-        """
-        The matrices / arrays are then multiplied and added in the catalyst components (orginal dataset columns') axis,
-        to complete the weighted averagecomputation.
-        """
-
-        averaged_array = np.multiply(converted_elements, extended_catalyst_compositions).sum(axis = 1)
+        
     # Weighted Average (Format B) Main Script------------------------------------------------------------------
 
     if len(target_columns_list) != 0 and target_columns_list:
@@ -178,8 +181,6 @@ def get_catalyst_property_conversion(data):
     data = output_df.T.to_dict(orient='list')
     # logger.info(headers)
     # logger.info(data)
-
-    result = {}
 
     result['header'] = header
     result['data'] = data

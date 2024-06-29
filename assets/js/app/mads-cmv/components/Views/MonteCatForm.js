@@ -45,14 +45,24 @@ const setSubmitButtonDisable = (disableState) => {
 }
 //=======================
 
-const machineLearningModel = ['Linear', 'Support Vector Machines', 'Random Forest'];
+const machineLearningModel = ['Linear', 'Support Vector Regression', 'Random Forest'];
 const temperature = [10, 50, 100, 500, 1000];
 
 //=======================
-const validate = (values) => {
+const validate = (values, props) => {
   // console.log(values)
   const errors = {};
 
+  // Make sure the correct dataset is loaded
+  const targetColumn = values.targetColumn;
+  const testTargetColumn = targetColumn ? !(props.columns.some(column => column.value === targetColumn)) : '';
+  if (testTargetColumn) {
+    values.targetColumn =  '';
+    values.baseDescriptors = [];
+    values.descriptorsFileName = "Nothing loaded."
+  }
+  
+  // Validate each Form
   if (!values.machineLearningModel) {
     errors.machineLearningModel = 'Required';
     errors.iterations = 'Model is Requred';
@@ -61,9 +71,9 @@ const validate = (values) => {
         if (!values.iterations || values.iterations < 50 || values.iterations > 100) {
           errors.iterations = 'The value must be between 50 and 100 (Random Forest)'
         }
-      } else if (values.machineLearningModel === 'Linear' || values.machineLearningModel === 'Support Vector Machines') {
+      } else if (values.machineLearningModel === 'Linear' || values.machineLearningModel === 'Support Vector Regression') {
         if (!values.iterations || values.iterations < 100 || values.iterations > 1000) {
-          errors.iterations = 'The value must be between 100 and 1000 (Linear, Support Vector Machines)'
+          errors.iterations = 'The value must be between 100 and 1000 (Linear, Support Vector Regression)'
         }
       }
     }
@@ -72,15 +82,15 @@ const validate = (values) => {
     errors.temperature = 'Required';
   }
 
-  if (values.descriptorsList && values.descriptorsList.length === 0) {
-    errors.descriptorsList = 'Required';
+  if (values.baseDescriptors && values.baseDescriptors.length === 0) {
+    errors.baseDescriptors = 'Required';
   }
 
   if (!values.targetColumn) {
     errors.targetColumn = 'Required';
   }
 
-  setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.descriptorsList || errors.targetColumn);
+  setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.baseDescriptors || errors.targetColumn);
 
   return errors;
 };
@@ -126,10 +136,10 @@ const MonteCatForm = (props) => {
       reader.readAsText(file);
       reader.onload = (e) => {
         const text = e.target.result;
-        console.log(e.target)
-        console.log(text.split(/,|\r\n|\n|\r/).filter(Boolean));
-        console.log(text.split(/,|\r\n|\n|\r/))
-        props.change('baseDescriptors', text.split(',').filter(Boolean));
+        // console.log(e.target)
+        // console.log(text.split(/,|\r\n|\n|\r/).filter(Boolean));
+        // console.log(text.split(/,|\r\n|\n|\r/))
+        props.change('baseDescriptors', text.split(/,|\r\n|\n|\r/).filter(Boolean));
         props.change('descriptorsFileName', `${file.name}`);
       };
     }
@@ -157,10 +167,12 @@ const MonteCatForm = (props) => {
             placeholder="Models"
             options={getDropdownOptions(machineLearningModel)}
             onChange={(e) => {changeModel(e)}}
+            search
           />
         </Form.Field>
+
         <Form.Field width={12}>
-          <label>Iterations<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Enter the number of iterations for the model, limited to 50-100 for RandomForest, 100-1000 for Linear and Support Vector Machines' size='small' />:</label>
+          <label>Iterations<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Enter the number of iterations for the model, limited to 50-100 for RandomForest, 100-1000 for Linear and Support Vector Regression' size='small' />:</label>
           <Field 
             name="iterations"
             component={Input}
@@ -174,30 +186,9 @@ const MonteCatForm = (props) => {
 
       <hr />
 
-      <Form.Group widths="equal">
-        <Form.Field>
-            <label>Temperature<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Temperature parameter used to tune the Acceptance Probability curve behavior' size='small' />:</label>
-            <Field 
-              name="temperature"
-              component={SemButtonGroup}
-              buttonList = {temperature}
-            />
-          </Form.Field>
-          <Form.Field>
-            <label>Random Seed<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='A specific random seed value can be selected by the user if reproducibility is desired. If not, the outcome will be randomized.' size='small' />:</label>
-            <Field 
-              name="randomSeed"
-              component={SemCheckbox}
-              toggle
-            />
-          </Form.Field>
-      </Form.Group>
-
-      <hr />
-
       <Form.Group>
         <Form.Field width={4}>
-          <label>Base Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='----------------' size='small' />:</label>
+          <label>Base Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This file contains a list of the base Descriptor names prior to engineering the different analogues.' size='small' />:</label>
           <Button type="button" onClick={handleClick} style={{width: '100%'}}>Load File</Button>
           <input type="file" ref={fileInputRef} accept=".csv" onChange={handleFileChange} style={{ display: 'none' }}/>
           <input
@@ -224,8 +215,30 @@ const MonteCatForm = (props) => {
           component={SemanticDropdown}
           placeholder="target column"
           options={columns}
+          search
         />
       </Form.Field>
+
+      <hr />
+
+      <Form.Group widths="equal">
+        <Form.Field>
+            <label>Temperature(Hyperparameter)<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Temperature parameter used to tune the Acceptance Probability curve behavior' size='small' />:</label>
+            <Field 
+              name="temperature"
+              component={SemButtonGroup}
+              buttonList = {temperature}
+            />
+          </Form.Field>
+          <Form.Field>
+            <label>Random Seed<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='A specific random seed value can be selected by the user if reproducibility is desired. If not, the outcome will be randomized.' size='small' />:</label>
+            <Field 
+              name="randomSeed"
+              component={SemCheckbox}
+              toggle
+            />
+          </Form.Field>
+      </Form.Group>
 
       <hr />
 

@@ -18,10 +18,14 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, Table, GridColumn } from 'semantic-ui-react'
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image, Popup } from 'semantic-ui-react'
 import PropTypes from "prop-types";
+import { useSelector } from "react-redux";
 
 import $ from "jquery";
+
+import csvinput from './images/featureEngineering/csvinput.png';
+import csvoutput from './images/featureEngineering/csvoutput.png';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -34,25 +38,10 @@ const defaultOptions = {
   extent: { width: 400, height: 200 },
 };
 
-//--------------------------------------------------------------------------------------------------
-//Format culcurated data from python
-const transposeData = (data) => {
-  const fields = Object.keys(data);
-  const valuesLength = Object.values(data)[0].length;
-  const transposedData = [];
-
-  for (let i = 0; i < valuesLength; i++) {
-    const rowData = fields.map(field => data[field][i]);
-    transposedData.push(rowData);
-  }
-  // console.log('headers', fields)
-  // console.log('content',transposedData)
-
-  return { headers: fields, data: transposedData };
-};
-
-//Download
-const csvDownload  = (csvData, fileName) => {
+//-------------------------------------------------------------------------------------------------
+// The function which download csv File
+const csvDownload = (csvData, fileName) => {
+  //Download 
   const link = document.createElement("a");
   link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData));
   link.setAttribute("target", "_blank");
@@ -61,34 +50,46 @@ const csvDownload  = (csvData, fileName) => {
   try {
     document.body.removeChild(link)
   } catch (error) {}
+
 }
 
-//-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
 export default function FeatureEngineering({
   data,
   options,
+  id,
 }) {
-
   const [disabled, setdisabled] = useState(true);
-  console.log(disabled)
-  const [open, setOpen] = useState(false);
-  const [dataT, setDataT] = useState({})
+  const [open, setOpen] = useState(false); //manage Modal of Reault data
+  const [currentDataSource, setCurrentDataSource] = useState({id: '', name: ''}); //manage data souerce change
   // Initiation of the VizComp
   let internalOptions = {...defaultOptions, ...options};
 
-  //Buttun Clicked Funtuion
-  const resultButtonClick = (e, data) => {
-    const headersCSV = dataT['headers'].join(',') + '\n';
-    const dataCSV = dataT['data'].map(row => row.join(',')).join('\n');
+  try {
+    const availableDataSources = useSelector((state) => state.dataSources);
+    if (availableDataSources.selectedDataSource != currentDataSource.id) {
+      if(currentDataSource.id != '') {
+        setdisabled(true);
+      }
+      setCurrentDataSource({id: availableDataSources.selectedDataSource, name: ((availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name)})
+    }
+  } catch (error) { /*Just ignore and move on*/ }
 
-    const csvData = headersCSV + dataCSV
+  //Buttun Clicked Funtuion
+  const downloadButtonClick = (e, value) => {
+    //generate csv dataset
+    let csv = data.header.join(',') + '\n';
+    Object.keys(data.data).forEach(key => {
+      csv += data.data[key].join(',') + '\n';
+      });
+    // console.log(csv)
     
     //fileName
-    const fileName = "Feature_Engineering.csv";
+    const fileName =  'Feature_Engineering'
+    // console.log(fileName)
 
-    csvDownload(csvData, fileName)
+    csvDownload(csv, fileName);
   }
 
   const baseDesctriptorsButtonClick = (e, data) => {
@@ -105,7 +106,6 @@ export default function FeatureEngineering({
   const createChart = () => {
     if (data.data && data.base_descriptors && data.base_descriptors !== 0) {
       setdisabled(false);
-      setDataT(transposeData(data.data));
     }
   };
 
@@ -126,8 +126,8 @@ export default function FeatureEngineering({
 
   // Add the VizComp to the DOM
   return (
-    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box', textAlign: 'center' }}>
-      <Header as='h2' style={{ marginBottom: '20px' }}>Feature Engineering</Header>
+    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Feature Engineering</Header>
       <Grid centered >
         <GridRow columns={3} centered>
           <GridColumn textAlign={'center'} verticalAlign={"middle"}>
@@ -135,9 +135,8 @@ export default function FeatureEngineering({
           </GridColumn>
           <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
             <Button 
-              positive
               disabled={disabled}
-              onClick={(e, data) => {resultButtonClick(e, data)}}
+              onClick={(e, value) => {downloadButtonClick(e, value)}}
               csvdata = {data}
             >Download
             </Button>
@@ -149,7 +148,6 @@ export default function FeatureEngineering({
               onOpen={() => setOpen(true)}
               open={open}
               trigger={<Button 
-                        positive
                         disabled={disabled}
                         >View
                       </Button>}
@@ -157,7 +155,7 @@ export default function FeatureEngineering({
               size="fullscreen"
             >
               <ModalContent  scrolling>
-                <ViewTable dataset = {dataT}/>
+                <ViewTable dataset = {data}/>
               </ModalContent>
               <ModalActions>
                 <Button negative onClick={() => setOpen(false)}>Close</Button>
@@ -165,44 +163,86 @@ export default function FeatureEngineering({
             </Modal>
           </GridColumn>
         </GridRow>
-        <GridRow columns={3} centered>
-          <GridColumn textAlign={'center'} verticalAlign={"middle"}>
-            <Header as='h4'>Base Descriptors</Header>
+        <GridRow columns={2} centered>
+          <GridColumn textAlign={'center'} verticalAlign={"middle"} >
+            <Header as='h4' style={{ display: 'inline-block' }}>Base Descriptors <Popup trigger={<span style={{fontSize: "20px", color: "blue", display: 'inline'}}>ⓘ</span>} content='In this csv file, feature columns list is included. Download this csv file if you use "MonteCat." ' size='mini' /></Header>
           </GridColumn>
           <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
             <Button 
-              positive
               disabled={disabled}
               onClick={(e, data) => {baseDesctriptorsButtonClick(e, data)}}
               basedescriptors = {data.base_descriptors}
             >Download
-            </Button>           
+            </Button>
           </GridColumn>
           <GridColumn />
         </GridRow>
-      </Grid> 
+      </Grid>
+      <CSVFileModal image={csvinput} title={'Input CSV File Data Requirements Format'} attr={'#inputcsvfile' + id}/>
+      <CSVFileModal image={csvoutput} title={'Output CSV File Data Format'} attr={'#outputcsvfile' + id}/>
     </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
 
-//This is a component which show result data as table
-const ViewTable = ({dataset}) => {
-  const { headers, data } = dataset
+//Modal component of csv file format and csv file output
+const CSVFileModal = ({image, title, attr}) => {
+  const [open, setOpen] = useState(false);
+  const rootNode = useRef(null);
+
+  useEffect(() => {
+    const viewWrapperCustomButton = $(rootNode.current).parent().parent().parent().find(attr);
+    viewWrapperCustomButton.off('click');
+    viewWrapperCustomButton.on( "click", function () {
+      setOpen(true);
+    })
+    return () => { viewWrapperCustomButton.off('click'); }
+  }, [])
+
   return (
     <div>
-      <Table celled>
+      <Modal
+        onClose={() => setOpen(false)}
+        onOpen={() => setOpen(true)}
+        open={open}
+        // trigger={<Button size="mini" style={{margin:'15px 0.5em 30px 0px'}} color='red'>ⓘ</Button>}
+        centered
+        size="large"
+      >
+        <ModalHeader >{title}</ModalHeader>
+        <ModalContent image style={{ display: 'flex', justifyContent: 'center' }}>
+          <Image size='huge' src={image} wrapped />
+        </ModalContent>
+        <ModalActions>
+          <Button negative onClick={() => setOpen(false)}>Close</Button>
+        </ModalActions>
+      </Modal>
+      <div ref={rootNode} />
+    </div>
+  )
+}
+
+//This is a component which show result data as table
+//This is a component which show result data as table
+const ViewTable = ({dataset}) => {
+  // console.log(dataset)
+  const { header, data } = dataset
+  return (
+    <div>
+      <Table celled compact>
         <Table.Header>
           <Table.Row>
-            {headers.map((header, index) => (
-              <Table.HeaderCell key={index}>{header}</Table.HeaderCell>
+            <Table.HeaderCell>#</Table.HeaderCell>
+            {header.map((cell, index) => (
+              <Table.HeaderCell key={index}>{cell}</Table.HeaderCell>
             ))}
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {data.map((row, rowIndex) => (
-            <Table.Row key={rowIndex}>
-              {row.map((cell, cellIndex) => (
+          {Object.keys(data).map((key) => (
+            <Table.Row key={key}>
+              <Table.Cell>{key}</Table.Cell>
+              {data[key].map((cell, cellIndex) => (
                 <Table.Cell key={cellIndex}>{cell}</Table.Cell>
               ))}
             </Table.Row>

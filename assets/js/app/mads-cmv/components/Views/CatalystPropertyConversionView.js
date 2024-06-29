@@ -38,7 +38,7 @@ export default class CatalystPropertyConversionView extends withCommandInterface
     //Excute in common  
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
-    console.log(newValues)
+    // console.log(newValues)
 
     const data = {};
     const df = new DataFrame(dataset.main.data);

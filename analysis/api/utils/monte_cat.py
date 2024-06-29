@@ -58,7 +58,7 @@ def get_monte_cat(data):
 
     # Script configuration
 
-    model_dictionary = {'Support Vector Machines': SVR(kernel = 'rbf', C = C_value, gamma = gamma_value),
+    model_dictionary = {'Support Vector Regression': SVR(kernel = 'rbf', C = C_value, gamma = gamma_value),
                         'Linear': LinearRegression(),
                         'Random Forest': RandomForestRegressor(n_estimators = 100, random_state = 0)}
 
@@ -93,7 +93,6 @@ def get_monte_cat(data):
     counter += 1
 
     for i in range(iterations):
-
         if len(descriptors_bank) > 0: # Addition proposals do not occur if there are no Descriptors in the bank
             addition_result = random_addition(df_descriptors, df_target, descriptors_in_model, descriptors_bank, model_tested)
         else:
@@ -161,12 +160,18 @@ def get_monte_cat(data):
 
     output_df = output_df.reindex(columns = columns_list).dropna(axis = 1)
 
-    end_time = round(time.time(), 5)
     ## ===================================================================================================================
-    result = {}
-    result['process'] = process_df
-    result['output'] = output_df
-        
+    result = {'process': {}, 'output': {}}
+    process_header = process_df.columns
+    process_data = process_df.T.to_dict(orient='list')
+    output_header = output_df.columns
+    output_data = output_df.T.to_dict(orient='list')
+    result['process']['header'] = process_header
+    result['process']['data'] = process_data
+    result['output']['header'] = output_header
+    result['output']['data'] = output_data
+
+    end_time = round(time.time(), 5)
     run_time = round(end_time - s_time, 4)
     logger.info(run_time)
 

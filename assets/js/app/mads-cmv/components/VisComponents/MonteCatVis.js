@@ -21,7 +21,12 @@ import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 import $ from "jquery";
-import { Button, Header, Grid, GridRow, GridColumn, Modal, ModalActions, ModalContent, Table } from 'semantic-ui-react'
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image} from 'semantic-ui-react'
+import { useSelector } from "react-redux";
+
+import csvinput from './images/monteCat/csvinput.png';
+import csvoutput from './images/monteCat/csvoutput.png';
+
 
 //-------------------------------------------------------------------------------------------------
 
@@ -36,22 +41,6 @@ const defaultOptions = {
 
 //-------------------------------------------------------------------------------------------------
 
-//Format culcurated data from python
-const transposeData = (data) => {
-  const fields = Object.keys(data);
-  const valuesLength = Object.values(data)[0].length;
-  const transposedData = [];
-
-  for (let i = 0; i < valuesLength; i++) {
-    const rowData = fields.map(field => data[field][i]);
-    transposedData.push(rowData);
-  }
-  // console.log('headers', fields)
-  // console.log('content',transposedData)
-
-  return { headers: fields, data: transposedData };
-};
-
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
@@ -60,15 +49,28 @@ export default function MonteCat({
   options,
   temperature,
   machineLearningModel,
+  id,
 }) {
   const [disabled, setdisabled] = useState(true);
+  const [currentDataSource, setCurrentDataSource] = useState({id: '', name: ''}); //manage data souerce change
 
   // Initiation of the VizComp
   let internalOptions = {...defaultOptions, ...options};
 
+  try {
+    const availableDataSources = useSelector((state) => state.dataSources);
+    // console.log(availableDataSources)
+    if (availableDataSources.selectedDataSource != currentDataSource.id) {
+      if(currentDataSource.id != '') {
+        setdisabled(true);
+      }
+      setCurrentDataSource({id: availableDataSources.selectedDataSource, name: ((availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name)})
+    }
+  } catch (error) { /*Just ignore and move on*/ }
+
   // Create the VizComp based on the incomming parameters
   const createChart = () => {
-    if (data['output'] && data['output'] !== 0 && data['process'] && data['process'] !== 0) {
+    if (data['output'] && data['process']) {
       setdisabled(false);
     }
   };
@@ -90,42 +92,74 @@ export default function MonteCat({
 
   // Add the VizComp to the DOM
   return (
-    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height,  maxWidth: '100%', overflow: 'hidden', boxSizing: 'border-box', textAlign: 'center' }}>
-      <Header as='h2' style={{ marginBottom: '20px' }}>Monte Cat</Header>
+    <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Monte Cat</Header>
       <DataItemActions data={data['process']} content='Process Result' disabled={disabled} filename='montecat_process'/>
       <DataItemActions data={data['output']} content='Best Model' disabled={disabled} filename={`${machineLearningModel}_T${temperature}`}/>
+      <CSVFileModal image={csvinput} title={'Input CSV File Data Requirements Format'} attr={'#inputcsvfile' + id}/>
+      <CSVFileModal image={csvoutput} title={'Output CSV File Data Format'} attr={'#outputcsvfile' + id}/>
     </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
 
+//Modal component of csv file format and csv file output
+const CSVFileModal = ({image, title, attr}) => {
+  const [open, setOpen] = useState(false);
+  const rootNode = useRef(null);
+
+  useEffect(() => {
+    const viewWrapperCustomButton = $(rootNode.current).parent().parent().parent().find(attr);
+    viewWrapperCustomButton.off('click');
+    viewWrapperCustomButton.on( "click", function () {
+      setOpen(true);
+    })
+    return () => { viewWrapperCustomButton.off('click'); }
+  }, [])
+
+  return (
+    <div>
+      <Modal
+        onClose={() => setOpen(false)}
+        onOpen={() => setOpen(true)}
+        open={open}
+        // trigger={<Button size="mini" style={{margin:'15px 0.5em 30px 0px'}} color='red'>ⓘ</Button>}
+        centered
+        size="large"
+      >
+        <ModalHeader >{title}</ModalHeader>
+        <ModalContent image style={{ display: 'flex', justifyContent: 'center' }}>
+          <Image size='huge' src={image} wrapped />
+        </ModalContent>
+        <ModalActions>
+          <Button negative onClick={() => setOpen(false)}>Close</Button>
+        </ModalActions>
+      </Modal>
+      <div ref={rootNode} />
+    </div>
+  )
+}
+
 //Dawnload and view button Component
 const DataItemActions = ({data, content, disabled, filename}) => {
   const [open, setOpen] = useState(false);
-  const [dataT, setDataT] = useState({});
-
-  useEffect(() => {
-    if (data) {
-      setDataT(transposeData(data))
-    }
-  }, [data])
 
   //Buttun Clicked Funtuion
-  const downloadButtonClick = (e, data) => {
-    const {filename} = data
-    const headersCSV = dataT['headers'].join(',') + '\n';
-    const dataCSV = dataT['data'].map(row => row.join(',')).join('\n');
+  const downloadButtonClick = (e, value) => {
+    const {filename} = value
 
-    const datasetCSV = headersCSV + dataCSV
-    
-    //fileName
-    const fileName =  filename + ".csv";
+    //generate csv dataset
+    let csv = data.header.join(',') + '\n';
+    Object.keys(data.data).forEach(key => {
+      csv += data.data[key].join(',') + '\n';
+      });
+    // console.log(csv)
 
     //Download 
     const link = document.createElement("a");
-    link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(datasetCSV));
+    link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
     link.setAttribute("target", "_blank");
-    link.setAttribute("download", fileName);
+    link.setAttribute("download", filename);
     link.click();
     try {
       document.body.removeChild(link)
@@ -139,10 +173,9 @@ const DataItemActions = ({data, content, disabled, filename}) => {
           <Header as='h4'>{content}</Header>
         </GridColumn>
         <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
-          <Button 
-            positive
+          <Button
             disabled={disabled}
-            onClick={(e, data) => {downloadButtonClick(e, data)}}
+            onClick={(e, value) => {downloadButtonClick(e, value)}}
             filename = {filename}
           >Download
           </Button>
@@ -153,8 +186,7 @@ const DataItemActions = ({data, content, disabled, filename}) => {
             onClose={() => setOpen(false)}
             onOpen={() => setOpen(true)}
             open={open}
-            trigger={<Button 
-                      positive
+            trigger={<Button
                       disabled={disabled}
                       >View
                     </Button>}
@@ -162,7 +194,7 @@ const DataItemActions = ({data, content, disabled, filename}) => {
             size="fullscreen"
           >
             <ModalContent  scrolling>
-              <ViewTable dataset = {dataT}/>
+              <ViewTable dataset = {data}/>
             </ModalContent>
             <ModalActions>
               <Button negative onClick={() => setOpen(false)}>Close</Button>
@@ -176,21 +208,24 @@ const DataItemActions = ({data, content, disabled, filename}) => {
 
 //This is a component which show result data as table
 const ViewTable = ({dataset}) => {
-  const { headers, data } = dataset
+  // console.log(dataset)
+  const { header, data } = dataset
   return (
     <div>
-      <Table celled>
+      <Table celled compact>
         <Table.Header>
           <Table.Row>
-            {headers.map((header, index) => (
-              <Table.HeaderCell key={index}>{header}</Table.HeaderCell>
+            <Table.HeaderCell>#</Table.HeaderCell>
+            {header.map((cell, index) => (
+              <Table.HeaderCell key={index}>{cell}</Table.HeaderCell>
             ))}
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {data.map((row, rowIndex) => (
-            <Table.Row key={rowIndex}>
-              {row.map((cell, cellIndex) => (
+          {Object.keys(data).map((key) => (
+            <Table.Row key={key}>
+              <Table.Cell>{key}</Table.Cell>
+              {data[key].map((cell, cellIndex) => (
                 <Table.Cell key={cellIndex}>{cell}</Table.Cell>
               ))}
             </Table.Row>
@@ -199,9 +234,7 @@ const ViewTable = ({dataset}) => {
       </Table>
     </div>
   )
-
 }
-
 
 
 //-------------------------------------------------------------------------------------------------

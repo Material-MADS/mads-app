@@ -72,7 +72,7 @@ const validate = (value, props) => {
     value.catalyst =  []
   }
   if (testTarget && testTarget.some(e => !e)) {
-    value.testTarget =  []
+    value.targetColumns =  []
   }
   if (testComposition && testComposition.some(e => !e)) {
     value.compositionColumns = []
@@ -90,8 +90,14 @@ const validate = (value, props) => {
     errors.catalyst = 'Required';
   }
 
-  if (value.conversionMethod === 'Weighted Average (Format B)' && value.compositionColumns.length === 0) {
-    errors.compositionColumns = 'Required'
+  if (value.conversionMethod === 'Weighted Average (Format B)' ) {
+    if (value.compositionColumns.length === 0) {
+      errors.compositionColumns = 'Required'
+    } else {
+        if (value.compositionColumns.length !== value.catalyst.length) {
+      errors.compositionColumns = 'need the same number of elements as Catalyst Columns'
+      errors.catalyst = 'need the same number of elements as Catalyst Composition Columns'
+    }}
   }
 
   setSubmitButtonDisable(errors.conversionMethod || errors.catalyst || errors.compositionColumns);
@@ -151,6 +157,7 @@ const CatalystPropertyConversionForm = (props) => {
             placeholder="Conversion Method"
             options={getDropdownOptions(conversionMethodList)}
             onChange={(e, data) => {changeConversionMethod(e, data)}}
+            search
           />
       </Form.Field>
 
@@ -164,6 +171,7 @@ const CatalystPropertyConversionForm = (props) => {
             placeholder="Catalyst Columns"
             options={getAvailableColumns(columns, targetColumns, compositionColumns)}
             onChange={(newVal) => {setCatalyst(newVal)}}
+            search
           />
       </Form.Field>
 
@@ -177,6 +185,7 @@ const CatalystPropertyConversionForm = (props) => {
             placeholder="Catalyst Composition Columns"
             options={getAvailableColumns(columns, catalyst, targetColumns)}
             onChange={(newVal) => setCompositonColumns(newVal)}
+            search
           />
         </Form.Field>
         </div>}
@@ -191,6 +200,7 @@ const CatalystPropertyConversionForm = (props) => {
             placeholder="Not Applicable"
             options={getAvailableColumns(columns, catalyst, compositionColumns)}
             onChange={(newVal) => {setTargetColumns(newVal)}}
+            search
           />
       </Form.Field>
 

@@ -368,6 +368,10 @@ export const config = [
     version: 0.1,
     devStage: "Draft",
     component: FeatureEngineeringView,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
     settings: {
       descriptorColumns: [],
       targetColumns: [],
@@ -392,6 +396,10 @@ export const config = [
     version: 0.1,
     devStage: "Draft",
     component: MonteCatView,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
     settings: {
       baseDescriptors: [],
       machineLearningModel: '',
@@ -419,6 +427,10 @@ export const config = [
     version: 0.1,
     devStage: "Draft",
     component: CatalystPropertyConversionView ,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
     settings: {
       conversionMethod: '',
       catalyst: [],

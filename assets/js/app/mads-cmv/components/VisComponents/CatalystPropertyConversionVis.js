@@ -23,7 +23,8 @@ import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import $ from "jquery";
 
-import csvformat from './images/catalystPropertyConversion/csvformat.png';
+import csvinput from './images/catalystPropertyConversion/csvinput.png';
+import csvoutput from './images/catalystPropertyConversion/csvoutput.png';
 //-------------------------------------------------------------------------------------------------
 
 
@@ -50,15 +51,14 @@ export default function CatalystPropertyConversion({
   conversionMethod,
 }) {
   let internalOptions = {...defaultOptions, ...options};
-  
+
   //function to manage state of each buttons
   const manageButton= (saBoolean, waaBoolean, wabBoolean) => {
     setsaDisabled(saBoolean);
     setwaaDisabled(waaBoolean);
     setwabDisabled(wabBoolean);
   }
-  
-  const [formatOpen, setFormatOpen] = useState(false);
+
   const [saDisabled, setsaDisabled] = useState(true); // manage button of simple average
   const [waaDisabled, setwaaDisabled] = useState(true); // manage button of weighted average format A
   const [wabDisabled, setwabDisabled] = useState(true); // manage button of weighted average format B
@@ -105,32 +105,53 @@ export default function CatalystPropertyConversion({
   // Add the VizComp to the DOM
   return (
     <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
-      <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between'}}>
-        <Header as='h2' style={{margin:'15px 0px 30px 0.5em',}}>Catalyst Property Conversion</Header>
-        <Modal
-              onClose={() => setFormatOpen(false)}
-              onOpen={() => setFormatOpen(true)}
-              open={formatOpen}
-              trigger={<Button size="mini" style={{margin:'15px 0.5em 30px 0px'}} color='red'>ⓘ</Button>}
-              centered
-              size="large"
-            >
-              <ModalHeader >Simple Average Dataset Format</ModalHeader>
-              <ModalContent image style={{ display: 'flex', justifyContent: 'center' }}>
-                <Image size='huge' src={csvformat} wrapped />
-              </ModalContent>
-              <ModalActions>
-                <Button negative onClick={() => setFormatOpen(false)}>Close</Button>
-              </ModalActions>
-            </Modal>
-      </div>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Catalyst Property Conversion</Header>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={saDisabled} name={'Simple Average'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={waaDisabled} name={'Format A'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={wabDisabled} name={'Format B'}/>
+      <CSVFileModal image={csvinput} title={'Input CSV File Data Requirements Format'} attr={'#inputcsvfile' + id}/>
+      <CSVFileModal image={csvoutput} title={'Output CSV File Data Format'} attr={'#outputcsvfile' + id}/>
     </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
+
+//Modal component of csv file format and csv file output
+const CSVFileModal = ({image, title, attr}) => {
+  const [open, setOpen] = useState(false);
+  const rootNode = useRef(null);
+
+  useEffect(() => {
+    const viewWrapperCustomButton = $(rootNode.current).parent().parent().parent().find(attr);
+    viewWrapperCustomButton.off('click');
+    viewWrapperCustomButton.on( "click", function () {
+      setOpen(true);
+    })
+    return () => { viewWrapperCustomButton.off('click'); }
+  }, [])
+
+  return (
+    <div>
+      <Modal
+        onClose={() => setOpen(false)}
+        onOpen={() => setOpen(true)}
+        open={open}
+        // trigger={<Button size="mini" style={{margin:'15px 0.5em 30px 0px'}} color='red'>ⓘ</Button>}
+        centered
+        size="large"
+      >
+        <ModalHeader >{title}</ModalHeader>
+        <ModalContent image style={{ display: 'flex', justifyContent: 'center' }}>
+          <Image size='huge' src={image} wrapped />
+        </ModalContent>
+        <ModalActions>
+          <Button negative onClick={() => setOpen(false)}>Close</Button>
+        </ModalActions>
+      </Modal>
+      <div ref={rootNode} />
+    </div>
+  )
+}
 
 //Dawnload and view button Component
 const DataItemActions = ({data, conversionmethod, disabled, name}) => {
@@ -207,8 +228,6 @@ const DataItemActions = ({data, conversionmethod, disabled, name}) => {
   )
 }
 
-//This is a component which show required format in each conversion method
-
 
 //This is a component which show result data as table
 const ViewTable = ({dataset}) => {
@@ -238,7 +257,6 @@ const ViewTable = ({dataset}) => {
       </Table>
     </div>
   )
-
 }
 
 //-------------------------------------------------------------------------------------------------

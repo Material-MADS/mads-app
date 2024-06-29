@@ -51,8 +51,22 @@ const setSubmitButtonDisable = (disableState) => {
 }
 //=======================
 
-const validate = values => {
+const validate = (values, props) => {
   const errors = {}
+
+  // Make sure the correct dataset is loaded
+  const descriptorColumns = values.descriptorColumns;
+  const targetColumns = values.targetColumns;
+  const testDescriptorColumns = descriptorColumns ? descriptorColumns.map(e => props.columns.some(column => column.value === e)) : [];
+  const testTargetColumns = targetColumns ? targetColumns.map(e => props.columns.some(column => column.value === e)) : [];
+  if (testDescriptorColumns && testDescriptorColumns.some(e => !e)) {
+    values.descriptorColumns = []
+  }
+  if (testTargetColumns && testTargetColumns.some(e => !e)) {
+    values.targetColumns =  []
+  }
+
+  // Validate each Form
   if (!values.descriptorColumns) {
     errors.descriptorColumns = 'Required';
   }
@@ -112,13 +126,14 @@ const FeatureEngineeringForm = (props) => {
     <Form onSubmit={handleSubmit}>
 
       <Form.Field>
-        <label>Descriptor Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select discriptors to generate First Order Descriptors' size='small' /></label>
+        <label>Base Descriptor Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select discriptors to generate First Order Descriptors' size='small' /></label>
         <Field
           name="descriptorColumns"
           placeholder="Descriptor Columns"
           component={MultiSelectDropdown}
           options={getAvailableColumns(columns, targetColumns)}
           onChange={(newVal) => {setDescriptorColumns(newVal)}}
+          search
         />
       </Form.Field>
 
@@ -130,6 +145,7 @@ const FeatureEngineeringForm = (props) => {
           component={MultiSelectDropdown}
           options={getAvailableColumns(columns, descriptorColumns)}
           onChange={(newVal) => {setTargetColumns(newVal)}}
+          search
         />
       </Form.Field>
       <hr />
@@ -141,6 +157,7 @@ const FeatureEngineeringForm = (props) => {
           placeholder="First Order Descriptors"
           component={MultiSelectDropdown}
           options={getDropdownOptions(firstOrderDescriptors)}
+          search
         />
       </Form.Field>
       <hr />
