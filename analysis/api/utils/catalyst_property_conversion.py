@@ -67,7 +67,6 @@ def get_catalyst_property_conversion(data):
         catalysts = df.values
 
         # Information dimension setup.
-
         no_rows, no_columns = catalysts.shape
         no_properties = len(ref_dict['None'])
         try :
@@ -95,7 +94,7 @@ def get_catalyst_property_conversion(data):
             averaged_array = np.around(averaged_array, decimals = 4)
         except :
             result['status'] = 'error'
-            result['detail'] = "Detected elements that cannot be referenced. Please check format. Especially, is Element Name of catalyst component correct? If there is no element, assume None. Or there may be rows that are all None in listed."
+            result['detail'] = "Detected elements that cannot be referenced. Please check the input requirements format. Especially, is Element Name of catalyst component correct? If there is no element, assume None. Or there may be rows that are all None in listed."
             return result
 
     # Simple Average Main Script ------------------------------------------------------------------------------
@@ -166,8 +165,6 @@ def get_catalyst_property_conversion(data):
             result['status'] = 'error'
             result['detail'] = "can't multiply sequence by non-int of type 'float'. Please enter a number for Catalyst Compositions."
             return result
-
-        
     # Weighted Average (Format B) Main Script------------------------------------------------------------------
 
     if len(target_columns_list) != 0 and target_columns_list:

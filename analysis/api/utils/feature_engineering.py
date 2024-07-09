@@ -74,7 +74,7 @@ def inverse_ln(descriptor):
 def get_feature_engineering(data):
     logger.info(data)
     result = {}
-    # logger.info(data)
+
     #Dataset loading
     descriptor_columns_list = data['view']['settings']['descriptorColumns']
     target_columns_list = data['view']['settings']['targetColumns']
@@ -104,7 +104,6 @@ def get_feature_engineering(data):
     descriptors.drop(columns = [x for x in descriptors.loc[:,descriptors.nunique() == 1].columns], inplace = True)
     # logger.info(descriptors)
 
-    descriptors = descriptors.astype('float')
     first_order_descriptors = {'x': [simple_value],
                            '1/(x)': [inverse_value, '1/(', ')'],
                            '(x)^2': [squared_value, '(', ')^2'],
@@ -159,8 +158,6 @@ def get_feature_engineering(data):
     end_time = round(time.time(), 2)
     run_time = round(end_time - s_time, 3)
     # logger.info(run_time)
-
-
     return result
 #-------------------------------------------------------------------------------------------------
 

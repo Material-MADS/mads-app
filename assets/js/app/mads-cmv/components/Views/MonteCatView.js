@@ -38,19 +38,29 @@ export default class MonteCatView extends withCommandInterface(MonteCat, MonteCa
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
+
+    //Blank data
+    if (values.targetColumn == '') {
+      throw new Error('The Error for Blank Duplicate');
+    }
     
-    const columns = this.getColumnOptionArray();
-
     const data = {};
-    const df = new DataFrame(dataset.main.data);
-
-    //extract descriptor and target columns
-    const datasetColumns = columns.filter((column) => column !== 'index');
-    datasetColumns.forEach((c) => {
-      const dc = df.get(c);
-      data[c] = dc.values.toArray();
-    })
-
+    //Selected Data Surce is Data Management
+    if (newValues.selectedDataSource === 'Data Management') {
+      const columns = this.getColumnOptionArray();
+  
+      const df = new DataFrame(dataset.main.data);
+  
+      //extract descriptor and target columns
+      if (newValues.targetColumn) {
+        const datasetColumns = columns.filter((column) => column !== 'index');
+        datasetColumns.forEach((c) => {
+          const dc = df.get(c);
+          data[c] = dc.values.toArray();
+        })
+      }
+    }
+    
     newValues = convertExtentValues(newValues);
     actions.sendRequestViewUpdate(view, newValues, data);
   };

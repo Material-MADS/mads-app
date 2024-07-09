@@ -22,7 +22,7 @@
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useRef } from 'react';
 import { Field, reduxForm, Label, change } from 'redux-form';
-import { Button, Form, Popup, ButtonGroup } from 'semantic-ui-react';
+import { Button, Form, Popup, Checkbox, Header } from 'semantic-ui-react';
 
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
@@ -30,6 +30,8 @@ import SemButtonGroup from '../FormFields/ButtonGroup';
 import SemCheckbox from '../FormFields/Checkbox';
 
 import { getDropdownOptions } from './FormUtils';
+
+import { useSelector } from "react-redux";
 
 // import _, { values } from 'lodash';
 
@@ -47,19 +49,29 @@ const setSubmitButtonDisable = (disableState) => {
 
 const machineLearningModel = ['Linear', 'Support Vector Regression', 'Random Forest'];
 const temperature = [10, 50, 100, 500, 1000];
+const selectedDataSourceList = ['Data Management', 'Feature Engineering Component'];
 
 //=======================
 const validate = (values, props) => {
-  // console.log(values)
   const errors = {};
 
   // Make sure the correct dataset is loaded
-  const targetColumn = values.targetColumn;
-  const testTargetColumn = targetColumn ? !(props.columns.some(column => column.value === targetColumn)) : '';
-  if (testTargetColumn) {
-    values.targetColumn =  '';
-    values.baseDescriptors = [];
-    values.descriptorsFileName = "Nothing loaded."
+  if (values.selectedDataSource === 'Data Management') {
+    const targetColumn = values.targetColumn;
+    const testTargetColumn = targetColumn ? !(props.columns.some(column => column.value === targetColumn)) : '';
+    if (testTargetColumn) {
+      values.targetColumn =  '';
+      values.baseDescriptors = [];
+      values.descriptorsFileName = "Nothing loaded."
+    }
+  } else {
+    const feId = values.featureEngineeringId
+    const feIdBoolean = values.featureEngineeringId ? props.dataset[feId] : true;
+    if (!feIdBoolean) {
+      values.targetColumn = '';
+      values.featureEngineeringId = '';
+      values.featureEngineeringDS = {};
+    }
   }
   
   // Validate each Form
@@ -78,19 +90,28 @@ const validate = (values, props) => {
       }
     }
 
-  if (values.temperature === 0) {
+  if (!values.temperature) {
     errors.temperature = 'Required';
-  }
-
-  if (values.baseDescriptors && values.baseDescriptors.length === 0) {
-    errors.baseDescriptors = 'Required';
   }
 
   if (!values.targetColumn) {
     errors.targetColumn = 'Required';
   }
 
-  setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.baseDescriptors || errors.targetColumn);
+  //when selectDataSource is Data Management
+  if (values.selectedDataSource === 'Data Management') {
+    if (values.baseDescriptors && !values.baseDescriptors.length ) {
+      errors.baseDescriptors = 'Required';
+    }
+    setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.baseDescriptors || errors.targetColumn);
+  } else {
+    // Validate each Form whenselectDataSource is Feature Engineering Component
+    if ( !values.featureEngineeringDS ) {
+      errors.featureEngineeringDS = 'Required'
+    }
+    setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.featureEngineeringDS || errors.targetColumn);
+  }
+
 
   return errors;
 };
@@ -117,12 +138,25 @@ const MonteCatForm = (props) => {
   } = props;
 
 
+  const { views, dataset } = useSelector((state) => ({
+    views: state.views,
+    dataset: state.dataset,
+  }));
+  const idFE = views.filter((view) => view.name === 'FeatureEngineering').map((view) => view.id)
+  const idHaveData = idFE.filter((id) => dataset.hasOwnProperty(id)).filter((id) => dataset[id])
+  // console.log(views)
+  // console.log(dataset)
+
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
 
   const fileInputRef = useRef(null);
-  
   const [iterationsMin, setIterationsMin] = useState(null);
   const [iterationsMax, setIterationsMax] = useState(null);
+  const [fieldsAreShowing, toggleVisibleFields] = useState(
+    initialValues.selectedDataSource != selectedDataSourceList[1]
+  );
+  const [feId, setFeId] = useState(initialValues.featureEngineeringId);
+  const [targetColumnsFE, setTargetColumnsFE] = useState(views.some((view) => view.id === feId) ? views.find((view) => view.id === feId).settings.targetColumns :[])
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -136,9 +170,6 @@ const MonteCatForm = (props) => {
       reader.readAsText(file);
       reader.onload = (e) => {
         const text = e.target.result;
-        // console.log(e.target)
-        // console.log(text.split(/,|\r\n|\n|\r/).filter(Boolean));
-        // console.log(text.split(/,|\r\n|\n|\r/))
         props.change('baseDescriptors', text.split(/,|\r\n|\n|\r/).filter(Boolean));
         props.change('descriptorsFileName', `${file.name}`);
       };
@@ -154,9 +185,73 @@ const MonteCatForm = (props) => {
       setIterationsMax(1000);
     }
   }
+
+  const selectFEId = (e, data) => {
+    props.change('featureEngineeringDS', dataset[data.value]);
+    props.change('featureEngineeringId', data.value);
+    setFeId(data.value);
+    setTargetColumnsFE(() => {
+      const selectedView = views.find((view) => view.id === data.value);
+      return selectedView.settings.targetColumns
+    })
+  }
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
+
+        <Form.Field> 
+          <label>Selected Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='You can choose to use the Dataset of Data Management or Feature Engineering Component.' size='small' />:</label>
+          <Field
+            name="selectedDataSource"
+            component={SemanticDropdown}
+            placeholder="SelectedDataSource"
+            options={getDropdownOptions(selectedDataSourceList)}
+            onChange={(e, data) => {
+              toggleVisibleFields(data != selectedDataSourceList[1]);
+            }}
+          />
+        </Form.Field>
+
+        {/* These Form Fields are for using Data Management Source */}
+        {fieldsAreShowing &&
+          <Form.Group>
+            <Form.Field width={4}>
+              <label>Base Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This file contains a list of the base Descriptor names prior to engineering the different analogues.' size='small' />:</label>
+              <Button type="button" onClick={handleClick} style={{width: '100%'}}>Load File</Button>
+              <input type="file" ref={fileInputRef} accept=".csv" onChange={handleFileChange} style={{ display: 'none' }}/>
+            </Form.Field>
+
+            <Form.Field width={12} style={{marginTop: 'auto'}}>
+              <Field 
+                name='descriptorsFileName'
+                component={Input}
+                readOnly
+                style={{width: '100%'}}
+              />
+            </Form.Field>
+          </Form.Group>}
+
+        {/* These Form Fields are for using Feature Engineering Source */}
+        {!fieldsAreShowing &&
+          <Form.Field >
+            <label>Feature Engineering Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Choose which Feature Engineering Component to use.' size='small' />:</label>
+            { ( idHaveData.length === 0 ) ? <label style={{margin:'0px auto'}}>There is no available Feature Engineering Data Source</label> :
+              idHaveData.map((id) => {
+                return (
+                  <Form.Field key={id}>
+                    <Checkbox
+                      label={'Feature Engineering id :' + id}
+                      name='featureEngineeringDS'
+                      value={id}
+                      checked={feId === id}
+                      onChange={(e, data) => selectFEId(e, data)}
+                      />
+                  </Form.Field>
+                  )
+              })}
+          </Form.Field>}
+
+      <hr />
 
       <Form.Group >
         <Form.Field width={6}>
@@ -186,35 +281,13 @@ const MonteCatForm = (props) => {
 
       <hr />
 
-      <Form.Group>
-        <Form.Field width={4}>
-          <label>Base Descriptors<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='This file contains a list of the base Descriptor names prior to engineering the different analogues.' size='small' />:</label>
-          <Button type="button" onClick={handleClick} style={{width: '100%'}}>Load File</Button>
-          <input type="file" ref={fileInputRef} accept=".csv" onChange={handleFileChange} style={{ display: 'none' }}/>
-          <input
-            type="hidden"
-            name="baseDescriptors"
-          />
-        </Form.Field>
-        <Form.Field width={12} style={{marginTop: 'auto'}}>
-          <Field 
-            name='descriptorsFileName'
-            component={Input}
-            readOnly
-            style={{width: '100%'}}
-          />
-        </Form.Field>
-      </Form.Group>
-
-      <hr />
-
       <Form.Field>
-        <label>Target Column</label>
+        <label>Target Column<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='When Selected Data Source is Data Management, you can choose Target Column from columns of Data Management. When Selected Data Source is Feature Engineering Component, you can choose from Target Columns of Feature Engineering Component.' size='small' />:</label>
         <Field
           name="targetColumn"
           component={SemanticDropdown}
           placeholder="target column"
-          options={columns}
+          options={fieldsAreShowing ? getDropdownOptions(columns): getDropdownOptions(targetColumnsFE)}
           search
         />
       </Form.Field>
@@ -223,7 +296,7 @@ const MonteCatForm = (props) => {
 
       <Form.Group widths="equal">
         <Form.Field>
-            <label>Temperature(Hyperparameter)<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Temperature parameter used to tune the Acceptance Probability curve behavior' size='small' />:</label>
+            <label>Temperature<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Temperature parameter used to tune the Acceptance Probability curve behavior' size='small' />:</label>
             <Field 
               name="temperature"
               component={SemButtonGroup}

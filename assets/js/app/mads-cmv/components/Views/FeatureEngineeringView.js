@@ -39,7 +39,11 @@ export default class FeatureEngineeringView extends withCommandInterface(Feature
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
-    // console.log('default', newValues)
+    // console.log(view);
+    
+    if (values.targetColumns.length === 0) {
+      throw new Error('The Error for Blank Duplicate');
+    }
 
     // // extract data
     const data = {};

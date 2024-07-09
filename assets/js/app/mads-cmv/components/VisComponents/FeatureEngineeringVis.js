@@ -35,7 +35,7 @@ import csvoutput from './images/featureEngineering/csvoutput.png';
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: "Empty Feature Engineering",
-  extent: { width: 400, height: 200 },
+  extent: { width: 400, height: 300 },
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ export default function FeatureEngineering({
   // Add the VizComp to the DOM
   return (
     <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
-      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Feature Engineering</Header>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Feature Engineering( id: {id})</Header>
       <Grid centered >
         <GridRow columns={3} centered>
           <GridColumn textAlign={'center'} verticalAlign={"middle"}>
@@ -178,6 +178,7 @@ export default function FeatureEngineering({
           <GridColumn />
         </GridRow>
       </Grid>
+      <div>Feature Engineering id : {id}</div>
       <CSVFileModal image={csvinput} title={'Input CSV File Data Requirements Format'} attr={'#inputcsvfile' + id}/>
       <CSVFileModal image={csvoutput} title={'Output CSV File Data Format'} attr={'#outputcsvfile' + id}/>
     </div>
@@ -259,6 +260,9 @@ const ViewTable = ({dataset}) => {
 //-------------------------------------------------------------------------------------------------
 FeatureEngineering.propTypes = {
   data: PropTypes.shape({ }),
+  descriptorColumns: PropTypes.array,
+  targetColumns: PropTypes.array,
+  firstOrderDescriptors: PropTypes.array,
   options: PropTypes.shape({
     extent: PropTypes.shape({
       width: PropTypes.number,
@@ -274,6 +278,9 @@ FeatureEngineering.propTypes = {
 //-------------------------------------------------------------------------------------------------
 FeatureEngineering.defaultProps = {
   data: {},
+  descriptorColumns: [],
+  targetColumns: [],
+  firstOrderDescriptors: [],
   options: defaultOptions,
 };
 //-------------------------------------------------------------------------------------------------

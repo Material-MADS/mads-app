@@ -112,8 +112,8 @@ const FeatureEngineeringForm = (props) => {
     submitting,
     colorTags,
     columns,
+    id,
   } = props;
-
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
   const [descriptorColumns, setDescriptorColumns] = useState(initialValues.descriptorColumns);

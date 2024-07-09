@@ -35,10 +35,12 @@ export default class CatalystPropertyConversionView extends withCommandInterface
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {
-    //Excute in common  
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
-    // console.log(newValues)
+
+    if (values.conversionMethod === '') {
+      throw new Error('The Error for Blank Duplicate');
+    }
 
     const data = {};
     const df = new DataFrame(dataset.main.data);
@@ -75,7 +77,6 @@ export default class CatalystPropertyConversionView extends withCommandInterface
   mapData = (dataset) => {
     const { id } = this.props;
     let data = {};
-    // console.log(dataset)
 
     if (dataset[id]) {
 

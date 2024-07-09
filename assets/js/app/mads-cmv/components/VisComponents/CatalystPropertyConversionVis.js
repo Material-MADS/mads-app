@@ -264,6 +264,10 @@ const ViewTable = ({dataset}) => {
 //-------------------------------------------------------------------------------------------------
 CatalystPropertyConversion.propTypes = {
   data: PropTypes.shape({ }),
+  conversionMethod: PropTypes.string,
+  catalyst: PropTypes.array,
+  targetColumns: PropTypes.array,
+  compositionColumns: PropTypes.array,
   options: PropTypes.shape({
     extent: PropTypes.shape({
       width: PropTypes.number,
@@ -279,6 +283,10 @@ CatalystPropertyConversion.propTypes = {
 //-------------------------------------------------------------------------------------------------
 CatalystPropertyConversion.defaultProps = {
   data: {},
+  conversionMethod: '',
+  catalyst: [],
+  targetColumns: [],
+  compositionColumns: [],
   options: defaultOptions,
 };
 //-------------------------------------------------------------------------------------------------

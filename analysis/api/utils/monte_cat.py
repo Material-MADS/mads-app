@@ -35,26 +35,47 @@ logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
 
 def get_monte_cat(data):
+    result = {'process': {}, 'output': {}}
     #Dataset and General Script Parameters loading-----------------------------------------------
-    base_descriptors = data['view']['settings']['baseDescriptors']
-    model_to_tested = data['view']['settings']['machineLearningModel']
-    temperature = data['view']['settings']['temperature'] # Temperature parameter used to tune the Acceptance Probability curve behavior
-    iterations  = int(data['view']['settings']['iterations']) # Number of steps / iterations
+    #comman loading Data Management and Feature Engineering
+    temperature = data['view']['settings']['temperature']
+    iterations  = int(data['view']['settings']['iterations']) # Number of steps/iterations
     random_seed = data['view']['settings']['randomSeed'] # For reproducibility
     targetColumn = data['view']['settings']['targetColumn']
-    data = data['data']
+    selectedDataSource = data['view']['settings']['selectedDataSource']
+    model_to_tested = data['view']['settings']['machineLearningModel']
+
+    if selectedDataSource == 'Data Management':
+        dataset = data['data']
+        base_descriptors = data['view']['settings']['baseDescriptors']
+        df_descriptors =  pd.DataFrame(data = {k: v for k, v in dataset.items() if k != targetColumn})
+        df_target = pd.DataFrame(data={targetColumn: dataset[targetColumn]})
+        columns_list = df_descriptors.columns.tolist() + df_target.columns.tolist()
+    else:
+        columns_list = data['view']['settings']['featureEngineeringDS']['header']
+        data_dict = data['view']['settings']['featureEngineeringDS']['data']
+        df_dataset  = pd.DataFrame(data=data_dict.values(), columns=columns_list)
+        df_descriptors =  df_dataset.drop(columns=[targetColumn])
+        df_target = df_dataset[[targetColumn]]
+        base_descriptors = data['view']['settings']['featureEngineeringDS']['base_descriptors']
     
+    try:
+        #Check if blanks are included.
+        if df_descriptors.isna().any().any() or df_target.isna().any().any():
+            raise ValueError("DataFrame contains NaN values or Blank values")
+        df_descriptors.astype('float')
+        df_target.astype('float')
+    except ValueError as e:
+        result['status'] = 'error'
+        result['detail'] = str(e) + '. Datasets containing blanks or strings are not allowed'
+        return result
+
     C_value = 50               # Hyperparameter value for the SVR model
     gamma_value = 0.0001       # Hyperparameter value for the SVR model
-    kB = 0.00008617333262      # Boltzmann constant in eV/K units
-    temperature = 100          
+    kB = 0.00008617333262      # Boltzmann constant in eV/K units          
     seed_value = 0             # For reproducibility
     if random_seed:
         random.seed(seed_value)    # For reproducibility
-
-    df_descriptors =  pd.DataFrame(data = {k: v for k, v in data.items() if k != targetColumn})
-    df_target = pd.DataFrame(data={targetColumn: data[targetColumn]})
-    columns_list = df_descriptors.columns.tolist() + df_target.columns.tolist()
 
     # Script configuration
 
@@ -89,7 +110,6 @@ def get_monte_cat(data):
 
     descriptors_in_model, descriptors_bank, result_package = greedy_addition(df_descriptors, df_target, descriptors_in_model, descriptors_bank, 
                                                                                     model_tested, result_package, reference_dictionary)
-    
     counter += 1
 
     for i in range(iterations):

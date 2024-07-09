@@ -241,7 +241,16 @@ const ViewTable = ({dataset}) => {
 // This Visualization Component's Allowed and expected Property Types
 //-------------------------------------------------------------------------------------------------
 MonteCat.propTypes = {
-  data: PropTypes.shape({ }),
+  data: PropTypes.shape({}),
+  selectedDataSource: PropTypes.string,
+  featureEngineeringId: PropTypes.string,
+  machineLearningModel: PropTypes.string,
+  targetColumn: PropTypes.string,
+  descriptorsFileName: PropTypes.string,
+  baseDescriptors: PropTypes.array,
+  featureEngineeringDS: PropTypes.shape({}),
+  randomSeed: PropTypes.bool,
+  temperature: PropTypes.number,
   options: PropTypes.shape({
     extent: PropTypes.shape({
       width: PropTypes.number,
@@ -256,7 +265,16 @@ MonteCat.propTypes = {
 // This Visualization Component's default initial start Property Values
 //-------------------------------------------------------------------------------------------------
 MonteCat.defaultProps = {
-  data: {process: [], output: []},
+  data: {},
+  selectedDataSource: 'Data Management',
+  baseDescriptors: [],
+  featureEngineeringDS: {},
+  featureEngineeringId: '',
+  machineLearningModel: '',
+  temperature: 0,
+  targetColumn: '',
+  descriptorsFileName: "Nothing loaded.",
+  randomSeed: false,
   options: defaultOptions,
 };
 //-------------------------------------------------------------------------------------------------
