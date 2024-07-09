@@ -32,6 +32,9 @@ import GapMinderView from './GapMinderView';
 
 // Data Processing
 import ImageViewView from './ImageView';
+import FeatureEngineeringView from './FeatureEngineeringView';
+import MonteCatView from './MonteCatView';
+import CatalystPropertyConversionView from './CatalystPropertyConversionView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -356,6 +359,96 @@ export const config = [
   },
   //------------------------------------------
 
+  // Feature Engineering - A Customizable Feature Engienering
+  //----------------------------------------------------------------
+  {
+    type: 'featureEngineering',
+    name: 'FeatureEngineering',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: FeatureEngineeringView,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
+    settings: {
+      descriptorColumns: [],
+      targetColumns: [],
+      firstOrderDescriptors: [],
+      options: {
+        extent: {
+          width: 400,
+          height: 200,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // THIS IS A Monte Cat COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'monteCat',
+    name: 'MonteCat',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: MonteCatView,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
+    settings: {
+      selectedDataSource: 'Data Management',
+      baseDescriptors: [],
+      featureEngineeringDS: {},
+      featureEngineeringId: '',
+      machineLearningModel: '',
+      temperature: 0,
+      targetColumn: '',
+      descriptorsFileName: "Nothing loaded.",
+      randomSeed: false,
+      options: {
+        extent: {
+          width: 400,
+          height: 200,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // THIS IS A Catalyst Property Conversion COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'catalystPropertyConversion',
+    name: 'CatalystPropertyConversion',
+    category: 'Data Processing',
+    version: 0.1,
+    devStage: "Draft",
+    component: CatalystPropertyConversionView ,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
+    settings: {
+      conversionMethod: '',
+      catalyst: [],
+      targetColumns: [],
+      compositionColumns: [],
+      options: {
+        extent: {
+          width: 400,
+          height: 300,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================
@@ -761,7 +854,7 @@ export const config = [
         },
       },
     },
-    enabled: false,
+    enabled: true,
   },
   //------------------------------------------
 ];
