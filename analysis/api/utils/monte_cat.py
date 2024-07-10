@@ -51,6 +51,16 @@ def get_monte_cat(data):
         df_descriptors =  pd.DataFrame(data = {k: v for k, v in dataset.items() if k != targetColumn})
         df_target = pd.DataFrame(data={targetColumn: dataset[targetColumn]})
         columns_list = df_descriptors.columns.tolist() + df_target.columns.tolist()
+        #Check if base descriptors are correct
+        try:
+            filtered_list = filter_descriptors(df_descriptors.columns.tolist(), base_descriptors)
+            logger.info( filtered_list)
+            if filtered_list:
+                raise ValueError(f'can not find base descriptors of {filtered_list}')
+        except ValueError as e:
+            result['status'] = 'error'
+            result['detail'] = str(e)
+            return result
     else:
         columns_list = data['view']['settings']['featureEngineeringDS']['header']
         data_dict = data['view']['settings']['featureEngineeringDS']['data']
@@ -430,3 +440,9 @@ def reconstruct_best_model(df_to_process):
             descriptors_to_extract.remove(descriptor)
     return descriptors_to_extract
 
+"""Check if base descriptors are correct for descriptors List"""
+def filter_descriptors(descriptor_list, base_descriptors):
+    return [
+        descriptor for descriptor in descriptor_list
+        if not any(base in descriptor for base in base_descriptors)
+    ]
