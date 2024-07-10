@@ -68,7 +68,7 @@ export default function CatalystPropertyConversion({
     const availableDataSources = useSelector((state) => state.dataSources);
     if (availableDataSources.selectedDataSource != currentDataSource.id) {
       if(currentDataSource.id != '') {
-        manageButton(true, true, true);
+        // manageButton(true, true, true);
       }
       setCurrentDataSource({id: availableDataSources.selectedDataSource, name: ((availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name)})
     }

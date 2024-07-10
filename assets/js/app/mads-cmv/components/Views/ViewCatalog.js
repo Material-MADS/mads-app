@@ -366,7 +366,7 @@ export const config = [
     name: 'FeatureEngineering',
     category: 'Data Processing',
     version: 0.1,
-    devStage: "Draft",
+    devStage: "Stable Release",
     component: FeatureEngineeringView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -394,7 +394,7 @@ export const config = [
     name: 'MonteCat',
     category: 'Data Processing',
     version: 0.1,
-    devStage: "Draft",
+    devStage: "Stable Release",
     component: MonteCatView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -428,7 +428,7 @@ export const config = [
     name: 'CatalystPropertyConversion',
     category: 'Data Processing',
     version: 0.1,
-    devStage: "Draft",
+    devStage: "Stable Release",
     component: CatalystPropertyConversionView ,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},

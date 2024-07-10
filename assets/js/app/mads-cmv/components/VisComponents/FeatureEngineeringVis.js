@@ -70,7 +70,7 @@ export default function FeatureEngineering({
     const availableDataSources = useSelector((state) => state.dataSources);
     if (availableDataSources.selectedDataSource != currentDataSource.id) {
       if(currentDataSource.id != '') {
-        setdisabled(true);
+        // setdisabled(true);
       }
       setCurrentDataSource({id: availableDataSources.selectedDataSource, name: ((availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id)).name)})
     }
