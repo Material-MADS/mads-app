@@ -373,6 +373,9 @@ export const config = [
       {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
     ],
     settings: {
+      selectedDataSource: 'Data Management',
+      propertyConversionDS: {},
+      propertyConversionId: '',
       descriptorColumns: [],
       targetColumns: [],
       firstOrderDescriptors: [],
@@ -399,12 +402,14 @@ export const config = [
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
       {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+      {name: 'paperLink', icon: 'linkify', text: 'Learn more about montecat.'},
     ],
     settings: {
       selectedDataSource: 'Data Management',
       baseDescriptors: [],
       featureEngineeringDS: {},
       featureEngineeringId: '',
+      featureEngineeringTC: [],
       machineLearningModel: '',
       temperature: 0,
       targetColumn: '',

@@ -20,7 +20,7 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Field, reduxForm, Label, change } from 'redux-form';
 import { Button, Form, Popup, Checkbox, Header } from 'semantic-ui-react';
 
@@ -64,13 +64,14 @@ const validate = (values, props) => {
       values.baseDescriptors = [];
       values.descriptorsFileName = "Nothing loaded."
     }
-  } else {
+  } else if (values.selectedDataSource === 'Feature Engineering Component') {
     const feId = values.featureEngineeringId
     const feIdBoolean = values.featureEngineeringId ? props.dataset[feId] : true;
     if (!feIdBoolean) {
       values.targetColumn = '';
       values.featureEngineeringId = '';
       values.featureEngineeringDS = {};
+      values.featureEngineeringTC = [];
     }
   }
   
@@ -104,7 +105,7 @@ const validate = (values, props) => {
       errors.baseDescriptors = 'Required';
     }
     setSubmitButtonDisable( errors.machineLearningModel || errors.iterations || errors.temperature || errors.baseDescriptors || errors.targetColumn);
-  } else {
+  } else if (values.selectedDataSource === 'Feature Engineering Component') {
     // Validate each Form whenselectDataSource is Feature Engineering Component
     if ( !values.featureEngineeringDS ) {
       errors.featureEngineeringDS = 'Required'
@@ -144,8 +145,6 @@ const MonteCatForm = (props) => {
   }));
   const idFE = views.filter((view) => view.name === 'FeatureEngineering').map((view) => view.id)
   const idHaveData = idFE.filter((id) => dataset.hasOwnProperty(id)).filter((id) => dataset[id])
-  // console.log(views)
-  // console.log(dataset)
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
 
@@ -156,7 +155,7 @@ const MonteCatForm = (props) => {
     initialValues.selectedDataSource != selectedDataSourceList[1]
   );
   const [feId, setFeId] = useState(initialValues.featureEngineeringId);
-  const [targetColumnsFE, setTargetColumnsFE] = useState(views.some((view) => view.id === feId) ? views.find((view) => view.id === feId).settings.targetColumns :[])
+  const [targetColumnsFE, setTargetColumnsFE] = useState(views.some((view) => view.id === feId) ? views.find((view) => view.id === feId).settings.targetColumns : []);
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -187,14 +186,26 @@ const MonteCatForm = (props) => {
   }
 
   const selectFEId = (e, data) => {
+    const selectedView = views.find((view) => view.id === data.value);
+    const targetColumns = selectedView.settings.targetColumns;
     props.change('featureEngineeringDS', dataset[data.value]);
     props.change('featureEngineeringId', data.value);
+    props.change('featureEngineeringTC', targetColumns)
+    props.change('targetColumn', '');
     setFeId(data.value);
-    setTargetColumnsFE(() => {
-      const selectedView = views.find((view) => view.id === data.value);
-      return selectedView.settings.targetColumns
-    })
+    setTargetColumnsFE(targetColumns)
   }
+
+  useEffect(() => {
+  if (initialValues.selectedDataSource === 'Feature Engineering Component') {
+    props.change('featureEngineeringDS', dataset[feId]);
+    props.change('featureEngineeringTC', targetColumnsFE);
+    const testTargetFE = targetColumnsFE.includes(initialValues.targetColumn);
+    if (!testTargetFE) {
+      props.change('targetColumn', '');
+    }
+  }
+  }, [])
   // The form itself, as being displayed in the DOM
   return (
     <Form onSubmit={handleSubmit}>
@@ -207,7 +218,8 @@ const MonteCatForm = (props) => {
             placeholder="SelectedDataSource"
             options={getDropdownOptions(selectedDataSourceList)}
             onChange={(e, data) => {
-              toggleVisibleFields(data != selectedDataSourceList[1]);
+              toggleVisibleFields(data != selectedDataSourceList[1])
+              props.change('targetColumn', '');
             }}
           />
         </Form.Field>
@@ -330,6 +342,12 @@ const MonteCatForm = (props) => {
           placeholder="Height"
         />
       </Form.Group>
+
+      <hr />
+      <Form.Field>
+        <p style={{fontSize: "15px", color: "red"}}>※The Monte Cat process may take a few minutes. Please do not reload the page during the process.</p>
+      </Form.Field>
+
 
     </Form>
   );

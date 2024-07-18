@@ -53,6 +53,7 @@ export default function MonteCat({
 }) {
   const [disabled, setdisabled] = useState(true);
   const [currentDataSource, setCurrentDataSource] = useState({id: '', name: ''}); //manage data souerce change
+  const rootNode = useRef(null);
 
   // Initiation of the VizComp
   let internalOptions = {...defaultOptions, ...options};
@@ -73,6 +74,12 @@ export default function MonteCat({
     if (data['output'] && data['process']) {
       setdisabled(false);
     }
+
+    const paperLink = $(rootNode.current).parent().parent().find('#paperLink' + id);
+    paperLink.off('click');
+    paperLink.on('click', function() { 
+      window.open('https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952', '_blank')
+  });
   };
 
    // Clear away the VizComp
@@ -98,6 +105,7 @@ export default function MonteCat({
       <DataItemActions data={data['output']} content='Best Model' disabled={disabled} filename={`${machineLearningModel}_T${temperature}`}/>
       <CSVFileModal image={csvinput} title={'Input CSV File Data Requirements Format'} attr={'#inputcsvfile' + id}/>
       <CSVFileModal image={csvoutput} title={'Output CSV File Data Format'} attr={'#outputcsvfile' + id}/>
+      <div ref={rootNode} />
     </div>
   );
 }

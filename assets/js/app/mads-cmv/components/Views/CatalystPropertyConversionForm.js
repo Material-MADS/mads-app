@@ -58,7 +58,6 @@ const setSubmitButtonDisable = (disableState) => {
 //=======================
 //validate function
 const validate = (value, props) => {
-  // console.log(value);
   const errors = {}
 
   // Make sure the correct dataset is loaded
@@ -79,7 +78,7 @@ const validate = (value, props) => {
   }
 
   // Validate each Form
-  if (value.conversionMethod !== 'Weighted Average (Format B)') {
+  if (value.conversionMethod && value.conversionMethod !== 'Weighted Average (Format B)'  ) {
     value.compositionColumns = []
   }
   if (!value.conversionMethod) {
@@ -90,7 +89,7 @@ const validate = (value, props) => {
     errors.catalyst = 'Required';
   }
 
-  if (value.conversionMethod === 'Weighted Average (Format B)' ) {
+  if ( value.conversionMethod === 'Weighted Average (Format B)' ) {
     if (value.compositionColumns.length === 0) {
       errors.compositionColumns = 'Required'
     } else {
