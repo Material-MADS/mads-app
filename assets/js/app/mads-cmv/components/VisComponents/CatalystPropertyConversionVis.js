@@ -18,7 +18,7 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image } from 'semantic-ui-react'
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image, Loader, Dimmer } from 'semantic-ui-react'
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import $ from "jquery";
@@ -105,7 +105,7 @@ export default function CatalystPropertyConversion({
   // Add the VizComp to the DOM
   return (
     <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
-      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Catalyst Property Conversion</Header>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Catalyst Property Conversion( id: {id})</Header>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={saDisabled} name={'Simple Average'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={waaDisabled} name={'Format A'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={wabDisabled} name={'Format B'}/>
@@ -232,29 +232,46 @@ const DataItemActions = ({data, conversionmethod, disabled, name}) => {
 //This is a component which show result data as table
 const ViewTable = ({dataset}) => {
   // console.log(dataset)
-  const { header, data } = dataset
+  const { header, data } = dataset;
+  const [isLoading, setIsLoadting] = useState(true);
+
+  useEffect(() => {
+    let timeoutId = setTimeout(() => {
+      setIsLoadting(false)
+    }, 50);
+    return () => {
+      clearTimeout(timeoutId);
+    }
+  }, []);
+
   return (
     <div>
-      <Table celled compact>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>#</Table.HeaderCell>
-            {header.map((cell, index) => (
-              <Table.HeaderCell key={index}>{cell}</Table.HeaderCell>
-            ))}
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {Object.keys(data).map((key) => (
-            <Table.Row key={key}>
-              <Table.Cell>{key}</Table.Cell>
-              {data[key].map((cell, cellIndex) => (
-                <Table.Cell key={cellIndex}>{cell}</Table.Cell>
+      {isLoading ? (
+        <Dimmer active>
+          <Loader indeterminate>Preparing Table</Loader>
+        </Dimmer>
+      ): (
+        <Table celled compact>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>#</Table.HeaderCell>
+              {header.map((cell, index) => (
+                <Table.HeaderCell key={index}>{cell}</Table.HeaderCell>
               ))}
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+          </Table.Header>
+          <Table.Body>
+            {Object.keys(data).map((key) => (
+              <Table.Row key={key}>
+                <Table.Cell>{key}</Table.Cell>
+                {data[key].map((cell, cellIndex) => (
+                  <Table.Cell key={cellIndex}>{cell}</Table.Cell>
+                ))}
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      )}
     </div>
   )
 }

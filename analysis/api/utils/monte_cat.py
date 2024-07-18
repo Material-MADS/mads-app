@@ -54,7 +54,6 @@ def get_monte_cat(data):
         #Check if base descriptors are correct
         try:
             filtered_list = filter_descriptors(df_descriptors.columns.tolist(), base_descriptors)
-            logger.info( filtered_list)
             if filtered_list:
                 raise ValueError(f'can not find base descriptors of {filtered_list}')
         except ValueError as e:
@@ -64,8 +63,9 @@ def get_monte_cat(data):
     else:
         columns_list = data['view']['settings']['featureEngineeringDS']['header']
         data_dict = data['view']['settings']['featureEngineeringDS']['data']
+        fe_target_columns = data['view']['settings']['featureEngineeringTC']
         df_dataset  = pd.DataFrame(data=data_dict.values(), columns=columns_list)
-        df_descriptors =  df_dataset.drop(columns=[targetColumn])
+        df_descriptors =  df_dataset.drop(columns=fe_target_columns)
         df_target = df_dataset[[targetColumn]]
         base_descriptors = data['view']['settings']['featureEngineeringDS']['base_descriptors']
     
@@ -191,7 +191,6 @@ def get_monte_cat(data):
     output_df = output_df.reindex(columns = columns_list).dropna(axis = 1)
 
     ## ===================================================================================================================
-    result = {'process': {}, 'output': {}}
     process_header = process_df.columns
     process_data = process_df.T.to_dict(orient='list')
     output_header = output_df.columns
@@ -201,9 +200,6 @@ def get_monte_cat(data):
     result['output']['header'] = output_header
     result['output']['data'] = output_data
 
-    end_time = round(time.time(), 5)
-    run_time = round(end_time - s_time, 4)
-    logger.info(run_time)
 
     return result
 #-------------------------------------------------------------------------------------------------

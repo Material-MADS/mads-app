@@ -18,7 +18,7 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image, Popup } from 'semantic-ui-react'
+import { Button, Header, Grid, GridRow, Modal, ModalActions, ModalContent, ModalHeader ,Table, GridColumn, Image, Popup, Loader, Dimmer } from 'semantic-ui-react'
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 
@@ -165,7 +165,7 @@ export default function FeatureEngineering({
         </GridRow>
         <GridRow columns={2} centered>
           <GridColumn textAlign={'center'} verticalAlign={"middle"} >
-            <Header as='h4' style={{ display: 'inline-block' }}>Base Descriptors <Popup trigger={<span style={{fontSize: "20px", color: "blue", display: 'inline'}}>ⓘ</span>} content='In this csv file, feature columns list is included. Download this csv file if you use "MonteCat." ' size='mini' /></Header>
+            <Header as='h4' style={{ display: 'inline-block' }}>Base Descriptors <Popup trigger={<span style={{fontSize: "20px", color: "blue", display: 'inline'}}>ⓘ</span>} content='In this csv file, feature columns list is included. Download this csv file if you use "MonteCat" with data source of data management. ' size='mini' /></Header>
           </GridColumn>
           <GridColumn textAlign={'justified'} verticalAlign={"middle"}>
             <Button 
@@ -228,8 +228,24 @@ const CSVFileModal = ({image, title, attr}) => {
 const ViewTable = ({dataset}) => {
   // console.log(dataset)
   const { header, data } = dataset
+  const [isLoading, setIsLoadting] = useState(true);
+
+  useEffect(() => {
+    let timeoutId = setTimeout(() => {
+      setIsLoadting(false)
+    }, 50);
+    return () => {
+      clearTimeout(timeoutId);
+    }
+  }, []);
+
   return (
     <div>
+      {isLoading ? (
+        <Dimmer active>
+          <Loader indeterminate>Preparing Table</Loader>
+        </Dimmer>
+      ): (
       <Table celled compact>
         <Table.Header>
           <Table.Row>
@@ -250,6 +266,7 @@ const ViewTable = ({dataset}) => {
           ))}
         </Table.Body>
       </Table>
+      )}
     </div>
   )
 

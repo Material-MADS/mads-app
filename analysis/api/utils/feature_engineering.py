@@ -72,33 +72,43 @@ def inverse_ln(descriptor):
 
 #-------------------------------------------------------------------------------------------------
 def get_feature_engineering(data):
-    logger.info(data)
+    # logger.info(data)
     result = {}
 
     #Dataset loading
-    descriptor_columns_list = data['view']['settings']['descriptorColumns']
+    #comman loading in Data Management and Catalyst Property Conversion
     target_columns_list = data['view']['settings']['targetColumns']
     first_order_descriptors_list = data['view']['settings']['firstOrderDescriptors']
-    dataset = data['data']
+    descriptor_columns_list = data['view']['settings']['descriptorColumns']
+    selectedDataSource = data['view']['settings']['selectedDataSource']
 
-    s_time = round(time.time(), 2)
+    if selectedDataSource == 'Data Management':
+        dataset = data['data'] 
+        # Dropping row with blank data
+        df = pd.DataFrame(dataset)
+        df = df.dropna().reset_index(drop=True)
 
-    # Dropping row with blank data
-    df = pd.DataFrame(dataset)
-    df = df.dropna().reset_index(drop=True)
+        descriptors = df[descriptor_columns_list]
+        #Check if the data is numeric
+        try :
+            descriptors = descriptors.astype('float')
+        except:
+            result['status'] = 'error'
+            result['detail'] = "could not convert string to float. Data contains strings. Please enter a numerical value."
+            return result
+        # logger.info(descriptors)
 
-    descriptors = df[descriptor_columns_list]
-    #Check if the data is numeric
-    try :
-        descriptors = descriptors.astype('float')
-    except:
-        result['status'] = 'error'
-        result['detail'] = "could not convert string to float. Data contains strings. Please enter a numerical value."
-        return result
-    # logger.info(descriptors)
-
-    targets = df[target_columns_list]
-    # logger.info(targets)
+        targets = df[target_columns_list]
+        # logger.info(targets)
+    else :
+        columns_list = data['view']['settings']['propertyConversionDS']['header']
+        data_dict = data['view']['settings']['propertyConversionDS']['data']
+        df  = pd.DataFrame(data=data_dict.values(), columns=columns_list)
+        targets = df[target_columns_list]
+        if 'all' in descriptor_columns_list:
+            descriptors = df[property_list]
+        else :
+            descriptors = df[descriptor_columns_list]
 
     # Dropping invariant columns
     descriptors.drop(columns = [x for x in descriptors.loc[:,descriptors.nunique() == 1].columns], inplace = True)
@@ -155,8 +165,6 @@ def get_feature_engineering(data):
     
     result['base_descriptors'] = descriptor_columns_list
 
-    end_time = round(time.time(), 2)
-    run_time = round(end_time - s_time, 3)
     # logger.info(run_time)
     return result
 #-------------------------------------------------------------------------------------------------
@@ -164,3 +172,5 @@ def get_feature_engineering(data):
 # If Custom Error Message is needed use the following:
 # result['status'] = 'error'
 # result['detail'] = "This is the Custom Error Message"
+
+property_list = ['atomic_number', 'atomic_radius_simple', 'atomic_radius_rahm', 'atomic_volume', 'atomic_weight', 'boiling_point', 'bulk_modulus', 'c6_gb', 'covalent_radius_cordero', 'covalent_radius_pyykko_simple', 'covalent_radius_pyykko_double', 'covalent_radius_pyykko_triple', 'covalent_radius_slater', 'density', 'dipole_polarizability', 'electron_negativity', 'electron_affinity', 'en_allen', 'en_ghosh', 'en_pauling', 'first_ion_en', 'fusion_enthalpy', 'gs_bandgap', 'gs_energy', 'gs_est_bcc_latcnt', 'gs_est_fcc_latcnt', 'gs_mag_moment', 'gs_volume_per', 'hhi_p', 'hhi_r', 'heat_capacity_mass', 'heat_capacity_molar', 'icsd_volume', 'evaporation_heat', 'heat_of_formation', 'lattice_constant', 'mendeleev_number', 'melting_point', 'molar_volume', 'num_unfilled', 'num_valence', 'num_d_unfilled', 'num_d_valence', 'num_f_unfilled', 'num_f_valence', 'num_p_unfilled', 'num_p_valence', 'num_s_unfilled', 'num_s_valence', 'period', 'specific_heat', 'thermal_conductivity', 'vdw_radius_simple', 'vdw_radius_alvarez', 'vdw_radius_mm3', 'vdw_radius_uff', 'sound_velocity', 'Polarizability']

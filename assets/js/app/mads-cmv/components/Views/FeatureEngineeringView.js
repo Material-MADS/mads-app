@@ -39,25 +39,25 @@ export default class FeatureEngineeringView extends withCommandInterface(Feature
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
-    // console.log(view);
-    
     if (values.targetColumns.length === 0) {
       throw new Error('The Error for Blank Duplicate');
     }
 
     // // extract data
     const data = {};
-    const df = new DataFrame(dataset.main.data);
-
-    newValues.targetColumns.forEach((c) => {
-      const tc = df.get(c);
-      data[c] = tc.values.toArray();
-    })
-
-    newValues.descriptorColumns.forEach((c) => {
-      const dc = df.get(c);
-      data[c] = dc.values.toArray();
-    });
+    if (newValues.selectedDataSource === "Data Management") {
+      const df = new DataFrame(dataset.main.data);
+  
+      newValues.targetColumns.forEach((c) => {
+        const tc = df.get(c);
+        data[c] = tc.values.toArray();
+      })
+  
+      newValues.descriptorColumns.forEach((c) => {
+        const dc = df.get(c);
+        data[c] = dc.values.toArray();
+      });
+    }
 
     newValues = convertExtentValues(newValues);
 
