@@ -1,10 +1,10 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q3 2024
 # ________________________________________________________________________________________________
-# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-#          Jun Fujima (Former Lead Developer) [2018-2021]
+# Authors: Miyasaka Naotoshi [2024-] 
+#          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
 #              'classification' components
@@ -23,19 +23,8 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 
-#from larch import Interpreter
-#session = Interpreter()
-#import larch
-#from larch import io
-#from larch import xafs
-#from larch.io import read_ascii
-#from larch.xafs import pre_edge
-#from larch.xafs import mback
 from statistics import stdev, variance, median
-#import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
-import pandas as pd
-import numpy as np
 import os
 import re
 import math
@@ -53,7 +42,6 @@ logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
 def get_xafs_analysis(data):
 
-    logger.info(data)
     abs1 = data['view']['settings']['abs']
     energy1 = data['view']['settings']['energy']
     element_name = data['view']['settings']['element']
@@ -62,18 +50,15 @@ def get_xafs_analysis(data):
     dataset['Raw_Abs'] = data['data'][data['data']['RawData_Yname']]
     dataset['Element'] = element_name
     
-    logger.info('dataset_RawX:', data['data'][data['data']['RawData_Xname']])
-
-
 #############################################
 
     dataset['XANES_Data'] = data['view']['settings']['XANES_Data']
     dataset['EXAFS_Data'] = data['view']['settings']['EXAFS_Data']
 
+    #Remove None values for XANES_xpoint and XANES_ypoint
     XANES_xpoint = [x for x in dataset['XANES_Data']['XANES_x'] if x is not None]
     XANES_ypoint = [y for y in dataset['XANES_Data']['XANES_y'] if y is not None]
 
-    # EXAFS_xpoint と EXAFS_ypoint の None の値を削除
     EXAFS_xpoint = [x for x in dataset['EXAFS_Data']['EXAFS_x'] if x is not None]
     EXAFS_ypoint = [y for y in dataset['EXAFS_Data']['EXAFS_y'] if y is not None]
 
@@ -82,12 +67,11 @@ def get_xafs_analysis(data):
     dataset['EXAFS_Data']['EXAFS_x'] = EXAFS_xpoint
     dataset['EXAFS_Data']['EXAFS_y'] = EXAFS_ypoint
 
-    logger.info(dataset)
-###############################################################
+########XANES###################################################
 
     df = pd.DataFrame({'energy': XANES_xpoint, 'mu': XANES_ypoint})
 
-    #極小点の抽出
+    #XA_Min_En
     df["mu_3"]=df["mu"].rolling(3).mean().round(1)
     threshold = 0.1
     min_energy_point = pd.DataFrame(columns=df.columns)
@@ -95,7 +79,6 @@ def get_xafs_analysis(data):
         min_data_option = data['view']['settings']['Min_Data_Option']
     else:
         min_data_option = 20
-         #ここの値を変更してください
     for index, row in df.iterrows():
         if index >= min_data_option and row['mu_3'] >= threshold:
             min_energy_point = df[index:].nsmallest(1, 'energy')
@@ -103,7 +86,7 @@ def get_xafs_analysis(data):
             dataset['XANES_statistics_Miny'] = min_energy_point['mu'].iloc[0]
             break
 
-    #########################################################
+    ########Code like Larch########################################
 
     import numpy as np
     import lmfit
@@ -114,11 +97,13 @@ def get_xafs_analysis(data):
                                 skewed_voigt, step, rectangle, exponential,
                                 powerlaw, linear, parabolic)
     from scipy.interpolate import interp1d as scipy_interp1d
+    
     def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
         kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
                 'copy': False, 'bounds_error': False}
         kwargs.update(kws)
         return  scipy_interp1d(x, y, **kwargs)(xnew)
+    
     def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
         out = interp1d(x, y, xnew, kind=kind, fill_value=fill_value, **kws)
         below = np.where(xnew<x[0])[0]
@@ -152,6 +137,7 @@ def get_xafs_analysis(data):
             elif kind.startswith('cubic'):
                 out[span] = IUSpline(x[sel], y[sel])(xnew[span])
         return out
+    
     def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
         # make uniform x, y data
         TINY = 1.e-12
@@ -184,6 +170,7 @@ def get_xafs_analysis(data):
             nex = int((len(y2) - len(x0))/2)
             y2 = (y2[nex:])[:len(x0)]
         return interp(x0, y2, x)
+    
     def remove_dups(arr, tiny=1.e-6):
         try:
             work = np.asarray(arr)
@@ -213,11 +200,13 @@ def get_xafs_analysis(data):
             if diff < tiny:
                 add[i] = previous_add + tiny
         return en+add
+    
     def find_energy_step(energy, frac_ignore=0.01, nave=10):
         nskip = int(frac_ignore*len(energy))
         e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
         ediff = np.diff(energy[e_ordered][nskip:-nskip])
         return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+    
     def _finde0(energy, mu_input, estep=None, use_smooth=True):
         en = remove_dups(energy, tiny=0.00050)
         ordered = np.where(np.diff(np.argsort(en))==1)[0]
@@ -258,6 +247,7 @@ def get_xafs_analysis(data):
                 (i-1 in high_deriv_pts)):
                 imax, dmax = i, dmu[i]
         return en[imax], imax, estep
+    
     def find_e0(energy, mu=None):
         e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
         istart = max(3, ie0-75)
@@ -271,54 +261,27 @@ def get_xafs_analysis(data):
         if ix < 1 :
             e0 = energy[istart+2]
         return e0
-
-    #logger.info(type(energy))
-    #logger.info(type(mu))
-    logger.info(type(XANES_xpoint))
-    logger.info(type(XANES_ypoint))
-
-    # XANES_xpoint と XANES_ypoint を NumPy 配列に変換
-    #energy = XANES_xpoint
-    #mu = XANES_ypoint
-    #logger.info(find_e0(energy, mu))
     
     max_points = df[(df['mu'].shift(1) < df['mu']) & (df['mu'].shift(-1) < df['mu'])]
     max_energy_points = max_points[(max_points['mu'].shift(1) < max_points['mu']) & (max_points['mu'].shift(-1) < max_points['mu'])]
-    #logger.info(max_energy_points)
-    #logger.info(XANES_xpoint)
-    #logger.info(XANES_ypoint)
-    #logger.info(find_e0(XANES_xpoint, XANES_ypoint))
 
     e0 = find_e0(XANES_xpoint, XANES_ypoint)
 
-    # XANES_xpoint で e0 よりも大きい値のうち、最小のインデックスを取得
+    # Get the smallest index among values greater than e0 in XANES_xpoint
     indices_greater_than_e0 = np.where(XANES_xpoint > e0)[0]
     closest_index = indices_greater_than_e0[0] if len(indices_greater_than_e0) > 0 else None
 
     if closest_index is not None:
-        # 条件を満たすデータを選択
         max_energy_point = max_energy_points[max_energy_points['mu'] >= XANES_ypoint[closest_index]].nsmallest(1, 'energy')
     else:
-        # 条件を満たすデータが見つからない場合の処理
         max_energy_point = max_points.nlargest(1, 'mu')
 
-    # max_energy_point をログに出力
-    logger.info(e0)
-    #logger.info(XANES_ypoint[XANES_xpoint == e0])
-    logger.info(max_energy_point)
-
-    # e0と完全に等しいXANES_xpointのインデックスを取得
+    # Get the index of the XANES_xpoint that is exactly equal to e0
     indices = np.where(np.abs(XANES_xpoint - e0) < 1e-10)[0]
 
-    # indicesが空でない場合、次の要素を取得してログに出力
+    # If indices is not empty, get the next element
     if indices:
         next_idx = indices[0] + 1
-        if next_idx < len(XANES_xpoint):
-            logger.info(f"Next XANES_xpoint[{next_idx}] = {XANES_xpoint[next_idx]}, Next XANES_ypoint[{next_idx}] = {XANES_ypoint[next_idx]}")
-        else:
-            logger.info("No next element found")
-    else:
-        logger.info("No element found for e0")
 
     dataset['XANES_statistics_Maxx'] = max_energy_point['energy'].iloc[0]
     dataset['XANES_statistics_Maxy'] = max_energy_point['mu'].iloc[0]
@@ -328,9 +291,8 @@ def get_xafs_analysis(data):
     peak_width = max_energy_point['energy'].iloc[0] - min_energy_point['energy'].iloc[0]
 
 
-##############################################################
+###########EXAFS##############################################
 
-    # NumPy配列に変換
     EXAFS_xpoint = np.array(EXAFS_xpoint)
     EXAFS_ypoint = np.array(EXAFS_ypoint)
 
@@ -343,37 +305,25 @@ def get_xafs_analysis(data):
     max_peak_index = np.argmax(peak_ypositions)
     max_peak_xposition = peak_xpositions[max_peak_index]
 
-    logger.info(max_peak_xposition)
-
     dataset['EXAFS_statistics_x'] = max_peak_xposition
     dataset['EXAFS_statistics_y'] = max(peak_ypositions)
-
-    logger.info(dataset)
-
 
 ###########periodic table#####################
     pt_strIO = StringIO(periodictablestring)
     testpt = pd.read_csv(pt_strIO)
-    #logger.info(testpt)
     
-    #logger.info(element_name)
     element = testpt[testpt['Element'] == element_name]
-    #logger.info(element) #Formで入力されたelementと周期表情報がリンク
-    #logger.info(type(element))
-    #logger.info(element['fusion_enthalpy'])
+
 ##################################################
 
     columns_to_extract = ['Peak_E0_μt', 'Peak_Max_μt', 'Max_y_xposition', 'Max_y', 'vdw_radius_alvarez', 'Peak_Width', 'gs_energy', 'fusion_enthalpy', 'num_unfilled']
     data_information=[XANES_ypoint[next_idx], max_energy_point['mu'].iloc[0], max_peak_xposition, max(peak_ypositions), element['vdw_radius_alvarez'].values[0],
                     peak_width, element['gs_energy'].values[0], element['fusion_enthalpy'].values[0], element['num_unfilled'].values[0]]
 
-    logger.info(data_information)
-
     data_information_df = pd.DataFrame([data_information], columns=columns_to_extract)
-    logger.info(data_information_df)
 
     ##############################################################################
-    #価数判定008 (0, 1-3, 4-6)の判定
+    #Oxide & Valence Group (0, 1-3, 4-6) Classification
     ##############################################################################
     Oxide008 = StringIO(Train_Oxide_008)
     df008 = pd.read_csv(Oxide008)
@@ -394,7 +344,6 @@ def get_xafs_analysis(data):
     results_8 = pd.concat([pred_8, df_result_8], axis=1)
     results_8['Oxide'] = result_8
     results_8 = pd.concat([results_8.iloc[:, -1], results_8.iloc[:, :-1]], axis=1)
-    logger.info(results_8)
     ###########Valence##########################
     target_B_8 = df008.iloc[:, 2]
     targets_B_8 = np.array(target_B_8)
@@ -414,25 +363,20 @@ def get_xafs_analysis(data):
     predictionlist_A_8.extend(result2_8)
     df_result2_8 = pd.DataFrame(predictionlist_A_8, columns=['Predict_Valence(0, 1-3, 4-6)'])
     #############################################################
-    #ユーザーに分かりやすいような表示にするなら、以下のコードも実行すること！
+    #To make the display more user-friendly, the following code should also be executed
     replace_dict = {3: '1 - 3', 4: '4 - 6'}
     df_result2_8['Predict_Valence(0, 1-3, 4-6)'] = df_result2_8['Predict_Valence(0, 1-3, 4-6)'].replace(replace_dict)
     #############################################################
     results_8 = pd.concat([pred_8, df_result_8, df_result2_8], axis=1)
     
     #results_8.to_csv('PredictData_for_Oxide&Valence_008.csv', index=False)
-    #display(pd.concat([results_8.iloc[:, 0], results_8.iloc[:, -2:]], axis=1)) #このコメントは外さないでください。
     result_df008 = results_8.iloc[:, -2:]
-    logger.info(result_df008)
 
     dataset['Predict_Oxide'] = result_df008['Predict_Oxide'].values[0]
     dataset['Predict_Valence_Group'] = result_df008['Predict_Valence(0, 1-3, 4-6)'].values[0]
 
-    logger.info(dataset)
-
-
     ##############################################################################
-    #価数判定006 (0, 1, 2, 3, 4, 5, 6)
+    #Oxide & Valence Each (0, 1, 2, 3, 4, 5, 6) Classification
     ##############################################################################
     Oxide006 = StringIO(Train_006)
     df006 = pd.read_csv(Oxide006)
@@ -451,7 +395,6 @@ def get_xafs_analysis(data):
     predictionlist_6.extend(result_6)
     df_result_6 = pd.DataFrame(predictionlist_6, columns=['Predict_Oxide'])
     results_6 = pd.concat([pred_6, df_result_6], axis=1)
-    # Corrected code
     results_6['Oxide'] = result_6
     results_6 = pd.concat([results_6.iloc[:, -1], results_6.iloc[:, :-1]], axis=1)
     ###########Valence##########################
@@ -476,10 +419,8 @@ def get_xafs_analysis(data):
     df_result2_6 = pd.DataFrame(predictionlist_A_6, columns=['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'])
     results_6 = pd.concat([pred_6, df_result_6, df_result2_6], axis=1)
     #results_6.to_csv('PredictData_for_Oxide&Valence_006.csv', index=False)
-    #display(pd.concat([results_6.iloc[:, 0], results_6.iloc[:, -2:]], axis=1)) #このコメントは外さないでください。
+
     result_df006 = pd.concat([results_6.iloc[:, 0], results_6.iloc[:, -2:]], axis=1)
-    #logger.info(pred_6)
-    logger.info(result_df006)
 
     dataset['Predict_Valence_Each'] = result_df006['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'].values[0]
     
@@ -487,8 +428,7 @@ def get_xafs_analysis(data):
     #df_all2 = pd.merge(result_df1, df_all, on=["Data_Number"], how="inner")
     #display(df_all2)
     #df_all2.to_csv('PredictData_for_Oxide&Valence_all.csv', index=False)
-    
-    
+        
     return dataset
 #-------------------------------------------------------------------------------------------------
 periodictablestring = """Element,fusion_enthalpy,gs_energy,num_unfilled,vdw_radius_alvarez

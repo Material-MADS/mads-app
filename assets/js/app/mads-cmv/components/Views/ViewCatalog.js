@@ -503,7 +503,7 @@ export const config = [
     type: 'XAFSAnalysis',
     name: 'XAFSAnalysis',
     category: 'Analysis',
-    version: 0.1,
+    version: 1.0,
     devStage: "Draft",
     component: XAFSAnalysisView,
     settings: {
@@ -516,6 +516,7 @@ export const config = [
         extent: {width: 400, height: 400},
       },
     },
+    rglRules : {isResizable: false},
     enabled: true,
   },
   //------------------------------------------

@@ -1,10 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2024
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Miyasaka Naotoshi [2024-] 
+//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'XAFSAnalysis' View,
 --              driven by ReduxForm
@@ -26,7 +26,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Field, reduxForm } from 'redux-form';
 import { Button, Confirm, Form, Modal } from 'semantic-ui-react';
-// import Papa from 'papaparse';
 
 import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import SemanticDropdown from '../FormFields/Dropdown';
@@ -64,10 +63,9 @@ const setSubmitButtonDisable = (disableState) => {
 }
 //=======================
 
-// バリデーション関数
+// Validation Functions
 const validate = (values) => {
   const errors = {};
-  console.log(values)
   if (!values.element) {
     errors.element = 'Required';
   }
@@ -77,12 +75,15 @@ const validate = (values) => {
   if (!values.abs) {
     errors.abs = 'Required';
   }
-  if (!values.XANES_Data) {
+  if (!values.XANES_Data || !values.XANES_Data.XANES_x.length || !values.XANES_Data.XANES_y.length) {
     errors.XANES_Data = 'Required';
   }
-  if (!values.EXAFS_Data) {
+  if (!values.EXAFS_Data || !values.EXAFS_Data.EXAFS_x.length || !values.EXAFS_Data.EXAFS_y.length) {
     errors.EXAFS_Data = 'Required';
   }
+
+  setSubmitButtonDisable( errors.element || errors.energy || errors.abs || errors.XANES_Data || errors.EXAFS_Data);
+
   return errors;
 };
 
@@ -108,19 +109,18 @@ const XAFSAnalysisForm = (props) => {
       const csvData = event.target.result;
       const parsedData = parseCSV(csvData);
       
-      // 第1列と第2列のデータを抽出し、それぞれx軸とy軸のデータに設定
+      // Extract data from columns 1 and 2 and set them to x- and y-axis data, respectively
       const xData = parsedData.map(row => parseFloat(row[0]));
       const yData = parsedData.map(row => parseFloat(row[1]));
   
-      // フォームの値を更新する
+      // Update form values
       props.change('XANES_Data', { XANES_x: xData, XANES_y: yData });
       setSelectedXANESFileName(file_XA.name);
   
-      // Redux Form にフォームの更新を通知する
+      // Notify Redux Form of form updates
       props.touch('XANES_Data');
   
-      // デバッグログ
-      console.log("Parsed CSV Data: ", { XANES_x: xData, XANES_y: yData });
+      // console.log("Parsed CSV Data: ", { XANES_x: xData, XANES_y: yData });
     };
   
     reader.readAsText(file_XA);
@@ -134,19 +134,15 @@ const XAFSAnalysisForm = (props) => {
       const csvData = event.target.result;
       const parsedData = parseCSV(csvData);
       
-      // 第1列と第2列のデータを抽出し、それぞれx軸とy軸のデータに設定
       const xData = parsedData.map(row => parseFloat(row[0]));
       const yData = parsedData.map(row => parseFloat(row[1]));
   
-      // フォームの値を更新する
       props.change('EXAFS_Data', { EXAFS_x: xData, EXAFS_y: yData });
       setSelectedEXAFSFileName(file_EX.name);
   
-      // Redux Form にフォームの更新を通知する
       props.touch('EXAFS_Data');
-  
-      // デバッグログ
-      console.log("Parsed CSV Data: ", { EXAFS_x: xData, EXAFS_y: yData });
+
+      // console.log("Parsed CSV Data: ", { EXAFS_x: xData, EXAFS_y: yData });
     };
   
     reader.readAsText(file_EX);
@@ -164,17 +160,10 @@ const XAFSAnalysisForm = (props) => {
 
   const onSubmit = (values) => {
     const valuesWithFileData = { ...values, XANES_Data: fileData_XA, EXAFS_Data: fileData_EX };
-    // console.log("onSubmit is called");
-    // console.log("File Data in onSubmit: ", fileData);
-    // console.log("Submitted Values: ", valuesWithFileData);
-    handleSubmit(valuesWithFileData); // handleSubmitの代わりに独自のハンドラを呼び出す場合
+    handleSubmit(valuesWithFileData); 
     // Reset the form after submission
     reset();
   };
-
-  // useEffect(() => {
-  //   // console.log("File Data updated: ", fileData);
-  // }, [fileData]);
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -184,7 +173,7 @@ const XAFSAnalysisForm = (props) => {
         <Field
           name="element"
           component={SemanticDropdown}
-          placeholder="Element name (Required)"
+          placeholder="Element name"
           search
           options={getDropdownOptions(methods)}
         />
@@ -195,7 +184,7 @@ const XAFSAnalysisForm = (props) => {
         <Field
           name="energy"
           component={SemanticDropdown}
-          placeholder="X / Energy (Required)"
+          placeholder="X / Energy"
           search
           options={columns}
         />
@@ -206,39 +195,68 @@ const XAFSAnalysisForm = (props) => {
         <Field
           name="abs"
           component={SemanticDropdown}
-          placeholder="Y / Abs (Required)"
+          placeholder="Y / Abs"
           search
           options={columns}
         />
       </Form.Field>    
 
-      <Form.Field width={12}>
+      <Form.Field width={15}>
         <label>
           XANES Data:
           <Button as="label" htmlFor="xanesfile" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>
             Load File
           </Button>
+          <a href="https://github.com/naopyonlove01/XAFSAnalysis" target="_blank" rel="noopener noreferrer" style={{ marginLeft: "10px" }}>
+            How to create XANES Data File
+          </a>
         </label>
         <input type="file" id="xanesfile" style={{ display: "none" }} onChange={fileChange_XA} name='XANES_Data' required/>
         <input 
           type='hidden'
           name='XANES_Data'/>
-        <span id="xanesfileLabel">{selectedXANESFileName}</span> {/* ファイル名を表示するための要素 */}
+        <span id="xanesfileLabel" style={{ color: selectedXANESFileName ? 'black' : 'red' }}>
+          {selectedXANESFileName || 'Required'}
+        </span>
       </Form.Field>
 
-      <Form.Field width={12}>
+      <Form.Field width={15}>
         <label>
           EXAFS Data:
           <Button as="label" htmlFor="exafsfile" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}} >
             Load File
           </Button>
+          <a href="https://github.com/naopyonlove01/XAFSAnalysis" target="_blank" rel="noopener noreferrer" style={{ marginLeft: "10px" }}>
+            How to create EXAFS Data File
+          </a>
         </label>
         <input type="file" id="exafsfile" style={{ display: "none" }} onChange={fileChange_EX} name='EXAFS_Data' required/>
         <input 
           type='hidden'
           name='EXAFS_Data'/>
-        <span id="exafsfileLabel">{selectedEXAFSFileName}</span> {/* ファイル名を表示するための要素 */}
+        <span id="exafsfileLabel" style={{ color: selectedEXAFSFileName ? 'black' : 'red' }}>
+          {selectedEXAFSFileName || 'Required'}
+        </span>
       </Form.Field>
+
+      <hr />
+
+      <Form.Group widths="equal">
+        <label>Graph Size:</label>
+
+        <Field
+          fluid
+          name="options.extent.width"
+          component={Input}
+          placeholder="Width"
+        />
+        <Field
+          fluid
+          name="options.extent.height"
+          component={Input}
+          placeholder="Height"
+        />
+      </Form.Group>
     </Form>
   );
 };

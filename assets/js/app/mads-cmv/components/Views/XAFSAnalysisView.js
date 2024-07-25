@@ -1,10 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2024
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Miyasaka Naotoshi [2024-] 
+//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Inner workings and Content Manager Controler of the 'XAFSAnalysis'
 //              View
@@ -51,8 +51,6 @@ export default class XAFSAnalysisView extends withCommandInterface( XAFSAnalysis
     const { id, view, colorTags, actions, dataset, updateView } = this.props;
     let newValues = { ...values };
 
-    console.log("values: ", values); // デバッグ用ログ
-
     // extract data
     const data = { };
     const df = new DataFrame(dataset.main.data);
@@ -62,11 +60,6 @@ export default class XAFSAnalysisView extends withCommandInterface( XAFSAnalysis
     data[newValues.abs] = tc2.values.toArray();
     data['RawData_Xname'] = values.energy;
     data['RawData_Yname'] = values.abs;
-
-    console.log("Submitted Values Received: ", values); // デバッグ用ログ
-    console.log("File Data: ", values.XANES_Data); // デバッグ用ログ
-    console.log("File Data: ", data); // デバッグ用ログ
-    console.log('X_name:', values.energy);
 
     newValues = convertExtentValues(newValues);
 
@@ -80,10 +73,7 @@ export default class XAFSAnalysisView extends withCommandInterface( XAFSAnalysis
 
     if (dataset[id]) {
       data = dataset[id];
-      console.log(dataset[id])      
     }
-
-    // console.log(data)
 
     return data;
   };

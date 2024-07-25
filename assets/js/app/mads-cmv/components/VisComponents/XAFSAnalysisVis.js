@@ -1,9 +1,10 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2024
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors:Miyasaka Naotoshi [2024-] 
+//         Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the 'XAFSAnalysis' module
 // ------------------------------------------------------------------------------------------------
@@ -18,15 +19,13 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Button, Confirm, Form, Modal, Icon, Slider } from 'semantic-ui-react';
 import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
 import ReactDOM from 'react-dom';
 import Input from '../FormFields/Input';
 import inputTrad from '../FormFields/inputTraditional';
-//import ReactSlider from "react-slider";
-//import "rc-slider/assets/index.css";
 
 import _ from 'lodash';
 import $ from "jquery";
@@ -49,7 +48,7 @@ import api from '../../api';
 const defaultOptions = {
   title: "XAFSAnalysis",
   extent: { width: 450, height: 450 },
-  margin: { top: 60, right: 40, bottom: 40, left: 40 },
+  margin: { top: 56, right: 51, bottom: 55, left: 51},
   marker: {
     size: 4,
     color: 'blue',
@@ -63,7 +62,7 @@ const defaultData = {
 };
 
 //-------------------------------------------------------------------------------------------------
-// Get Chart Data
+// Get Chart Data / Scatter Plot Part
 // Support Method that extracts and prepare the provided data for the VisComp
 //-------------------------------------------------------------------------------------------------
 
@@ -72,14 +71,15 @@ export default function XAFSAnalysis({
   data,
   options,
   actions,
+  selectedIndices,
 }) {
   const rootNode = useRef(null);
   const statsNode = useRef(null);
   const triangleNode = useRef(null);
   const internalOptions = useMemo(() => ({ ...defaultOptions, ...options }), [options]);
   const [dataUpdated, setDataUpdated] = useState(false);
-  const [minPoint, setMinPoint] = useState(19); // 初期値は20番目のデータ
-  const [new_data, setNewData] = useState([]); // new_dataをステートとして管理
+  const [minPoint, setMinPoint] = useState(19); // Default minPoint value is the 20th data
+  const [new_data, setNewData] = useState([]); 
   const [XANES_data, setChartData] = useState(defaultData);
   const [selectedButton, setSelectedButton] = useState("Raw Data");
   const [highlightedPoint, setHighlightedPoint] = useState(null);
@@ -89,47 +89,42 @@ export default function XAFSAnalysis({
   const [oxide, setOxide] = useState('');
   const [valence_group, setValenceGroup] = useState('');
   const [valence_each, setValenceEach] = useState('');
-  console.log(data)
+  const containerRef = useRef(null);
+  const initialWidth = useRef(internalOptions.extent.width);
+  const [lastSelections, setLastSelections] = useState([]);
+  const [selecting, setSelecting] = useState(false);
+  const [indices, setIndices] = useState([]);
+  const zoomRef = useRef(null);
+  const currentTransformRef = useRef(d3.zoomIdentity);
+
+  const handleSelectedIndicesChange = useCallback(() => {
+    const { onSelectedIndicesChange } = actions;
+    const newIndices = selectedIndices
+    .map(i => ({
+      x: new_data[i]?.x,
+      y: new_data[i]?.y
+    }))
+    .filter(d => d.x !== undefined && d.y !== undefined);
   
-  // let oxide;
-  // if (data.Predict_Oxide === 0) {
-  //   oxide = 'This is "Non-Oxide"';
-  // } else if (data.Predict_Oxide === 1) {
-  //   oxide = 'This is "Oxide"';
-  // } else {
-  //   oxide = ''; // それ以外のときは空文字列にする
-  // }
-
-  // let valence_group;
-  // if (data.Predict_Valence_Group === 0) {
-  //   valence_group = 'Valence (Group) 0 ';
-  // } else if (data.Predict_Valence_Group === "1 - 3") {
-  //   valence_group = 'Valence (Group) 1-3 ';
-  // } else if (data.Predict_Valence_Group === "4 - 6") {
-  //   valence_group = 'Valence (Group) 4-6 ';
-  // } else {
-  //   valence_group = ''; // それ以外のときは空文字列にする
-  // }  
-
-  // let valence_each;
-  // if (data.Predict_Valence_Each === 0) {
-  //   valence_each = '& (Each) 0';
-  // } else if (data.Predict_Valence_Each === 1) {
-  //   valence_each = '& (Each) 1';
-  // } else if (data.Predict_Valence_Each === 2) {
-  //   valence_each = '& (Each) 2';
-  // } else if (data.Predict_Valence_Each === 3) {
-  //   valence_each = '& (Each) 3';
-  // } else if (data.Predict_Valence_Each === 4) {
-  //   valence_each = '& (Each) 4';
-  // } else if (data.Predict_Valence_Each === 5) {
-  //   valence_each = '& (Each) 5';
-  // } else if (data.Predict_Valence_Each === 6) {
-  //   valence_each = '& (Each) 6';
-  // } else {
-  //   valence_each = ''; // それ以外のときは空文字列にする
-  // }  
-
+    if (selecting) {
+      return;
+    }
+  
+    if (onSelectedIndicesChange && !deepEqual(lastSelections, newIndices)) {
+      setSelecting(true);
+      setLastSelections([...newIndices]);
+      onSelectedIndicesChange(newIndices);
+      setSelecting(false);
+    }
+  
+    setIndices(newIndices);
+  
+  }, [actions, selecting, lastSelections, selectedIndices]);
+  
+  useEffect(() => {
+    handleSelectedIndicesChange();
+  }, [handleSelectedIndicesChange]);
+ 
   useEffect(() => {
     if (!rootNode.current) return;
 
@@ -141,12 +136,11 @@ export default function XAFSAnalysis({
     // else part is occured when initial
     if (data && data['Raw_Energy'] && data['Raw_Abs'] && data['Raw_Energy'].length === data['Raw_Abs'].length) {
       new_data = data['Raw_Energy'].map((x, i) => ({ x, y: data['Raw_Abs'][i] }));
-    
+
       if (data['XANES_Data'] && data['XANES_Data']['XANES_x'] && data['XANES_Data']['XANES_y'] &&
           data['XANES_Data']['XANES_x'].length === data['XANES_Data']['XANES_y'].length) {
         XANES_data = data['XANES_Data']['XANES_x'].map((x, i) => ({ x, y: data['XANES_Data']['XANES_y'][i] }));
       } else {
-        console.error('XANES data is missing or lengths do not match.');
         XANES_data = []; // Or set to default XANES data if available
       }
     
@@ -154,25 +148,16 @@ export default function XAFSAnalysis({
           data['EXAFS_Data']['EXAFS_x'].length === data['EXAFS_Data']['EXAFS_y'].length) {
         EXAFS_data = data['EXAFS_Data']['EXAFS_x'].map((x, i) => ({ x, y: data['EXAFS_Data']['EXAFS_y'][i] }));
       } else {
-        console.error('EXAFS data is missing or lengths do not match.');
         EXAFS_data = []; // Or set to default EXAFS data if available
       }
     } else {
-      console.error('data["X"] or data["Y"] is missing or lengths do not match. Using default data.');
       new_data = defaultData['X'].map((x, i) => ({ x, y: defaultData['Y'][i] }));
-      // Optionally set default XANES_data and EXAFS_data if initial state should include them
       XANES_data = defaultData['X'].map((x, i) => ({ x, y: defaultData['Y'][i] }));
       EXAFS_data = defaultData['X'].map((x, i) => ({ x, y: defaultData['Y'][i] }));
     }
 
-    
-    // console.log(XANES_data)
-    // console.log(data.Energy)
-
     setChartData(XANES_data);
-
-    // Updated new_data
-    setNewData(new_data);    
+    setNewData(new_data);
 
     // Clears existing svg elements (deletes previous scatterplot)
     d3.select(rootNode.current).selectAll("*").remove();
@@ -187,14 +172,13 @@ export default function XAFSAnalysis({
       .append("g")
       .attr("transform", `translate(${internalOptions.margin.left},${internalOptions.margin.top})`);
 
-      // デフォルトはnew_dataのスケールを使用
+    // Default is to use new_data scale
     let xExtent = d3.extent(new_data, d => d.x);
     let yExtent = d3.extent(new_data, d => d.y);
-
     let xExtent2 = d3.extent(new_data, d => d.x);
     let yExtent2 = d3.extent(new_data, d => d.y);
 
-    // XANES_dataの場合はそのスケールを使用
+    // For each data, use its scale
     if (selectedButton === "XANES") {
       xExtent = d3.extent(XANES_data, d => d.x);
       yExtent = d3.extent(XANES_data, d => d.y);
@@ -227,8 +211,8 @@ export default function XAFSAnalysis({
 
     // xScale and yScale for the main plot
     const xScale = d3.scaleLinear()
-      .domain(xExtent) // input range
-      .range([0, width]);                                       // output range
+      .domain(xExtent)
+      .range([0, width]);
 
     const yScale = d3.scaleLinear()
       .domain(yExtent)
@@ -236,8 +220,8 @@ export default function XAFSAnalysis({
 
     // xScale2 and yScale2 for the secondary axes
     const xScale2 = d3.scaleLinear()
-      .domain(xExtent2) // input range
-      .range([0, width]);                                       // output range
+      .domain(xExtent2)
+      .range([0, width]);
 
     const yScale2 = d3.scaleLinear()
       .domain(yExtent2)
@@ -249,25 +233,37 @@ export default function XAFSAnalysis({
     const xAxis2 = d3.axisTop(xScale2);
     const yAxis2 = d3.axisRight(yScale2);
 
-    svg.append("g")
+    const gX = svg.append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
-      .call(xAxis);
+      .call(xAxis)
+      .selectAll("text")
+      .style("font-size", "12px")
+      .attr("transform", "rotate(-45)") // Rotate text 45 degrees
+      .style("text-anchor", "end"); // Set text anchor to end position
 
-    svg.append("g")
+    const gY = svg.append("g")
       .attr("class", "y-axis")
-      .call(yAxis);
+      .call(yAxis)
+      .selectAll("text")
+      .style("font-size", "12px");
 
-    svg.append("g")
-      .attr("class", "x-axis")
-      .call(xAxis2);
+    const gX2 = svg.append("g")
+      .attr("class", "x-axis-2")
+      .call(xAxis2)
+      .selectAll("text")
+      .style("font-size", "12px")
+      .attr("transform", "rotate(-45)") // Rotate text 45 degrees
+      .style("text-anchor", "start"); // Set text anchor to start position
 
-    svg.append("g")
-      .attr("class", "y-axis")
+    const gY2 = svg.append("g")
+      .attr("class", "y-axis-2")
       .attr("transform", `translate(${width},0)`)
-      .call(yAxis2);
+      .call(yAxis2)
+      .selectAll("text") 
+      .style("font-size", "12px"); 
 
-    svg.append("g")
+    const gridX = svg.append("g")
       .attr("class", "grid-lines")
       .selectAll("line.horizontal-grid-line")
       .data(yScale.ticks())
@@ -278,9 +274,9 @@ export default function XAFSAnalysis({
       .attr("y1", d => yScale(d))
       .attr("y2", d => yScale(d))
       .attr("stroke", "lightgray")
-      .attr("stroke-dasharray", "2,2");
+      .attr("stroke-dasharray", "2,0");
 
-    svg.append("g")
+    const gridY = svg.append("g")
       .attr("class", "grid-lines")
       .selectAll("line.vertical-grid-line")
       .data(xScale.ticks())
@@ -291,19 +287,143 @@ export default function XAFSAnalysis({
       .attr("y1", 0)
       .attr("y2", height)
       .attr("stroke", "lightgray")
-      .attr("stroke-dasharray", "2,2");
+      .attr("stroke-dasharray", "2,0");
 
-      // 状態に基づいてテキストを追加
-      svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", -45)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "16px")
-      .attr("fill", "black")
-      .style("font-weight", "bold")
-      .text(selectedButton);
+///// If gridX2 or gridY2 is needed, uncomment it/////////
 
-       // x軸ラベルとy軸ラベルのテキストを選択されたボタンに応じて設定
+    // const gridX2 = svg.append("g")
+      // .attr("class", "grid-lines")
+      // .selectAll("line.horizontal-grid-line")
+      // .data(yScale2.ticks())
+      // .enter().append("line")
+      // .attr("class", "horizontal-grid-line")
+      // .attr("x1", 0)
+      // .attr("x2", width)
+      // .attr("y1", d => yScale2(d))
+      // .attr("y2", d => yScale2(d))
+      // .attr("stroke", "whitesmoke")
+      // .attr("stroke-dasharray", "2,2");
+
+    // const gridY2 = svg.append("g")
+      // .attr("class", "grid-lines")
+      // .selectAll("line.vertical-grid-line")
+      // .data(xScale2.ticks())
+      // .enter().append("line")
+      // .attr("class", "vertical-grid-line")
+      // .attr("x1", d => xScale2(d))
+      // .attr("x2", d => xScale2(d))
+      // .attr("y1", 0)
+      // .attr("y2", height)
+      // .attr("stroke", "whitesmoke")
+      // .attr("stroke-dasharray", "2,2");
+
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 10])
+      .extent([[0, 0], [width, height]])
+      .on('zoom', (event) => {
+        const transform = event.transform;
+        currentTransformRef.current = transform;
+        const newXScale = transform.rescaleX(xScale);
+        const newYScale = transform.rescaleY(yScale);
+        const newXScale2 = transform.rescaleX(xScale2);
+        const newYScale2 = transform.rescaleY(yScale2);
+
+        const yGridLines = svg.selectAll('.horizontal-grid-line')
+        .data(newYScale.ticks());
+
+        yGridLines.enter()
+          .append('line')
+          .attr('class', 'horizontal-grid-line')
+          .merge(yGridLines)
+          .attr("x1", 0)
+          .attr("x2", width)
+          .attr("y1", d => newYScale(d))
+          .attr("y2", d => newYScale(d))
+          .attr('clip-path', 'url(#clip)')
+          .attr("stroke", "lightgray")
+          .attr("stroke-dasharray", "2,0")
+          .lower();
+
+        yGridLines.exit().remove();
+
+
+        const xGridLines = svg.selectAll('.vertical-grid-line')
+          .data(newXScale.ticks());
+
+        xGridLines.enter()
+          .append('line')
+          .attr('class', 'vertical-grid-line')
+          .merge(xGridLines)
+          .attr("x1", d => newXScale(d))
+          .attr("x2", d => newXScale(d))
+          .attr("y1", 0)
+          .attr("y2", height)
+          .attr('clip-path', 'url(#clip)')
+          .attr("stroke", "lightgray")
+          .attr("stroke-dasharray", "2,0")
+          .lower();
+
+        xGridLines.exit().remove();
+
+        svg.selectAll('.dot, .dot-xanes, .dot-exafs, .highlighted-dot, .highlighted-dot1')
+          .attr('cx', d => newXScale(d.x))
+          .attr('cy', d => newYScale(d.y))
+          .style("pointer-events", "none");
+        
+        svg.selectAll('.dot2, .dot2-xanes, .dot2-exafs, .highlighted-dot2, .highlighted-dot12')
+          .attr('cx', d => newXScale2(d.x))
+          .attr('cy', d => newYScale2(d.y))
+          .style("pointer-events", "none");
+
+        svg.select('.x-axis')
+          .call(d3.axisBottom(newXScale));
+        
+        svg.select('.y-axis')
+          .call(d3.axisLeft(newYScale));
+
+        svg.select('.x-axis-2')
+          .call(d3.axisTop(newXScale2));
+
+        svg.select('.y-axis-2')
+          .call(d3.axisRight(newYScale2));
+
+        svg.selectAll('.x-axis text')
+          .style("font-size", "12px")
+          .attr("transform", "rotate(-45)")
+          .style("text-anchor", "end");
+      
+        svg.selectAll('.x-axis-2 text')
+          .style("font-size", "12px")
+          .attr("transform", "rotate(-45)")
+          .style("text-anchor", "start");
+
+        svg.selectAll('.y-axis text')
+          .style("font-size", "12px");
+      
+        svg.selectAll('.y-axis-2 text')
+          .style("font-size", "12px");
+
+      });
+    
+    zoomRef.current = zoom; 
+    //  Add a background rectangle to be the target of the zoom operation
+    svg.append("rect")
+       .attr("width", width)
+       .attr("height", height)
+       .style("fill", "none")
+       .style("pointer-events", "all")
+       .call(zoom);
+    
+    // Define a clipping path
+    svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", width + 8)
+    .attr("height", height + 8)
+    .attr("x", -8/2)  // Extend to the left
+    .attr("y", -8/2); // Extend upward
+
+    // Set x-axis label and y-axis label text according to selected buttons
     let xAxisLabelTop = "";
     let xAxisLabelBottom = "";
     let yAxisLabelLeft = "";
@@ -319,15 +439,19 @@ export default function XAFSAnalysis({
         .data(new_data)
         .enter().append("circle")
         .attr("class", "dot")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-           // Initial: transparency
           const isDefaultData = new_data.every((point, i) => {
             return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
-        });
-        return isDefaultData ? 'none' : 'green';
+          });
+          if (isDefaultData) return 'none';
+
+          // Highlight selected indices(Correspondence between table and XAFS Analysis)
+          const isSelected = indices.some(index => index.x === d.x && index.y === d.y);
+          return isSelected ? 'red' : 'green';
         })
         .attr("fill-opacity", internalOptions.marker.opacity);
         break;
@@ -341,11 +465,11 @@ export default function XAFSAnalysis({
         .data(XANES_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
         .attr("class", "dot-xanes")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", (d, i) => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
@@ -353,43 +477,55 @@ export default function XAFSAnalysis({
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
-        // 赤い点の描画 (最後に描画されるので最前面に表示される)
+        // Indicate minPoint with a pink dot
         svg.selectAll('.highlighted-dot')
-        .data(XANES_data.filter((d, i) => i === minPoint)) // 赤い点は選択されたインデックスのみ
+        .data(XANES_data.filter((d, i) => {
+          if (i === minPoint && !((d.x === defaultData.X[0] && d.y === defaultData.Y[0])|(d.x === defaultData.X[1] && d.y === defaultData.Y[1]))) {
+            return true; 
+          }
+          return false; 
+        }))
         .enter().append('circle')
-          .attr('class', 'highlighted-dot')
-          .attr('cx', d => xScale(d.x))
-          .attr('cy', d => yScale(d.y))
-          .attr('r', 5)
-          .attr('fill', '#FF1493') // 赤色で描画
-          .attr("fill-opacity", internalOptions.marker.opacity);
+        .attr('class', 'highlighted-dot')
+        .attr('clip-path', 'url(#clip)')
+        .attr('cx', d => xScale(d.x))
+        .attr('cy', d => yScale(d.y))
+        .attr('r', 5)
+        .attr('fill', '#FF1493')
+        .attr("fill-opacity", internalOptions.marker.opacity);
 
-        // 赤い点の描画 (最後に描画されるので最前面に表示される)
+        // Correspondence between statistics and blinking red dots
         svg.selectAll('.highlighted-dot1')
-        .data(XANES_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+        .data(XANES_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+          }
+          return false; 
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot1 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
          break;
 
       case "EXAFS":
         xAxisLabelTop = "";
         xAxisLabelBottom = "R / Å";
-        yAxisLabelLeft = "RSF";
+        yAxisLabelLeft = "RDF";
         yAxisLabelRight = "";
         svg.selectAll(".dot-exafs")
         .data(EXAFS_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
         .attr("class", "dot-exafs")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
@@ -397,14 +533,21 @@ export default function XAFSAnalysis({
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
+        // Correspondence between statistics and blinking red dots
         svg.selectAll('.highlighted-dot1')
-        .data(EXAFS_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+        .data(EXAFS_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]); 
+          }
+          return false;
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot1 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
@@ -417,26 +560,31 @@ export default function XAFSAnalysis({
         .data(new_data)
         .enter().append("circle")
         .attr("class", "dot")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-           // Initial: transparency
           const isDefaultData = new_data.every((point, i) => {
             return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
-        });
-        return isDefaultData ? 'none' : 'green';
+          });
+          if (isDefaultData) return 'none';
+
+          // Highlight selected indices(Correspondence between table and XAFS Analysis)
+          const isSelected = indices.some(index => index.x === d.x && index.y === d.y);
+          return isSelected ? 'red' : 'green';
         })
         .attr("fill-opacity", internalOptions.marker.opacity);
-        svg.selectAll(".dot-xanes")
+        
+        svg.selectAll(".dot2-xanes")
         .data(XANES_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
-        .attr("class", "dot-xanes")
+        .attr("class", "dot2-xanes")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale2(d.x))
         .attr("cy", d => yScale2(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", (d, i) => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
@@ -444,73 +592,97 @@ export default function XAFSAnalysis({
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
-        // 赤い点の描画 (最後に描画されるので最前面に表示される)
-        svg.selectAll('.highlighted-dot')
-        .data(XANES_data.filter((d, i) => i === minPoint)) // 赤い点は選択されたインデックスのみ
+        // Indicate minPoint with a pink dot
+        svg.selectAll('.highlighted-dot2')
+        .data(XANES_data.filter((d, i) => {
+          if (i === minPoint && !((d.x === defaultData.X[0] && d.y === defaultData.Y[0])|(d.x === defaultData.X[1] && d.y === defaultData.Y[1]))) {
+            return true; 
+          }
+          return false; 
+        }))
         .enter().append('circle')
-          .attr('class', 'highlighted-dot')
+          .attr('class', 'highlighted-dot2')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale2(d.x))
           .attr('cy', d => yScale2(d.y))
           .attr('r', 5)
-          .attr('fill', '#FF1493') // 赤色で描画
+          .attr('fill', '#FF1493')
           .attr("fill-opacity", internalOptions.marker.opacity);
 
-          // 赤い点の描画 (最後に描画されるので最前面に表示される)
-        svg.selectAll('.highlighted-dot1')
-        .data(XANES_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+          // Correspondence between statistics and blinking red dots
+        svg.selectAll('.highlighted-dot12')
+        .data(XANES_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]); 
+          }
+          return false;
+        }))
         .enter().append('circle')
-          .attr('class', 'highlighted-dot1 blinking')
+          .attr('class', 'highlighted-dot12 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale2(d.x))
           .attr('cy', d => yScale2(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red')
           .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
       case "EXAFS & Raw Data":
         xAxisLabelTop = "Energy / eV";
         xAxisLabelBottom = "R / Å";
-        yAxisLabelLeft = "RSF";
+        yAxisLabelLeft = "RDF";
         yAxisLabelRight = "Abs.";
         svg.selectAll(".dot-exafs")
         .data(EXAFS_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
         .attr("class", "dot-exafs")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
        return isDefaultData ? 'none' : 'orange';
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
-        svg.selectAll(".dot")
+        
+        svg.selectAll(".dot2")
         .data(new_data)
         .enter().append("circle")
-        .attr("class", "dot")
+        .attr("class", "dot2")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale2(d.x))
         .attr("cy", d => yScale2(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-           // Initial: transparency
           const isDefaultData = new_data.every((point, i) => {
             return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
-        });
-        return isDefaultData ? 'none' : 'green';
+          });
+          if (isDefaultData) return 'none';
+
+          // Highlight selected indices(Correspondence between table and XAFS Analysis)
+          const isSelected = indices.some(index => index.x === d.x && index.y === d.y);
+          return isSelected ? 'red' : 'green';
         })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
+        // Correspondence between statistics and blinking red dots
         svg.selectAll('.highlighted-dot1')
-        .data(EXAFS_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+        .data(EXAFS_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+          }
+          return false;
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot1 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red')
           .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
@@ -518,16 +690,16 @@ export default function XAFSAnalysis({
         xAxisLabelTop = "R / Å";
         xAxisLabelBottom = "Energy / eV";
         yAxisLabelLeft = "Norm. Abs.";
-        yAxisLabelRight = "RSF";
+        yAxisLabelRight = "RDF";
         svg.selectAll(".dot-xanes")
         .data(XANES_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
         .attr("class", "dot-xanes")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", (d, i) => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
@@ -535,15 +707,15 @@ export default function XAFSAnalysis({
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
-        svg.selectAll(".dot-exafs")
+        svg.selectAll(".dot2-exafs")
         .data(EXAFS_data.filter(d => d.x != null && d.y != null))
         .enter().append("circle")
-        .attr("class", "dot-exafs")
+        .attr("class", "dot2-exafs")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale2(d.x))
         .attr("cy", d => yScale2(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-          // Initial: transparency
          const isDefaultData = new_data.every((point, i) => {
            return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
        });
@@ -551,36 +723,55 @@ export default function XAFSAnalysis({
        })
         .attr("fill-opacity", internalOptions.marker.opacity);
 
-        // 赤い点の描画 (最後に描画されるので最前面に表示される)
+        // Indicate minPoint with a pink dot
         svg.selectAll('.highlighted-dot')
-        .data(XANES_data.filter((d, i) => i === minPoint)) // 赤い点は選択されたインデックスのみ
+        .data(XANES_data.filter((d, i) => {
+          if (i === minPoint && !((d.x === defaultData.X[0] && d.y === defaultData.Y[0])|(d.x === defaultData.X[1] && d.y === defaultData.Y[1]))) {
+            return true; 
+          }
+          return false;
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
-          .attr('fill', '#FF1493') // 赤色で描画
+          .attr('fill', '#FF1493') 
           .attr("fill-opacity", internalOptions.marker.opacity);
 
-          // 赤い点の描画 (最後に描画されるので最前面に表示される)
+          // Correspondence between statistics and blinking red dots
         svg.selectAll('.highlighted-dot1')
-        .data(XANES_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+        .data(XANES_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]); 
+          }
+          return false; 
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot1 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
 
-          svg.selectAll('.highlighted-dot1')
-        .data(EXAFS_data.filter(d => highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y)) // 赤い点は選択されたインデックスのみ
+          // Correspondence between statistics and blinking red dots
+          svg.selectAll('.highlighted-dot12')
+          .data(EXAFS_data.filter(d => {
+            if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+              return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+            }
+            return false; 
+          }))
         .enter().append('circle')
-          .attr('class', 'highlighted-dot1 blinking')
+          .attr('class', 'highlighted-dot12 blinking')
+          .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale2(d.x))
           .attr('cy', d => yScale2(d.y))
           .attr('r', 5)
-          .attr('fill', 'red') // 赤色で描画
+          .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
@@ -593,66 +784,80 @@ export default function XAFSAnalysis({
         .data(new_data)
         .enter().append("circle")
         .attr("class", "dot")
+        .attr('clip-path', 'url(#clip)')
         .attr("cx", d => xScale(d.x))
         .attr("cy", d => yScale(d.y))
         .attr("r", internalOptions.marker.size)
         .attr("fill", d => {
-           // Initial: transparency
           const isDefaultData = new_data.every((point, i) => {
             return point.x === defaultData['X'][i] && point.y === defaultData['Y'][i];
-        });
-        return isDefaultData ? 'none' : 'green';
+          });
+          if (isDefaultData) return 'none';
+
+          // Highlight selected indices(Correspondence between table and XAFS Analysis)
+          const isSelected = indices.some(index => index.x === d.x && index.y === d.y);
+          return isSelected ? 'red' : 'green';
         })
         .attr("fill-opacity", internalOptions.marker.opacity);
     }
 
-    // x軸ラベルの更新（上）
-    svg.selectAll(".x-axis-label-top").remove(); // 既存のラベルを削除
+    // Update x-axis labels (top)
+    svg.selectAll(".x-axis-label-top").remove();
     svg.append("text")
       .attr("class", "x-axis-label-top")
       .attr("x", width / 2)
-      .attr("y", -20)
+      .attr("y", -45)
       .attr("text-anchor", "middle")
-      .attr("font-size", "13px")
+      .attr("font-size", "13.9px")
       .attr("fill", "black")
       .text(xAxisLabelTop);
 
-    // x軸ラベルの更新（下）
-    svg.selectAll(".x-axis-label-bottom").remove(); // 既存のラベルを削除
+    // Update x-axis labels (below)
+    svg.selectAll(".x-axis-label-bottom").remove();
     svg.append("text")
       .attr("class", "x-axis-label-bottom")
       .attr("x", width / 2)
-      .attr("y", height + 30)
+      .attr("y", height + 50)
       .attr("text-anchor", "middle")
-      .attr("font-size", "13px")
+      .attr("font-size", "13.9px")
       .attr("fill", "black")
       .text(xAxisLabelBottom);
 
-    // y軸ラベルの更新（左）
-    svg.selectAll(".y-axis-label-left").remove(); // 既存のラベルを削除
+    // Update y-axis labels (left)
+    svg.selectAll(".y-axis-label-left").remove();
     svg.append("text")
       .attr("class", "y-axis-label-left")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
-      .attr("y", -30)
+      .attr("y", -40)
       .attr("text-anchor", "middle")
-      .attr("font-size", "13px")
+      .attr("font-size", "13.9px")
       .attr("fill", "black")
       .text(yAxisLabelLeft);
 
-    // y軸ラベルの更新（右）
-    svg.selectAll(".y-axis-label-right").remove(); // 既存のラベルを削除
+    // Update y-axis labels (right)
+    svg.selectAll(".y-axis-label-right").remove();
     svg.append("text")
       .attr("class", "y-axis-label-right")
       .attr("transform", "rotate(90)")
       .attr("x", height / 2)
-      .attr("y", -width - 30)
+      .attr("y", -width - 40)
       .attr("text-anchor", "middle")
-      .attr("font-size", "13px")
+      .attr("font-size", "13.9px")
       .attr("fill", "black")
       .text(yAxisLabelRight);
 
-///// Statistics////////////////////////
+     // Apply the current transform on initial render
+    requestAnimationFrame(() => {
+      const transform = currentTransformRef.current;
+      if (transform) {
+        svg.call(zoomRef.current.transform, transform);
+      }
+    });
+
+//-------------------------------------------------------------------------------------------------
+// Statistics Part
+//-------------------------------------------------------------------------------------------------
     const XANES_statistics = {
       XANES_statistics_Maxx: data.XANES_statistics_Maxx || 0,
       XANES_statistics_Maxy: data.XANES_statistics_Maxy || 0,
@@ -663,14 +868,14 @@ export default function XAFSAnalysis({
     };
 
     const EXAFS_statistics = {
-      EXAFS_statistics_y: data.EXAFS_statistics_y || 0,
-      EXAFS_statistics_x: data.EXAFS_statistics_x || 0
+      EXAFS_statistics_x: data.EXAFS_statistics_x || 0,
+      EXAFS_statistics_y: data.EXAFS_statistics_y || 0
     };
 
     const stats = computeStatistics(new_data, XANES_statistics, EXAFS_statistics);
     renderTable(stats);
 
-  }, [data, internalOptions, selectedButton, minPoint, highlightedPoint]); 
+  }, [data, internalOptions, selectedButton, minPoint, highlightedPoint, rootNode, indices]); 
 
   const computeStatistics = (new_data, XANES_statistics, EXAFS_statistics) => {
     if (!new_data || new_data.length === 0){
@@ -681,8 +886,8 @@ export default function XAFSAnalysis({
         XA_E0y: 0,
         XA_Minx: 0,
         XA_Miny: 0,
-        EX_Maxy: 0,
         EX_Maxyxposition: 0,
+        EX_Maxy: 0,
       };
     }
 
@@ -693,8 +898,8 @@ export default function XAFSAnalysis({
       XA_E0y: XANES_statistics.XANES_statistics_E0y,
       XA_Minx: XANES_statistics.XANES_statistics_Minx,
       XA_Miny: XANES_statistics.XANES_statistics_Miny,
-      EX_Maxy: EXAFS_statistics.EXAFS_statistics_y,
       EX_Maxyxposition: EXAFS_statistics.EXAFS_statistics_x,
+      EX_Maxy: EXAFS_statistics.EXAFS_statistics_y,
     };
   };
 
@@ -704,7 +909,7 @@ export default function XAFSAnalysis({
     borderRadius: "5px",
   };
 
-  // CSSで点滅アニメーションを定義
+  // Define blinking animation with CSS
   const style = document.createElement('style');
   style.innerHTML = `
     @keyframes blink {
@@ -719,21 +924,17 @@ export default function XAFSAnalysis({
   `;
   document.head.appendChild(style);
 
-    // マウスエンターハンドラ
   const handleMouseEnter = (point) => {
     setHighlightedPoint(point);
   };
 
-  // マウスリーブハンドラ
   const handleMouseLeave = () => {
     setHighlightedPoint(null);
   };
 
   const renderTable = (stats) => {
-    // console.log("Rendering table with stats:", stats);
-
     const formatNumber = (number) => {
-      return number.toFixed(2); // 小数点第2位までのフォーマット
+      return number.toFixed(2); // Format to 2 decimal places
     };
 
     const table = (
@@ -751,15 +952,15 @@ export default function XAFSAnalysis({
             <tr onMouseEnter={() => handleMouseEnter({ x: stats.XA_Minx, y: stats.XA_Miny })} onMouseLeave={handleMouseLeave}>
               <td>XA_MinPoint:</td>
               <td>({formatNumber(stats.XA_Minx)}, {formatNumber(stats.XA_Miny)})</td>
-            </tr>      
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={handleMouseLeave}>
-              <td>EX_Maxy:</td>
-              <td>{formatNumber(stats.EX_Maxy)}</td>
-            </tr> 
+            </tr>
             <tr onMouseEnter={() => handleMouseEnter({ x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={handleMouseLeave}>
               <td>EX_Maxyxposition:</td>
               <td>{formatNumber(stats.EX_Maxyxposition)} Å</td>
-            </tr>                       
+            </tr>           
+            <tr onMouseEnter={() => handleMouseEnter({ x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={handleMouseLeave}>
+              <td>EX_Maxy:</td>
+              <td>{formatNumber(stats.EX_Maxy)}</td>
+            </tr>                   
           </tbody>
         </table>
       </div>
@@ -770,7 +971,7 @@ export default function XAFSAnalysis({
     }
   };
 
-   // retresが更新されたときに統計量を計算し、テーブルを再レンダリング
+  // Calculate statistics when retres are updated and re-render table
   useEffect(() => {
     if (retres) {
       const XANES_statistics = {
@@ -783,8 +984,8 @@ export default function XAFSAnalysis({
       };
 
       const EXAFS_statistics = {
-        EXAFS_statistics_y: retres.EXAFS_statistics_y || 0,
-        EXAFS_statistics_x: retres.EXAFS_statistics_x || 0
+        EXAFS_statistics_x: retres.EXAFS_statistics_x || 0,
+        EXAFS_statistics_y: retres.EXAFS_statistics_y || 0
       };
 
       const newStats = computeStatistics(retres, XANES_statistics, EXAFS_statistics);
@@ -792,13 +993,16 @@ export default function XAFSAnalysis({
     }
   }, [retres, minPoint, selectedButton, highlightedPoint]);
 
+//-------------------------------------------------------------------------------------------------
+// Oxide and Valence Show Part (Output)
+//-------------------------------------------------------------------------------------------------
   const getOxideText = (predictOxide) => {
     if (predictOxide === 0) {
       return 'This is "Non-Oxide"';
     } else if (predictOxide === 1) {
       return 'This is "Oxide"';
     } else {
-      return ''; // それ以外のときは空文字列にする
+      return '';
     }
   };
   
@@ -810,7 +1014,7 @@ export default function XAFSAnalysis({
     } else if (predictValenceGroup === "4 - 6") {
       return 'Valence (Group) 4-6 ';
     } else {
-      return ''; // それ以外のときは空文字列にする
+      return '';
     }
   };
   
@@ -831,11 +1035,10 @@ export default function XAFSAnalysis({
       case 6:
         return '& (Each) 6';
       default:
-        return ''; // それ以外のときは空文字列にする
+        return '';
     }
   };
   
-  // useEffect フックの定義
   useEffect(() => {
     if (data) {
       let oxide = getOxideText(data.Predict_Oxide);
@@ -860,15 +1063,18 @@ export default function XAFSAnalysis({
     }
   }, [retres, minPoint, selectedButton, highlightedPoint]);
   
-  // statsが更新されたときにテーブルを再レンダリング
+  // Calculate statistics when stats are updated and re-render table
   useEffect(() => {
     if (stats) {
       renderTable(stats);
     }
   }, [stats]);
 
-///// triangle////////////////////////
+//-------------------------------------------------------------------------------------------------
+// Triangle Button Part
+//-------------------------------------------------------------------------------------------------
   useEffect(() => {
+    d3.select(triangleNode.current).selectAll("*").remove();
     const triangleVertices = [
       { x: 75, y: 200 },
       { x: 125, y: 100 },
@@ -876,10 +1082,10 @@ export default function XAFSAnalysis({
     ];
 
     const triangle_svg = d3.select(triangleNode.current)
-      .attr("width", internalOptions.extent.width)
+      .attr("width", initialWidth.current * 2 / 3)
       .attr("height", internalOptions.extent.height)
       .append("g")
-      // console.log(internalOptions.extent.width)
+      .attr("transform", `translate(${initialWidth.current*2 / 6 - 125}, ${internalOptions.extent.height / 2 - 150})`);
 
     triangle_svg.append("line")
       .attr("x1", triangleVertices[0].x)
@@ -972,6 +1178,10 @@ export default function XAFSAnalysis({
         d3.select(this).attr("stroke", "red");
         const buttonName = d3.select(this).attr("id");
         setSelectedButton(buttonName);
+
+        // Reset zoom transformation
+        const svg = d3.select(rootNode.current);
+        svg.transition().duration(500).call(zoomRef.current.transform, d3.zoomIdentity);
     });
 
     triangle_svg.selectAll("circle")
@@ -981,18 +1191,39 @@ export default function XAFSAnalysis({
         d3.select(this).attr("fill", "red");
         const buttonName = d3.select(this).attr("id");
         setSelectedButton(buttonName);
+
+         // Reset zoom transformation
+        const svg = d3.select(rootNode.current);
+        svg.transition().duration(500).call(zoomRef.current.transform, d3.zoomIdentity);
     });
 
-  }, []); 
+  }, [internalOptions, selectedButton]); 
 
-//// Oxide Valence Show///////////////
-  // const handleClick = () => {
-  //  setShowMessage(!showMessage);
-  // };
-
-//// Recalculate (Button)///////////////
-
+  useEffect(() => {
+    if ((selectedButton === "" || selectedButton === "Raw Data") && data && data['XANES_Data'] && data['XANES_Data']['XANES_x'] !== null) {
+      d3.select(triangleNode.current).select(`#Raw\\ Data`).attr("fill", "red");
+      setSelectedButton("Raw Data");
+    } else if (selectedButton === "XANES") {
+      d3.select(triangleNode.current).select(`#XANES`).attr("fill", "red");
+    } else if (selectedButton === "EXAFS") {
+      d3.select(triangleNode.current).select(`#EXAFS`).attr("fill", "red");
+    } else if (selectedButton === "Raw Data & XANES") {
+      d3.select(triangleNode.current).select(`#Raw\\ Data\\ \\&\\ XANES`).attr("stroke", "red");
+    } else if (selectedButton === "EXAFS & Raw Data") {
+      d3.select(triangleNode.current).select("#EXAFS\\ \\&\\ Raw\\ Data").attr("stroke", "red");
+    } else if (selectedButton === "XANES & EXAFS") {
+      d3.select(triangleNode.current).select("#XANES\\ \\&\\ EXAFS").attr("stroke", "red");
+    }
+  }, [data, internalOptions, selectedButton]);
+  
+//-------------------------------------------------------------------------------------------------
+// Recalculate Button Part
+//-------------------------------------------------------------------------------------------------
   const handleRecalculate = async (data) => {
+    if (!oxide) {
+      console.log("Oxide is empty. Cannot recalculate.");
+      return false;
+    }
     if(actions){ actions.setLoadingState(true); }
     setServerInfo("Score: Stand by, being calculated (might take some time) ...");
 
@@ -1014,72 +1245,112 @@ export default function XAFSAnalysis({
     return true;
   }
 
-
-//// MinPointBar (Slider)///////////////
+//-------------------------------------------------------------------------------------------------
+// MinPoint Slider Part
+//-------------------------------------------------------------------------------------------------
   const MinpointBar = (event) => {
-    const minValue = parseInt(event.target.value); // スライダーの値を整数に変換
+    const minValue = parseInt(event.target.value);
     
-    // 新しいデータを作成し、特定のデータ点を赤色にする
+    // Create new data and make certain data points red
     const newDataWithHighlightedPoint = XANES_data.map((point, index) => {
-      console.log("Index:", index);
-      if (index === (minValue)) { // スライダーの値に対応するデータ点
-        console.log("highlighted: true"); 
-        return { ...point, highlighted: true }; // 赤色にするためのフラグを設定
+      if (index === (minValue)) { // Data points corresponding to slider values
+        return { ...point, highlighted: true }; // Set flag to make red
       } else {
-        return { ...point, highlighted: false }; // 他のデータ点は赤色にしない
+        return { ...point, highlighted: false };
       }
     });
 
-  setMinPoint(minValue); // スライダーの値をセット
-  setChartData(newDataWithHighlightedPoint); // 赤色にしたデータ点を含む新しいデータをセット
-  console.log("New data with highlighted point:", newDataWithHighlightedPoint);
+  setMinPoint(minValue);
+  setChartData(newDataWithHighlightedPoint); 
   data['Min_Data_Option'] = minValue;
   };
 
 
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "250px 250px 250px", gridTemplateRows: "80px 250px 250px 100px" }}>
-      <div style={{ gridColumn:"1 / span 2", gridRow:"2 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
-        <svg ref={rootNode} />
-      </div>
-      
-      <div style={{ gridColumn:"1 / span 3", gridRow:"1 / span 1", position: "relative", marginTop: "auto", marginBottom: "auto",
-                    padding: "20px", boxSizing: "content-box", border: "2px solid black", textAlign: "center", fontSize: "24px"}}>
-        {oxide} <br /> 
-        <br />
-        {valence_group}{valence_each}.
-      </div>
-      
-      <div style={{ gridColumn:"3 / span 1", gridRow:"2 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
-        <div ref={statsNode} />
-      </div>
-      
-      <div style={{ gridColumn:"3 / span 1", gridRow:"3 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
-        <svg ref={triangleNode} />
-      </div>
-      
-      <div style={{ gridColumn:"2 / span 1", gridRow:"4 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
-        <Button icon color ="blue" onClick={() => handleRecalculate(data)} > 
-        Recalculate 
-        </Button>
-        {dataUpdated && redrawScatterPlot()}
-      </div>
+  // Reapply zoom when data or minimum point changes
+  useEffect(() => {
+    const svg = d3.select(rootNode.current);
+    requestAnimationFrame(() => {
+      const transform = currentTransformRef.current;
+      if (transform) {
+        svg.call(zoomRef.current.transform, transform);
+      }
+    });
+  }, [minPoint, XANES_data]);
 
-      <div style={{ gridColumn:"1 / span 1", gridRow:"4 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
-                    textAlign: "center", fontSize: "18px", id: "MinpointCount"}}>
-        Min Data point: {minPoint + 1}<br />
-        <input 
-          type="range" 
-          min={0} 
-          max={XANES_data.length > 1 ? XANES_data.length - 1 : 0}
-          value={minPoint}
-          onChange={MinpointBar}
-        />
-      </div>
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.width = `${internalOptions.extent.width}px`;
+      containerRef.current.style.height = `${internalOptions.extent.height}px`;
+    }
+  }, [internalOptions.extent.width, internalOptions.extent.height]);
+
+  const gridContainerStyle = {
+    display: 'grid',
+    gridTemplateColumns: '(1000%/750) (24000%/750) (25000%/750) (24000%/750) (1000%/750)',
+    gridTemplateRows: '(8000/660)% (10000/660)% (15000/660)% (25000/660)% (8000/660)%',
+    gap : '10px',
+    width: '100%',
+    height: '100%',
+  };
+
+  const gridItemStyle = {
+    backgroundColor: '#f0f0f0',
+    padding: '20px',
+    textAlign: 'center',
+    border: '1px solid #ccc',
+  };
+
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <div style={gridContainerStyle} className="grid-container">
+        <div style={{ gridColumn:"1 / span 3", gridRow:"2 / span 4", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+          <svg ref={rootNode} />
+        </div>
+
+        <div style={{ gridColumn: "1 / span 3", gridRow: "2 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
+                      textAlign: "center", fontSize: "16px", fontWeight: "bold" }}>
+          {selectedButton}
+        </div>
       
+        <div style={{ gridColumn:"2 / span 3", gridRow:"1 / span 1", position: "relative", marginTop: "auto", marginBottom: "auto",
+                    padding: "10px", boxSizing: "content-box", border: "2px solid black", textAlign: "center", fontSize: "24px"}}>
+          {oxide} <br /> 
+          <br />
+          {valence_group}{valence_each}
+        </div>
+      
+        <div style={{ gridColumn:"4 / span 2", gridRow:"2 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+          <div ref={statsNode} />
+        </div>
+      
+        <div style={{ gridColumn:"4 / span 2", gridRow:"4 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+          <svg ref={triangleNode} />
+        </div>
+      
+        <div style={{ gridColumn:"3 / span 1", gridRow:"5 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+          <Button icon color ="blue" onClick={() => handleRecalculate(data)} > 
+          Recalculate 
+          </Button>
+          {dataUpdated && redrawScatterPlot()}
+        </div>
+
+        <div style={{ gridColumn:"1 / span 2", gridRow:"5 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
+                      textAlign: "center", fontSize: "18px", id: "MinpointCount"}}>
+          Min Data point: {minPoint + 1}<br />
+          <input 
+            type="range" 
+            min={0} 
+            max={XANES_data.length > 1 ? XANES_data.length - 1 : 0}
+            value={minPoint}
+            onChange={MinpointBar}
+          />
+        </div>
+      </div>
     </div>
   );
 };
+
 
 XAFSAnalysis.propTypes = {
   data: PropTypes.shape({ }),
