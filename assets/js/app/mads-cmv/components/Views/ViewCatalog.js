@@ -365,7 +365,7 @@ export const config = [
     type: 'featureEngineering',
     name: 'FeatureEngineering',
     category: 'Data Processing',
-    version: 0.1,
+    version: 1.0,
     devStage: "Stable Release",
     component: FeatureEngineeringView,
     customBtns: [
@@ -396,7 +396,7 @@ export const config = [
     type: 'monteCat',
     name: 'MonteCat',
     category: 'Data Processing',
-    version: 0.1,
+    version: 1.0,
     devStage: "Stable Release",
     component: MonteCatView,
     customBtns: [
@@ -432,7 +432,7 @@ export const config = [
     type: 'catalystPropertyConversion',
     name: 'CatalystPropertyConversion',
     category: 'Data Processing',
-    version: 0.1,
+    version: 1.0,
     devStage: "Stable Release",
     component: CatalystPropertyConversionView ,
     customBtns: [
