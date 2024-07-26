@@ -912,6 +912,9 @@ export default function XAFSAnalysis({
   // Define blinking animation with CSS
   const style = document.createElement('style');
   style.innerHTML = `
+    .highlighted-text {
+      color: red;
+    }
     @keyframes blink {
       0% { fill-opacity: 1; }
       50% { fill-opacity: 0; }
@@ -924,12 +927,14 @@ export default function XAFSAnalysis({
   `;
   document.head.appendChild(style);
 
-  const handleMouseEnter = (point) => {
+  const handleMouseEnter = (event, point) => {
     setHighlightedPoint(point);
+    event.currentTarget.classList.add("highlighted-text");
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (event) => {
     setHighlightedPoint(null);
+    event.currentTarget.classList.remove("highlighted-text");
   };
 
   const renderTable = (stats) => {
@@ -941,23 +946,23 @@ export default function XAFSAnalysis({
       <div style={tableBorderStyle}>
         <table>
           <tbody>
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.XA_Maxx, y: stats.XA_Maxy })} onMouseLeave={handleMouseLeave}>
+            <tr onMouseEnter={(event) => handleMouseEnter(event, { x: stats.XA_Maxx, y: stats.XA_Maxy })} onMouseLeave={(event) => handleMouseLeave(event)}>
               <td>XA_MaxPoint:</td>
               <td>({formatNumber(stats.XA_Maxx)}, {formatNumber(stats.XA_Maxy)})</td>
             </tr>
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.XA_E0x, y: stats.XA_E0y })} onMouseLeave={handleMouseLeave}>
+            <tr onMouseEnter={(event) => handleMouseEnter(event, { x: stats.XA_E0x, y: stats.XA_E0y })} onMouseLeave={(event) => handleMouseLeave(event)}>
               <td>XA_E0Point:</td>
               <td>({formatNumber(stats.XA_E0x)}, {formatNumber(stats.XA_E0y)})</td>
             </tr>
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.XA_Minx, y: stats.XA_Miny })} onMouseLeave={handleMouseLeave}>
+            <tr onMouseEnter={(event) => handleMouseEnter(event, { x: stats.XA_Minx, y: stats.XA_Miny })} onMouseLeave={(event) => handleMouseLeave(event)}>
               <td>XA_MinPoint:</td>
               <td>({formatNumber(stats.XA_Minx)}, {formatNumber(stats.XA_Miny)})</td>
             </tr>
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={handleMouseLeave}>
+            <tr onMouseEnter={(event) => handleMouseEnter(event, { x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={(event) => handleMouseLeave(event)}>
               <td>EX_Maxyxposition:</td>
               <td>{formatNumber(stats.EX_Maxyxposition)} Å</td>
             </tr>           
-            <tr onMouseEnter={() => handleMouseEnter({ x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={handleMouseLeave}>
+            <tr onMouseEnter={(event) => handleMouseEnter(event, { x: stats.EX_Maxyxposition, y: stats.EX_Maxy })} onMouseLeave={(event) => handleMouseLeave(event)}>
               <td>EX_Maxy:</td>
               <td>{formatNumber(stats.EX_Maxy)}</td>
             </tr>                   
@@ -1095,6 +1100,7 @@ export default function XAFSAnalysis({
       .attr("stroke", "black")
       .attr("stroke-width", 10)
       .attr("id", "Raw Data & XANES")
+      .style("cursor", "grab")
       .on("click", () => {
       });
 
@@ -1106,6 +1112,7 @@ export default function XAFSAnalysis({
       .attr("stroke", "black")
       .attr("stroke-width", 10)
       .attr("id", "EXAFS & Raw Data")
+      .style("cursor", "grab")
       .on("click", () => {
       });
 
@@ -1117,6 +1124,7 @@ export default function XAFSAnalysis({
       .attr("stroke", "black")
       .attr("stroke-width", 10)
       .attr("id", "XANES & EXAFS")
+      .style("cursor", "grab")
       .on("click", () => {
       });
 
@@ -1126,6 +1134,7 @@ export default function XAFSAnalysis({
        .attr("r", 15)
        .attr("fill", "black")
        .attr("id", "XANES")
+       .style("cursor", "grab")
        .on("click", () => {
        });
 
@@ -1135,6 +1144,7 @@ export default function XAFSAnalysis({
        .attr("r", 15)
        .attr("fill", "black")
        .attr("id", "Raw Data")
+       .style("cursor", "grab")
        .on("click", () => {
        });
        
@@ -1144,6 +1154,7 @@ export default function XAFSAnalysis({
        .attr("r", 15)
        .attr("fill", "black")
        .attr("id", "EXAFS")
+       .style("cursor", "grab")
        .on("click", () => {
        });
 
