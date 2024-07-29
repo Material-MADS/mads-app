@@ -55,6 +55,7 @@ export default class Cads_Component_TemplateView extends withCommandInterface(Ca
 
     if (dataset[id]) {
       data = dataset[id];
+      data["theAnswer"] = 42;
     }
 
     return data;

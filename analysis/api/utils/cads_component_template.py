@@ -30,7 +30,11 @@ def get_cads_component_template_stuff(data):
     result = {}
 
     result = data['data']
-    result["content"] = "Yes"
+    if(something == "Something"):
+        result["content"] = "Yes"
+    else:
+        result["content"] = "No"
+
 
     logger.info(result)
 
