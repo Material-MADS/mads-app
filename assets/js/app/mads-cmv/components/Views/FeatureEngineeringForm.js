@@ -150,7 +150,7 @@ const FeatureEngineeringForm = (props) => {
   const selectCpcId = (e, data) => {
     props.change('propertyConversionDS', dataset[data.value]);
     props.change('propertyConversionId', data.value);
-    props.change('targetColumns', ['A']);
+    props.change('targetColumns', []);
     setCpcId(data.value);
     setTargetColumnsCPC(() => {
       const selectedView = views.find((view) => view.id === data.value);
