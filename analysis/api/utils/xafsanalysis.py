@@ -288,8 +288,12 @@ def get_xafs_analysis(data):
     dataset['XANES_statistics_E0x'] = XANES_xpoint[next_idx]
     dataset['XANES_statistics_E0y'] = XANES_ypoint[next_idx]
 
-    peak_width = max_energy_point['energy'].iloc[0] - min_energy_point['energy'].iloc[0]
+    # Check the condition and update if necessary
+    if dataset['XANES_statistics_E0x'] <= dataset['XANES_statistics_Minx']:
+        dataset['XANES_statistics_Minx'] = XANES_xpoint[next_idx - 1]
+        dataset['XANES_statistics_Miny'] = XANES_ypoint[next_idx - 1]
 
+    peak_width = dataset['XANES_statistics_Maxx'] - dataset['XANES_statistics_Minx']
 
 ###########EXAFS##############################################
 
