@@ -31,6 +31,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from chython import smiles
+from chython.exceptions import IncorrectSmiles
 from doptools.chem.coloratom import ColorAtom
 
 from common.models import OwnedResourceModel

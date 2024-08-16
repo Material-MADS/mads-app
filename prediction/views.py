@@ -216,7 +216,8 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         if as_csv and not coloratom and type(out) is pd.DataFrame:
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=predictions.csv'
-            return out.to_csv(path_or_buf=response)
+            out.to_csv(path_or_buf=response)
+            return response
 
         context["inputs"] = form.cleaned_data
         context["outputs"] = {
