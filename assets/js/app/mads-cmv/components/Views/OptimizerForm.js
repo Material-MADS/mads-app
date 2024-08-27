@@ -54,14 +54,14 @@ const setSubmitButtonDisable = (disableState) => {
 //=======================
 const validate = (values) => {
   const errors = {};
-  if (!values.featureColumns) {
+  if (!values.featureColumns || values.featureColumns=="") {
     errors.featureColumns = 'Required';
   }
-  if (!values.targetColumn) {
+  if (!values.targetColumn || values.targetColumn=="") {
     errors.targetColumn = 'Required';
   }
 
-  setSubmitButtonDisable( errors.featureColumns || errors.targetColumn );
+  setSubmitButtonDisable(errors.featureColumns || errors.targetColumn);
 
   return errors;
 };
@@ -292,6 +292,29 @@ const OptimizerForm = (props) => {
             </Form.Field>}
           </Form.Group>
         </div>}
+
+        <Form.Field>
+          <label>Numerical column(s)</label>
+          <Field
+            name="numericalFeatureColumns"
+            component={MultiSelectDropdown}
+            placeholder="(Optional) Numerical column(s) directly encoding features"
+            search
+            options={columns}
+          />
+        </Form.Field>
+
+        <Form.Field>
+          <label>Solvent column</label>
+          <Field
+            name="solventColumn"
+            component={SemanticDropdown}
+            placeholder="(Optional) Column containing solvent name for solvent features calculation."
+            search
+            clearable
+            options={columns}
+          />
+        </Form.Field>
 
         <hr />
         <h4>Modeling</h4>

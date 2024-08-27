@@ -66,6 +66,14 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
       newValues.featureColumns = filteredColumns;
     }
 
+    // filter out numericalFeatureColumns
+    if (values.numericalFeatureColumns && values.numericalFeatureColumns.length > 0) {
+      const filteredColumns2 = values.numericalFeatureColumns.filter((f) =>
+        columns.includes(f)
+      );
+      newValues.numericalFeatureColumns = filteredColumns2;
+    }
+
     // extract data
     const data = {};
     const df = new DataFrame(dataset.main.data);
@@ -76,6 +84,17 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
       const fc = df.get(c);
       data[c] = fc.values.toArray();
     });
+    if(values.numericalFeatureColumns && values.numericalFeatureColumns.length > 0) {
+      const nfc = df.get(newValues.numericalFeatureColumns);
+      newValues.numericalFeatureColumns.forEach((c) => {
+        const nfc = df.get(c);
+        data[c] = nfc.values.toArray();
+      });
+    };
+    if(values.solventColumn) {
+      const sc = df.get(newValues.solventColumn);
+      data[newValues.solventColumn] = sc.values.toArray();
+    };
 
     // set mapping
     newValues.mappings = {

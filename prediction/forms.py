@@ -111,7 +111,7 @@ class PredictionForm(forms.ModelForm):
         elif metadata['input_type'] == "SMILES":
             self.fields["SMILES"] = forms.CharField(
                 widget=forms.Textarea,
-                label="SMILES (one per line)",
+                label="Please input items as specified above (one line per item)",
             )
 
     class Meta(object):

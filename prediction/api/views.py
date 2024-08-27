@@ -157,12 +157,17 @@ class PretrainedModelAPIViewSet(
                          'view': viewSettings['view'], }
         if 'params' in viewSettings['view'].keys():  # for optimizer component
             description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn']) + "\n"
-            description += "Descriptors: "+str(viewSettings['view']['settings']['method']) + " ("
-            for v in viewSettings['view']['settings']['methodArguments'].values():
-                description += str(v)+"; "
-            description = description[:-2] + ")\n Parameters: "
-            for x, y in viewSettings['view']['params'].items():
-                description += str(x) + "=" + str(y) + "; "
+            description += ("Descriptors: "+str(viewSettings['view']['settings']['method']) + " (" +
+                            "; ".join(str(v) for v in viewSettings['view']['settings']['methodArguments'].values()) +
+                            ")")
+            if viewSettings['view']['settings']['solventColumn']:
+                description += ", Solvent ("+viewSettings['view']['settings']['solventColumn']+")"
+            if viewSettings['view']['settings']['numericalFeatureColumns']:
+                description += (", Passthrough (" +
+                                ", ".join(str(v) for v in viewSettings['view']['settings']['numericalFeatureColumns']) +
+                                ")")
+            description += ("\n Parameters: " +
+                            ', '.join('{}={}'.format(*t) for t in viewSettings['view']['params'].items()))
             pm.description = description[:-2]
         model = get_model(arg_get_model)
         if type(model) is Pipeline:

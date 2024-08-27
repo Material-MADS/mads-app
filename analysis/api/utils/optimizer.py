@@ -21,6 +21,7 @@
 import logging
 import numpy as np
 from doptools.optimizer import launch_study, methods, calculate_descriptor_table
+from doptools.chem.solvents import available_solvents
 from chython import smiles
 import pandas as pd
 from scipy.sparse import csr_matrix
@@ -74,6 +75,20 @@ def get_descriptors_and_transformer(data, df, df_target):
                   'prop1': {'indices': indices,
                             'property': df_target,
                             'property_name': data['view']['settings']['targetColumn']}}
+    if 'numericalFeatureColumns' in data['view']['settings'] and data['view']['settings']['numericalFeatureColumns']:
+        df_nfc = df[data['view']['settings']['numericalFeatureColumns']]
+        try:
+            if not np.array_equal(df_nfc, df_nfc.astype(float)):
+                raise ValueError()
+        except ValueError:
+            raise ValueError("Some values are not numerical in Numerical column(s): ", ", ".join(str(x) for x in df_nfc.columns))
+        input_dict['passthrough'] = df_nfc
+
+    if 'solventColumn' in data['view']['settings'] and data['view']['settings']['solventColumn']:
+        df_sc = df[data['view']['settings']['solventColumn']]
+        if any(x not in available_solvents for x in df_sc):
+            raise ValueError("Unknown solvent. Please refer to solvents supported in DOPtools.")
+        input_dict['solvents'] = df_sc
 
     result = calculate_descriptor_table(input_dict, descriptors_name, parameters_dict)
     return result['prop1']['table'], result['prop1']['calculator']  # descriptors, transformer

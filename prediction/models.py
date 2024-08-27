@@ -33,6 +33,7 @@ import pandas as pd
 from chython import smiles
 from chython.exceptions import IncorrectSmiles
 from doptools.chem.coloratom import ColorAtom
+from doptools.chem.solvents import available_solvents
 
 from common.models import OwnedResourceModel
 
@@ -139,7 +140,7 @@ class PretrainedModel(OwnedResourceModel):
         elif self.metadata['input_type'] == "SMILES":
             mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys() else ["SMILES"]
             nb_mol_fields = len(mol_fields)
-            mols = []
+            to_pred = []
             real_props = []
             for line in inports["SMILES"].splitlines():
                 items = line.split()
@@ -148,46 +149,49 @@ class PretrainedModel(OwnedResourceModel):
 
                 for val, col in zip_longest(items, mol_fields):
                     if not val or not col:
-                        if not val:  # required col
+                        if not val:  # required value
                             line_error = True
                         break
-                    mol = smiles(val)
-                    if mol:
+                    try:
+                        mol = smiles(val)
                         try:
                             mol.canonicalize(fix_tautomers=False)
                         except:
                             mol.canonicalize(fix_tautomers=False)
                         line_dict[col] = mol
-                    else:
-                        line_error = True
-                        break
+                    except IncorrectSmiles:
+                        try:
+                            nbr = float(val)
+                            line_dict[col] = nbr
+                        except ValueError:
+                            if val in available_solvents:
+                                line_dict[col] = val
+                            else:
+                                line_error = True
+                                break
                 if not line_error:
-                    mols.append(line_dict)
+                    to_pred.append(line_dict)
                     real_props.append(float(items[-1]) if len(items) > nb_mol_fields else None)
-            mols = pd.DataFrame.from_records(mols)
+
+            if not to_pred:
+                return pd.DataFrame.from_records([{"ERROR": "No correct item to predict"}])
+
+            to_pred = pd.DataFrame.from_records(to_pred)
             if any([x is not None for x in real_props]):
-                mols['Real'] = real_props
+                to_pred['Real'] = real_props
 
-            mols_predictor = mols['SMILES'].to_list() if nb_mol_fields == 1 else mols
+            mols_predictor = to_pred['SMILES'].to_list() if nb_mol_fields == 1 else to_pred
             predictions = model.predict(mols_predictor)
-            mols['Predicted'] = predictions
+            to_pred['Predicted'] = predictions
 
-            if coloratom:
-                if nb_mol_fields == 1:
-                    clr = ColorAtom()
-                    clr.set_pipeline(model)
-                    colored = [clr.output_html(mols.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor))]
-                else:
-                    colored = []
-                    # clr = ColorAtom(is_complex=True)
-                    # clr.set_pipeline(model)
-                    # for n in range(len(mols_predictor)):
-                    #     colored.append(clr.output_html(mols.iloc[n]))
-                mols['ColorAtom'] = colored
+            if coloratom and nb_mol_fields == 1:  # ColorAtom don't work for several SMILES columns yet
+                clr = ColorAtom()
+                clr.set_pipeline(model)
+                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor))]
 
             for col in mol_fields:
-                mols[col] = [str(x) for x in mols[col]]
-            return mols
+                to_pred[col] = [str(x) for x in to_pred[col]]
+            return to_pred
 
         else:
             return outport
