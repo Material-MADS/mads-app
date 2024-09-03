@@ -3,19 +3,17 @@
 //          Hokkaido University (2018)
 //          Last Update: Q3 2023
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Philippe Gantzer (Component Developer) [2024-]
+//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'Regression' View
+// Description: This is the Inner workings and Content Manager Controler of the 'Descriptors' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Regression' is the manager of all current input that controls the final view of the
-//         'RegressionVis' visualization component.
+// Notes: 'Descriptors' is the manager of all current input that controls the final view of the
+//         'DescriptorsVis' visualization component.
 // ------------------------------------------------------------------------------------------------
 // References: 3rd party pandas & lodash libs, Internal ViewWrapper & Form Utility Support,
 //             Internal PieChart & PieForm libs,
 =================================================================================================*/
-
-//*** TODO: This is not structured the same way as other Views, should probably be adjusted to do that
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
@@ -53,20 +51,28 @@ export default class DescriptorsView extends withCommandInterface( DescriptorsVi
 
     // filter out non-existing columns & colorTags
     if (values.filter) {
-//      const colorTagIds = colorTags.map((c) => c.id);
-//      const filteredFilters = values.filter.filter((f) =>
-//        colorTagIds.includes(f)
-//      );
-      newValues.filter = values.filter;
+      const colorTagIds = colorTags.map((c) => c.id);
+      const filteredFilters = values.filter.filter((f) =>
+        colorTagIds.includes(f)
+      );
+      newValues.filter = filteredFilters;
     }
 
     // filter out featureColumns
     const columns = this.getColumnOptionArray();
     if (values.featureColumns) {
-//      const filteredColumns = values.featureColumns.filter((f) =>
-//        columns.includes(f)
-//      );
-      newValues.featureColumns = values.featureColumns;
+      const filteredColumns = values.featureColumns.filter((f) =>
+        columns.includes(f)
+      );
+      newValues.featureColumns = filteredColumns;
+    }
+
+    // filter out numericalFeatureColumns
+    if (values.numericalFeatureColumns && values.numericalFeatureColumns.length > 0) {
+      const filteredColumns2 = values.numericalFeatureColumns.filter((f) =>
+        columns.includes(f)
+      );
+      newValues.numericalFeatureColumns = filteredColumns2;
     }
 
     // extract data
@@ -75,33 +81,30 @@ export default class DescriptorsView extends withCommandInterface( DescriptorsVi
     const tc = df.get(newValues.targetColumn);
     data[newValues.targetColumn] = tc.values.toArray();
     const fc = df.get(newValues.featureColumns);
-    data[newValues.featureColumns] = fc.values.toArray();
-
-//    newValues.featureColumns.forEach((c) => {
-//      const fc = df.get(c);
-//      data[c] = fc.values.toArray();
-//    });
+    newValues.featureColumns.forEach((c) => {
+      const fc = df.get(c);
+      data[c] = fc.values.toArray();
+    });
+    if(values.numericalFeatureColumns && values.numericalFeatureColumns.length > 0) {
+      const nfc = df.get(newValues.numericalFeatureColumns);
+      newValues.numericalFeatureColumns.forEach((c) => {
+        const nfc = df.get(c);
+        data[c] = nfc.values.toArray();
+      });
+    };
+    if(values.solventColumn) {
+      const sc = df.get(newValues.solventColumn);
+      data[newValues.solventColumn] = sc.values.toArray();
+    };
 
     // set mapping
     newValues.mappings = {
       x: values.targetColumn,
       y: `${values.targetColumn}--Predicted`,
     };
-
     newValues = convertExtentValues(newValues);
 
-    this.tmpViewParams = { view, newValues, data };
     actions.sendRequestViewUpdate(view, newValues, data);
-  };
-
-  // Manages Save Model Requests
-  handleModelSave = (name, overwrite, id) => {
-    // Note: override this if necessary
-    const { actions } = this.props;
-
-    // submit setting form
-    this.formReference.submit();
-    actions.saveModel(name, this.tmpViewParams, overwrite, id);
   };
 
   composeSubmittingData = (values) => {};
@@ -122,8 +125,6 @@ export default class DescriptorsView extends withCommandInterface( DescriptorsVi
         console.log("not undef, returns good")
       }
     }
-
-
     return data;
   };
 }

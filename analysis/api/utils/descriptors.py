@@ -1,27 +1,26 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q3 2024
 # ________________________________________________________________________________________________
-# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-#          Jun Fujima (Former Lead Developer) [2018-2021]
+# Authors: Philippe Gantzer (Component Developer) [2024-]
+#          Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              'regression' components
+#              'descriptors' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
-#         allows serverside work for the 'regression' component.
+#         allows serverside work for the 'descriptors' component.
 # ------------------------------------------------------------------------------------------------
-# References: logging, numpy, pandas and sklearn libs
+# References: logging, numpy and pandas libs; optimizer component
 #=================================================================================================
 
 #-------------------------------------------------------------------------------------------------
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
 import logging
-from doptools.chem import ChythonCircus
-from chython import smiles
 import pandas as pd
+from .optimizer import get_descriptors_and_transformer, split_dataset
 
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
@@ -29,30 +28,14 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_descriptors(data):
-    print("called with arg", data['view']['settings'])
-    smiles_columns = data['view']['settings']['featureColumns']
     target_column = data['view']['settings']['targetColumn']
-    method = data['view']['settings']['method']
-    method_args = data['view']['settings']['methodArguments']
 
-    dataset = data['data']
-    df = pd.DataFrame(dataset)
-    df_smiles = df[smiles_columns]
-    mols = [y for x in df_smiles if (y := smiles(x))]
-    # TODO later: error if a SMILES is not read
+    df = pd.DataFrame(data['data'])
     df_target = df[target_column]
-    y = df_target.values
 
-    if method == 'Circus':
-        augmentor = ChythonCircus(int(method_args['arg1']), int(method_args['arg2']))
-        aa = augmentor.fit_transform(mols)
-        print("Features names", augmentor.get_feature_names())
-        desc = pd.DataFrame(aa)
-        desc2 = desc.to_dict('records')
+    raw_desc, _ = get_descriptors_and_transformer(data, df, df_target)
+    raw_desc[target_column] = df_target
 
-    result = {'data': data, 'data_desc': desc2}
-
-
-    return result
+    return {'data': data, 'data_desc': raw_desc.to_dict('records')}
 
 #-------------------------------------------------------------------------------------------------

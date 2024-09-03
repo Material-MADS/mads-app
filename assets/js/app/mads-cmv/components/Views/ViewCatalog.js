@@ -707,14 +707,18 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     component: DescriptorsView,
+    customBtns: [
+      {name: 'saveCSVData', icon: 'download', text: 'Download descriptors as CSV'},
+    ],
     settings: {
       method: 'Circus',
       methodArguments: {
         arg1: 0,
-        arg2: 0
+        arg2: 3
       },
       featureColumns: [],
       numericalFeatureColumns: [],
+      solventColumn: '',
       targetColumn: '',
       mappings: {},
     },
