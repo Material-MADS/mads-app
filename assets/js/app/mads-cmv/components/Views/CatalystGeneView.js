@@ -37,7 +37,6 @@ export default class CatalystGeneView extends withCommandInterface(CatalystGene,
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset,  } = this.props;
     let newValues = { ...values };
-    console.log(dataset);
 
     // extract data
     let internalData = dataset.main.data;
@@ -46,12 +45,10 @@ export default class CatalystGeneView extends withCommandInterface(CatalystGene,
     dataset.main.schema.fields.map(c => columns.push(c['name']));
     const listToChoose = [...newValues.featureColumns];
     listToChoose.push("Catalyst")
-    console.log(listToChoose)
     const s = df.get(listToChoose);
     const data = s.values.toArray();
 
     newValues = convertExtentValues(newValues);
-    // console.log(newValues)
     actions.sendRequestViewUpdate(view, newValues, dataset);
   };
 

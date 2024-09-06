@@ -53,6 +53,17 @@ const setSubmitButtonDisable = (disableState) => {
 
 const errors = {};
 const errorValidate = (value, values, props, fieldName) => {
+  const loadData = props.dataset
+  const dataColumns = loadData.main.schema.fields.map(a => a.name);
+  if (values.featureColumns){
+    const valueInclude = values.featureColumns.map(v => dataColumns.includes(v));
+    if(valueInclude.includes(false)){
+      values.featureColumns = [];
+      values.rootCatalyst = undefined;
+      values.visualizationMethod = undefined;
+    }
+  }
+
   let error = undefined;
 
   // at least three columns are selected
@@ -67,13 +78,22 @@ const errorValidate = (value, values, props, fieldName) => {
   if (values && (fieldName == "rootCatalyst") || (fieldName == "featureColumns") || (fieldName == "visualizationMethod")){
     if(!value || _.isEmpty(value)){
       error = 'Required';
-    }
+  }
     else { errors[fieldName] = false; }
   }
 
 
   errors[fieldName] = (error != undefined);
-  setSubmitButtonDisable(!value || error || (Object.values(errors)).includes(true));
+
+  if(values){
+    if(!values.preprocessingEnabled){
+      values.preprocMethod = undefined
+      setSubmitButtonDisable(error || (Object.values(errors)).includes(true));
+    }else{
+      setSubmitButtonDisable(!value || error || (Object.values(errors)).includes(true));
+
+    }
+  }
 
   return error;
 }
@@ -144,8 +164,6 @@ function makeCatalystOptions(data, columnName) {
 //-------------------------------------------------------------------------------------------------
 
 const CatalystGeneForm = (props) => {
-  // console.log(props)
-
   // parameters and such
   const {
     handleSubmit,
@@ -159,12 +177,6 @@ const CatalystGeneForm = (props) => {
     dataset,
 
   } = props;
-
-  // console.log(initialValues)
-  
-  // const cataList = dataset.main.data.map(a => a['Catalyst'])
-
-  // console.log(getDropdownOptions(cataList))
 
   const cTags = colorTags.map((c) => ({
     text: c.color,
@@ -208,12 +220,13 @@ const CatalystGeneForm = (props) => {
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
   );
+  
+  const [scalingMethod, setScalingMethod] = useState();
+
 
   const onCMChange = (event) => {
     setValue(event);
   };
-
-// console.log(catalysts)
 
   // The form itself, as being displayed in the DOM
   return (
@@ -261,7 +274,6 @@ const CatalystGeneForm = (props) => {
             toggle
             onChange={(e, data) => {
               setPreprocDisabled(!data);
-              //handleScalingMethodChange(e, data)
             }}
           />
         </Form.Field>
@@ -276,11 +288,14 @@ const CatalystGeneForm = (props) => {
               options={getDropdownOptions(preprocMethods)}
               disabled={preprocDisabled}
               validate={[ errorValidate ]}
+              onChange={(e, data)=> {
+                setScalingMethod(data)
+              }}
             />
           </Form.Field>
         </div>}
 
-        {!preprocDisabled && scalingMethod === 'MinMaxScalering' && (
+        {!preprocDisabled && scalingMethod === 'MinMaxScaler' && 
         <Form.Group widths="equal">
           <label>Scaling Parameters:</label>
           <Field
@@ -290,7 +305,6 @@ const CatalystGeneForm = (props) => {
             type="number"
             placeholder="max"
             label="Max"
-            validate={[ errorValidate ]}
           />
           <Field
             fluid
@@ -299,10 +313,9 @@ const CatalystGeneForm = (props) => {
             placeholder="min"
             type="number"
             label="Min"
-            validate={[ errorValidate ]}
           />
         </Form.Group>
-      )}
+      }
 
 
 

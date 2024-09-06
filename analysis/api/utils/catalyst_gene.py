@@ -49,6 +49,7 @@ def get_catalyst_gene(data):
     distance_border = 2
 
     result = {}
+    result['featureColumns'] = feature_columns
     result['visualizationMethod'] = visualization
     result['rootCatalyst'] = root_catalyst
     
@@ -67,9 +68,10 @@ def get_catalyst_gene(data):
         result["error"] = ["more than 3 valid columns are required"]
 
     else:
+        logger.info(data['view']['settings'].keys())
         #  Scaling the data if user specified the mehod  #
         if "preprocessingEnabled" in data['view']['settings'].keys():
-            if ((data['view']['settings']["preprocessingEnabled"] == True) & ("preprocMethod" in data['view']['settings'].keys())):
+            if data['view']['settings']["preprocessingEnabled"] == True:
                 scaling = data['view']['settings']['preprocMethod']
                 if scaling == 'StandardScaler':
                     scaler = StandardScaler()
@@ -78,13 +80,16 @@ def get_catalyst_gene(data):
                 elif scaling == 'MaxAbsScaler':
                     scaler = MaxAbsScaler()
                 elif scaling == 'MinMaxScaler':
-                    min_value = 0#data["settings"]["options"]["scaling"]["min"]
-                    max_value = 1#data["settings"]["options"]["scaling"]["max"]
+                    min_value = data['view']["settings"]["options"]["scaling"]["min"]
+                    max_value = data['view']["settings"]["options"]["scaling"]["max"]
                     scaler = MinMaxScaler(feature_range=(min_value, max_value))
                 scaled_df = pd.DataFrame(scaler.fit_transform(df_numerized), columns = df_numerized.columns)
+            else:
+                scaled_df = df_numerized
         else:
             scaled_df = df_numerized
         result["scaledData"]= scaled_df
+        result["columnsForGene"] = scaled_df.columns
 
 ##################################################################################################################################################
 #########   clustering   #########################################################################################################################
@@ -150,8 +155,10 @@ def get_catalyst_gene(data):
             
             list_df_genes.append(pd.DataFrame(array_gene, columns = [gene_columns[i]]))
                
-            
+        df_area = pd.concat(list_df_areas, axis = 1)
         df_gene_area = pd.concat([df_original] + list_df_areas + list_df_genes, axis = 1)
+
+        result['areaData'] = df_area
 
         array_for_gene = df_gene_area.loc[:, gene_columns].values
 
@@ -238,7 +245,9 @@ def get_catalyst_gene(data):
 
         df_distance_introduced = pd.concat([df_root_raw, df_compare_distance_introduced], axis = 0)
         
-        df_distance_introduced.reset_index(drop = False, inplace = True)
+        df_distance_introduced.reset_index(drop = True, inplace = True)
+
+        logger.info(df_distance_introduced.columns)
 
         result['dfDistanceIntroduced'] = df_distance_introduced
 
@@ -246,5 +255,15 @@ def get_catalyst_gene(data):
 
         result['similarGeneCatalyst'] = df_similar_gene_catalyst
 
+        area_columns = [a for a in df_distance_introduced.columns if "area" in a]
+
+        dict_area_cat =  {}
+
+        for i, catalyst in enumerate(df_distance_introduced["Catalyst"]):
+            df_cat = df_distance_introduced.iloc[i, :]
+            dict_area_cat[catalyst] = df_cat[area_columns].values.tolist()
+
+        result["parallelData"] = dict_area_cat
+        
     return result
 #-------------------------------------------------------------------------------------------------

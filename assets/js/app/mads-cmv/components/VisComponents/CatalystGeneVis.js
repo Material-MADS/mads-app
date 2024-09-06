@@ -17,11 +17,14 @@
 //===================================================================================================================
 // Main Dependent libraries (React and related)
 //---------------------------------------------
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, } from "react";
 import PropTypes from "prop-types";
+import { DataFrame } from 'pandas-js';
 import * as Bokeh from "@bokeh/bokehjs";
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
+import SemCheckbox from '../FormFields/Checkbox';
+import { Field, reduxForm, Label } from 'redux-form';
 
 
 // Available Visual Components to be used with this customizable one
@@ -119,6 +122,18 @@ const getMaxPoint = (linePoints) => {
   return maxPoint;
 };
 
+const getMinPoint = (linePoints) => {
+  let minPoint = Infinity;
+  linePoints.forEach(line => {
+    line.forEach(point => {
+      if (point < minPoint) {
+        minPoint = point;
+      }
+    });
+  });
+  return minPoint;
+};
+
 
 function Clustering({
   data,
@@ -133,7 +148,6 @@ function Clustering({
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
-    console.log(rootNode)
     const rootCatalyst = data["rootCatalyst"];
     const similarGeneCatalyst = data["similarGeneCatalyst"]
     const { extent, margin } = internalOptions;
@@ -148,7 +162,6 @@ function Clustering({
   
     const scaleX = plotWidth / maxXPoint;
     const scaleY = plotHeight / maxYPoint;
-    console.log("yscale of clustering is" + scaleY.toString())
 
 
     const source = new Bokeh.ColumnDataSource({
@@ -380,29 +393,273 @@ function Clustering({
       });    
     }
 
-
-
-
-    // const callback = new Bokeh.CustomJS({
-    //   args: { yaxis: plot.yaxis[0], rootCatalyst: rootCatalyst, yTicklabels: yTicklabels, yTickPoint: yTickPoint },
-    //   code: `
-    //       // y軸のラベル要素を取得
-    //       const labels = document.querySelectorAll('.bk-axis-tick');
-    //       labels.forEach((label, index) => {
-    //           const tickText = label.innerText.trim();
-    //           if (tickText === rootCatalyst) {
-    //               label.style.color = 'red';
-    //           } else {
-    //               label.style.color = 'black';
-    //           }
-    //       });
-    //   `
-    // });
    Bokeh.Plotting.show(plot, rootNode.current);
     // plot.js_event_callbacks = {'reset': [callback]};
 
   }, [data])
 
+  return(
+    <div id="containerHolder">
+      <div ref={rootNode} />
+    </div>
+  );
+}
+
+function ParallelGene({
+  data,
+  options,
+  selectedIndices,
+  onSelectedIndicesChange,
+  colorMap
+}){
+  const internalOptions = Object.assign({}, defaultOptions, options);
+  const internalData = data.parallelData;
+  const xTickLabels = Object.keys(data.areaData);
+  const columnsForGene = data.columnsForGene;
+  const rootNode = useRef(null);
+  const [selectCatalyst, setSelectCatalyst] = useState(null);
+  const [isXlabelArea, setIsXlabelArea] = useState(true);
+
+  useEffect(() => {
+    if (!rootNode.current) return;
+    rootNode.current.innerHTML = '';
+    const rootCatalyst = data["rootCatalyst"];
+    const similarGeneCatalyst = data["similarGeneCatalyst"]
+    const { extent, margin } = internalOptions;
+    const { width,height } = extent;
+    const xAxisRange = internalData[rootCatalyst].length;
+    const yMin = getMinPoint(Object.values(internalData));
+    const yMax = getMaxPoint(Object.values(internalData));
+    const yRangeMin = yMin < 0 ? yMin * 1.1 : -xAxisRange / 100;
+    const yAxisRange = yMax - yMin;
+    const { l: left, r: right, t: top, b: bottom } = margin;
+    const plotWidth = width - left - right;
+    const plotHeight = height - top - bottom;
+    const xRange = new Bokeh.Range1d({ start: 0, end: xAxisRange  });
+    const yRange = new Bokeh.Range1d({ start: yRangeMin, end: yMax * 1.1 });
+
+
+    const plot = new Bokeh.Plotting.figure({
+      tools: internalOptions.tools,
+      width: plotWidth,
+      height: plotHeight,
+      x_range: xRange,
+      y_range: yRange,
+    });
+   
+
+    const holizonLInes = Array.from({length:20},(_, index) => (index * yAxisRange / 20 + yMin))
+
+    const holizonSource = new Bokeh.ColumnDataSource({
+      data:{
+        x0: holizonLInes.map(p => 0),
+        y0: holizonLInes.map(p => p),
+        x1: holizonLInes.map(p => xAxisRange),
+        y1: holizonLInes.map(p => p),
+      }
+    });
+
+    const backGroundSource = new Bokeh.ColumnDataSource({
+      data: {
+        xData: [xAxisRange / 2],
+        yData: [(yMax + yRangeMin)/ 2],
+      }
+    });
+
+    const labelSource = new Bokeh.ColumnDataSource({
+      data:{
+        xData: holizonLInes.map(p =>1 / 4),
+        yData: holizonLInes.map(p => p),
+        labels: Array.from(Array(20), (_, i) => String.fromCharCode(i + 65))
+      }
+    });
+
+    const renderer = plot.rect({
+      x: { field: "xData" },
+      y: { field: "yData" },
+      width: xAxisRange,
+      height: yAxisRange,
+      source: backGroundSource,
+      fill_color: "white"
+    });
+
+
+    const holizonDraw = plot.segment(
+      {field:"x0"},
+      {field:"y0"},
+      {field:"x1"},
+      {field:"y1"},
+      {source : holizonSource}
+    );
+
+    const xData = Array.from({ length: internalData[rootCatalyst].length }, (_, index) => index + 1 / 2);
+    const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index );
+    
+    Object.keys(internalData).forEach(catalyst => {
+      const yData = internalData[catalyst].map(y => y );
+      const color = catalyst === rootCatalyst ? "orange": "blue";
+      const width = catalyst === rootCatalyst ? 10: 1;
+
+      const parallelSource = new Bokeh.ColumnDataSource({
+        data: { x: xData, y: yData }
+      });
+    
+      plot.line({
+        x: { field: "x" },
+        y: { field: "y" },
+        line_color: color,
+        line_width: width,
+        source: parallelSource });
+
+      const circles = plot.ellipse({
+        x: { field: "x" },
+        y: { field: "y" },
+        width: xAxisRange / 40,
+        height: yAxisRange / 40,
+        fill_color: "red",
+        source: parallelSource,
+      });
+    });
+
+    const labelDraw = new Bokeh.LabelSet({
+      x: {field: "xData"},
+      y: {field: "yData"},
+      text: {field: "labels"},
+      x_units: 'data',
+      y_units: 'data',
+      source: labelSource,
+      render_mode: 'canvas',
+      text_font_size: '10pt',
+      text_color: 'black',
+      text_align: 'center',
+      text_baseline: 'bottom'
+    });
+
+
+    if ((xTickLabels.length > 0) && isXlabelArea) {
+      const xaxis = plot.xaxis[0];
+      xaxis.ticker = new Bokeh.FixedTicker({ ticks: xData });
+      xaxis.major_label_orientation = 45;
+      xaxis.formatter = new Bokeh.FuncTickFormatter({
+        args: { labels: xTickLabels, tickPoints: xData },
+        code: `
+          const ind = tickPoints.indexOf(tick);
+          return labels[ind] ? labels[ind] : '';
+        `
+      });    
+    }
+
+    if ((columnsForGene.length > 0) && !isXlabelArea) {
+      const xaxis = plot.xaxis[0];
+      xaxis.ticker = new Bokeh.FixedTicker({ ticks: xLabelPoints });
+      xaxis.major_label_orientation = 45;
+      xaxis.formatter = new Bokeh.FuncTickFormatter({
+        args: { labels: columnsForGene, tickPoints: xLabelPoints },
+        code: `
+          const ind = tickPoints.indexOf(tick);
+          return labels[ind] ? labels[ind] : '';
+        `
+      });    
+    }
+
+    plot.add_layout(labelDraw);
+
+    // const circles = plot.ellipse({
+    //   x: { field: "xData" },
+    //   y: { field: "yData" },
+    //   width: 10,
+    //   height: 10,
+    //   fill_color:"red",
+    //   line_color:{ field: "color" },
+    //   source: parallelSource,
+    // });
+
+    Bokeh.Plotting.show(plot, rootNode.current);
+
+  }, [internalData, isXlabelArea])
+
+  return(
+    <div id="containerHolder">
+          <button
+            onClick={() => {
+              setIsXlabelArea(true);
+              }
+            }
+          >Show area Info
+          </button>
+          <button
+            onClick={() => {
+              setIsXlabelArea(false);
+              }
+            }
+          >Show column Info
+          </button>
+      <div ref={rootNode} />
+    </div>
+  );
+}
+
+function GeneTable({
+  data,
+  options,
+  colorTags,
+  selectedIndices,
+  onSelectedIndicesChange,
+  colorMap
+}){
+  const internalOptions = Object.assign({}, defaultOptions, options);
+  const internalData = data.dfDistanceIntroduced;
+  const xTickLabels = Object.keys(data.areaData);
+  const rootNode = useRef(null);
+  useEffect(() => {
+    if (!rootNode.current) return;
+    rootNode.current.innerHTML = '';
+    const { extent, margin } = internalOptions;
+    const { width,height } = extent;
+
+    const colNamesInProperOrder = Object.keys(internalData);
+
+    const tableSource = new Bokeh.ColumnDataSource({ data: internalData });
+    const tString = JSON.stringify(colorTags);
+
+    const template = `
+      <div style="color:<%=
+        (function() {
+          var colorTags = ${tString}
+          var color = 'black'
+          colorTags.forEach(t => {
+            if (t.itemIndices.includes(__bkdt_internal_index__)) {
+              color = t.color;
+              return;
+            }
+          });
+          return color;
+        }())
+      %>"><%= value %></div>
+    `;
+
+    const formatter = new Bokeh.Tables.HTMLTemplateFormatter({ template });
+
+    let displayColumns = colNamesInProperOrder.map((v) => {
+      const c = new Bokeh.Tables.TableColumn({
+        field: v,
+        title: v,
+        formatter,
+      });
+      return c;
+    });
+
+    const dataTable = new Bokeh.Tables.DataTable({
+      source: tableSource,
+      columns: displayColumns,
+      width: width || defaultOptions.extent.width,//INITIAL_WIDTH,
+      height: height || defaultOptions.extent.height,
+      selection_color: 'red',
+    });
+
+    Bokeh.Plotting.show(dataTable, rootNode.current);
+
+  }, [])
   return(
     <div id="containerHolder">
       <div ref={rootNode} />
@@ -447,6 +704,10 @@ function componentSelector(data){
       SelComp = Clustering;
     } else if (visualization === 'Heatmap'){
       SelComp = HeatMapGene;
+    } else if (visualization === 'Parallel-coordinate Catalyst gene introduction'){
+      SelComp = ParallelGene;
+    } else{
+      SelComp = GeneTable;
     }
   }
   return SelComp
