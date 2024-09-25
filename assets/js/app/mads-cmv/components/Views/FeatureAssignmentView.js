@@ -7,12 +7,12 @@
 //　　　　　 Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Inner workings and Content Manager Controler of the
-//              'CatalystPropertyConversionView' View
+//              'FeatureAssignmentView' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'CatalystPropertyConversionView' is the manager of all current input that controls the 
-//        final view of the 'CatalystPropertyConversionView' visualization component.
+// Notes: 'FeatureAssignmentView' is the manager of all current input that controls the 
+//        final view of the 'FeatureAssignmentView' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal "CatalystPropertyConversionView"
+// References: Internal ViewWrapper & Form Utility Support, Internal "FeatureAssignmentView"
 //             View & Form libs
 =================================================================================================*/
 
@@ -22,8 +22,8 @@
 import withCommandInterface from './ViewWrapper';
 import convertExtentValues from './FormUtils';
 
-import CatalystPropertyConversion from '../VisComponents/CatalystPropertyConversionVis';
-import CatalystPropertyConversionForm from './CatalystPropertyConversionForm';
+import FeatureAssignment from '../VisComponents/FeatureAssignmentVis';
+import FeatureAssignmentForm from './FeatureAssignmentForm';
 import { DataFrame } from 'pandas-js';
 //-------------------------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ import { DataFrame } from 'pandas-js';
 //-------------------------------------------------------------------------------------------------
 // The View Class for this Visualization Component
 //-------------------------------------------------------------------------------------------------
-export default class CatalystPropertyConversionView extends withCommandInterface(CatalystPropertyConversion, CatalystPropertyConversionForm) {
+export default class FeatureAssignmentView extends withCommandInterface(FeatureAssignment, FeatureAssignmentForm) {
 
   // Manages config settings changes (passed by the connected form) in the view
   handleSubmit = (values) => {

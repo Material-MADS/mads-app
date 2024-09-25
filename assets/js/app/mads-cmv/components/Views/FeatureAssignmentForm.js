@@ -6,11 +6,11 @@
 // Authors:Yoshiki Hasukawa (Student Developer and Component Design) [2024]
 //　　　　　 Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'CatalystPropertyConversionView' 
+// Description: This is the Settings Configuration Form for the 'featureAssignment' 
 //              View, driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
-// Notes: 'CatalystPropertyConversionView Form' opens a customized form for the
-//        'CatalystPropertyConversionView' visualization component and allows the user to edit its
+// Notes: 'featureAssignmentForm' opens a customized form for the
+//        'featureAssignmentForm' visualization component and allows the user to edit its
 //        look, feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
@@ -33,9 +33,6 @@ import { useSelector } from "react-redux";
 
 
 import { getDropdownOptions } from './FormUtils';
-
-// Info Help Images
-// import format_info_pdf from './images/catalystpropertycanversion/format_info.pdf';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -116,7 +113,7 @@ const getAvailableColumns = (columns, ...selectedList) => {
 //-------------------------------------------------------------------------------------------------
 // The ReduxForm Module for this specific view and Visualisation Component
 //-------------------------------------------------------------------------------------------------
-const CatalystPropertyConversionForm = (props) => {
+const FeatureAssignmentForm = (props) => {
 
   // parameters and such
   const {
@@ -129,7 +126,8 @@ const CatalystPropertyConversionForm = (props) => {
     colorTags,
     columns,
   } = props;
-
+  
+  //feature assign method means conversion method(I changed label of "Conversion Method" into "Feature Assignment method" -> refer to 153rd line)
   const [conversionMethod, setConversionMethod] = useState(initialValues.conversionMethod);
 
   const [catalyst, setCatalyst] = useState(initialValues.catalyst);
@@ -149,7 +147,7 @@ const CatalystPropertyConversionForm = (props) => {
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Field >
-        <label>Conversion Method<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='How to convert catalysts into property' size='small' />:</label>
+        <label>Feature Assignment Method<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='How to assign feature columns' size='small' />:</label>
           <Field
             name="conversionMethod"
             component={SemanticDropdown}
@@ -231,7 +229,7 @@ const CatalystPropertyConversionForm = (props) => {
 // Exporting and sharing this ReduxForm Module
 //-------------------------------------------------------------------------------------------------
 export default reduxForm({
-  form: 'CatalystPropertyConversion',
+  form: 'featureAssignment',
   validate,
-})(CatalystPropertyConversionForm);
+})(FeatureAssignmentForm);
 //-------------------------------------------------------------------------------------------------
