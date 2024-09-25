@@ -1241,7 +1241,7 @@ def get_xafs_analysis(data):
 
         # If indices is not empty, get the next element
         if indices:
-            next_idx = indices[0] + 1
+            next_idx = indices[0] + 0
 
         dataset['XANES_statistics_Maxx'] = max_energy_point['energy'].iloc[0]
         dataset['XANES_statistics_Maxy'] = max_energy_point['mu'].iloc[0]
