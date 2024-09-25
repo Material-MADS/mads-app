@@ -140,6 +140,7 @@ module.exports = [
         'babel-runtime': '@babel/runtime',
         '@vendors': path.resolve(__dirname, 'assets/vendors/'),
       },
+      fallback: { 'process/browser': require.resolve('process/browser'), }
     },
   },
 ];

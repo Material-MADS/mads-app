@@ -60,6 +60,7 @@ export default class XAFSAnalysisView extends withCommandInterface( XAFSAnalysis
     data[newValues.abs] = tc2.values.toArray();
     data['RawData_Xname'] = values.energy;
     data['RawData_Yname'] = values.abs;
+    data['version'] = 2;                              // version changeable
 
     newValues = convertExtentValues(newValues);
 

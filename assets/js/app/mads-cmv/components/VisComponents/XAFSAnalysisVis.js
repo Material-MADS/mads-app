@@ -20,7 +20,7 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Button, Confirm, Form, Modal, Icon, Slider } from 'semantic-ui-react';
+import { Button, Confirm, Form, Modal, Icon, Slider, Radio, Checkbox, Header } from 'semantic-ui-react';
 import { useSelector } from 'react-redux'
 import PropTypes from "prop-types";
 import ReactDOM from 'react-dom';
@@ -34,7 +34,8 @@ import Plotly from 'plotly.js-dist-min';
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 
 import * as d3 from "d3";
-
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import * as loadingActions from '../../actions/loading';
 
 import api from '../../api';
@@ -96,6 +97,21 @@ export default function XAFSAnalysis({
   const [indices, setIndices] = useState([]);
   const zoomRef = useRef(null);
   const currentTransformRef = useRef(d3.zoomIdentity);
+  const [EXAFS_data, setEXAFSData] = useState([]);
+  const [open, setOpen] = useState(false); // モーダルの開閉状態
+  const [selectedOptions, setSelectedOptions] = useState({
+    RawData: false,
+    XANES: false,
+    EXAFS: false,
+    RawData_XANES: false,
+    XANES_EXAFS: false,
+    EXAFS_RawData: false
+  });
+  const [isToggled, setIsToggled] = useState(false);
+  const [togglePoint0, setTogglePoint0] = useState(null);
+  const [togglePoint1, setTogglePoint1] = useState(null);
+  const [togglePoint2, setTogglePoint2] = useState(null);
+  const [togglePoint3, setTogglePoint3] = useState(null);
 
   const handleSelectedIndicesChange = useCallback(() => {
     const { onSelectedIndicesChange } = actions;
@@ -158,6 +174,7 @@ export default function XAFSAnalysis({
 
     setChartData(XANES_data);
     setNewData(new_data);
+    setEXAFSData(EXAFS_data);
 
     // Clears existing svg elements (deletes previous scatterplot)
     d3.select(rootNode.current).selectAll("*").remove();
@@ -365,12 +382,12 @@ export default function XAFSAnalysis({
 
         xGridLines.exit().remove();
 
-        svg.selectAll('.dot, .dot-xanes, .dot-exafs, .highlighted-dot, .highlighted-dot1')
+        svg.selectAll('.dot, .dot-xanes, .dot-exafs, .highlighted-dot, .highlighted-dot1, .highlighted-dot1-toggle')
           .attr('cx', d => newXScale(d.x))
           .attr('cy', d => newYScale(d.y))
           .style("pointer-events", "none");
         
-        svg.selectAll('.dot2, .dot2-xanes, .dot2-exafs, .highlighted-dot2, .highlighted-dot12')
+        svg.selectAll('.dot2, .dot2-xanes, .dot2-exafs, .highlighted-dot2, .highlighted-dot12, .highlighted-dot12-toggle')
           .attr('cx', d => newXScale2(d.x))
           .attr('cy', d => newYScale2(d.y))
           .style("pointer-events", "none");
@@ -510,6 +527,23 @@ export default function XAFSAnalysis({
           .attr('r', 5)
           .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
+
+        svg.selectAll('.highlighted-dot1-toggle')
+        .data(XANES_data.filter(d => {
+          return (
+            (togglePoint0 && d.x === togglePoint0.x && d.y === togglePoint0.y) ||
+            (togglePoint1 && d.x === togglePoint1.x && d.y === togglePoint1.y) ||
+            (togglePoint2 && d.x === togglePoint2.x && d.y === togglePoint2.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot1-toggle always-red')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
+          .attr("fill-opacity", internalOptions.marker.opacity);
          break;
 
       case "EXAFS":
@@ -543,6 +577,21 @@ export default function XAFSAnalysis({
         }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot1 blinking')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
+          .attr("fill-opacity", internalOptions.marker.opacity);
+
+        svg.selectAll('.highlighted-dot1-toggle')
+        .data(EXAFS_data.filter(d => {
+          return (
+            (togglePoint3 && d.x === togglePoint3.x && d.y === togglePoint3.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot1-toggle always-red')
           .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale(d.x))
           .attr('cy', d => yScale(d.y))
@@ -625,6 +674,23 @@ export default function XAFSAnalysis({
           .attr('r', 5)
           .attr('fill', 'red')
           .attr("fill-opacity", internalOptions.marker.opacity);
+
+        svg.selectAll('.highlighted-dot12-toggle')
+        .data(XANES_data.filter(d => {
+          return (
+            (togglePoint0 && d.x === togglePoint0.x && d.y === togglePoint0.y) ||
+            (togglePoint1 && d.x === togglePoint1.x && d.y === togglePoint1.y) ||
+            (togglePoint2 && d.x === togglePoint2.x && d.y === togglePoint2.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot12-toggle always-red')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale2(d.x))
+          .attr('cy', d => yScale2(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
+          .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
       case "EXAFS & Raw Data":
@@ -683,6 +749,21 @@ export default function XAFSAnalysis({
           .attr('cy', d => yScale(d.y))
           .attr('r', 5)
           .attr('fill', 'red')
+          .attr("fill-opacity", internalOptions.marker.opacity);
+
+        svg.selectAll('.highlighted-dot1-toggle')
+        .data(EXAFS_data.filter(d => {
+          return (
+            (togglePoint3 && d.x === togglePoint3.x && d.y === togglePoint3.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot1-toggle always-red')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
         break;
 
@@ -757,16 +838,48 @@ export default function XAFSAnalysis({
           .attr('fill', 'red') 
           .attr("fill-opacity", internalOptions.marker.opacity);
 
-          // Correspondence between statistics and blinking red dots
-          svg.selectAll('.highlighted-dot12')
-          .data(EXAFS_data.filter(d => {
-            if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
-              return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
-            }
-            return false; 
-          }))
+        svg.selectAll('.highlighted-dot1-toggle')
+        .data(XANES_data.filter(d => {
+          return (
+            (togglePoint0 && d.x === togglePoint0.x && d.y === togglePoint0.y) ||
+            (togglePoint1 && d.x === togglePoint1.x && d.y === togglePoint1.y) ||
+            (togglePoint2 && d.x === togglePoint2.x && d.y === togglePoint2.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot1-toggle always-red')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
+          .attr("fill-opacity", internalOptions.marker.opacity);
+
+        // Correspondence between statistics and blinking red dots
+        svg.selectAll('.highlighted-dot12')
+        .data(EXAFS_data.filter(d => {
+          if (highlightedPoint && d.x === highlightedPoint.x && d.y === highlightedPoint.y) {
+            return !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+          }
+          return false; 
+        }))
         .enter().append('circle')
           .attr('class', 'highlighted-dot12 blinking')
+          .attr('clip-path', 'url(#clip)')
+          .attr('cx', d => xScale2(d.x))
+          .attr('cy', d => yScale2(d.y))
+          .attr('r', 5)
+          .attr('fill', 'red') 
+          .attr("fill-opacity", internalOptions.marker.opacity);
+
+        svg.selectAll('.highlighted-dot12-toggle')
+        .data(EXAFS_data.filter(d => {
+          return (
+            (togglePoint3 && d.x === togglePoint3.x && d.y === togglePoint3.y)
+          ) && !(d.x === defaultData.X[0] && d.y === defaultData.Y[0]);
+        }))
+        .enter().append('circle')
+          .attr('class', 'highlighted-dot12-toggle always-red')
           .attr('clip-path', 'url(#clip)')
           .attr('cx', d => xScale2(d.x))
           .attr('cy', d => yScale2(d.y))
@@ -875,7 +988,7 @@ export default function XAFSAnalysis({
     const stats = computeStatistics(new_data, XANES_statistics, EXAFS_statistics);
     renderTable(stats);
 
-  }, [data, internalOptions, selectedButton, minPoint, highlightedPoint, rootNode, indices]); 
+  }, [data, internalOptions, selectedButton, minPoint, highlightedPoint, rootNode, indices, isToggled, togglePoint0, togglePoint1, togglePoint2, togglePoint3]); 
 
   const computeStatistics = (new_data, XANES_statistics, EXAFS_statistics) => {
     if (!new_data || new_data.length === 0){
@@ -924,6 +1037,10 @@ export default function XAFSAnalysis({
     .blinking {
       animation: blink 1s infinite;
     }
+
+    .always-red {
+      color: red;
+    }
   `;
   document.head.appendChild(style);
 
@@ -936,6 +1053,39 @@ export default function XAFSAnalysis({
     setHighlightedPoint(null);
     event.currentTarget.classList.remove("highlighted-text");
   };
+
+  const togglePointHandler = () => {
+
+    if (isToggled) {
+      const pointsToToggle = [
+        { x: data.XANES_statistics_Maxx, y: data.XANES_statistics_Maxy },
+        { x: data.XANES_statistics_E0x, y: data.XANES_statistics_E0y },
+        { x: data.XANES_statistics_Minx, y: data.XANES_statistics_Miny },
+        { x: data.EXAFS_statistics_x, y: data.EXAFS_statistics_y }
+      ];
+
+      if (pointsToToggle.length > 0) {
+        setTogglePoint0(pointsToToggle[0]);
+        setTogglePoint1(pointsToToggle[1]);
+        setTogglePoint2(pointsToToggle[2]);
+        setTogglePoint3(pointsToToggle[3]);
+      } else {
+        setTogglePoint0(null);
+        setTogglePoint1(null);
+        setTogglePoint2(null);
+        setTogglePoint3(null);
+      }
+    } else {
+      setTogglePoint0(null);
+      setTogglePoint1(null);
+      setTogglePoint2(null);
+      setTogglePoint3(null);
+    }
+  };
+
+  useEffect(() => {
+    togglePointHandler();
+  }, [isToggled, stats]);
 
   const renderTable = (stats) => {
     const formatNumber = (number) => {
@@ -1232,7 +1382,7 @@ export default function XAFSAnalysis({
 //-------------------------------------------------------------------------------------------------
   const handleRecalculate = async (data) => {
     if (!oxide) {
-      console.log("Oxide is empty. Cannot recalculate.");
+      // console.log("Oxide is empty. Cannot recalculate.");
       return false;
     }
     if(actions){ actions.setLoadingState(true); }
@@ -1247,7 +1397,6 @@ export default function XAFSAnalysis({
     const res = await api.views.sendRequestViewUpdate({settings: settings, id: null, type: 'XAFSAnalysis'}, data);
     const retres = res.data;
 
-    console.log(retres);
     setRetres(retres);
     setServerInfo("Score: " );
 
@@ -1288,6 +1437,209 @@ export default function XAFSAnalysis({
     });
   }, [minPoint, XANES_data]);
 
+//-------------------------------------------------------------------------------------------------
+// Output PDF Data Part
+//-------------------------------------------------------------------------------------------------
+  var pdfdoc = new jsPDF();
+  
+  const exportPDF = () => {
+    const gridContainer = document.querySelector('.grid-container');
+  
+    if (!gridContainer) {
+      console.error("Grid container not found");
+      return;
+    }
+  
+    const originalStyles = [];
+    gridContainer.querySelectorAll('[style]').forEach(el => {
+      originalStyles.push({
+        el,
+        style: el.getAttribute('style'),
+      });
+      if (el.style.gridRow) {
+        const gridRow = parseInt(el.style.gridRow.split(' / ')[0], 10);
+        if (gridRow > 6) {
+          el.style.display = 'none'; // Hide areas where gridRow is below 7
+        }
+      }
+    });
+ 
+    html2canvas(gridContainer, { useCORS: true, scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+  
+      const imgWidth = 210; // A4 width (mm)
+      const pageHeight = 297; // A4 height (mm)
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+  
+      const imgRatio = canvasWidth / canvasHeight;
+      const pdfWidth = imgWidth;
+      const pdfHeight = pdfWidth / imgRatio;
+  
+      let heightLeft = pdfHeight;
+  
+      // Adjust the image to fit on the page and add it to the PDF
+      const marginX = (pdfWidth - imgWidth) / 2;
+      const marginY = (pageHeight - pdfHeight) / 2;
+  
+      pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, pdfHeight);
+      heightLeft -= pageHeight;
+  
+      while (heightLeft >= 0) {
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+  
+      switch(selectedButton) {
+        case "Raw Data":
+          pdf.save('RawData.pdf');
+          break;
+
+        case "XANES":
+          pdf.save('XANES.pdf');
+          break;
+
+        case "EXAFS":
+          pdf.save('EXAFS.pdf');
+          break;
+
+        case "Raw Data & XANES":
+          pdf.save('RawData_XANES.pdf');
+          break;
+        
+        case "XANES & EXAFS":
+          pdf.save('XANES_EXAFS.pdf');
+          break;
+        
+        case "EXAFS & Raw Data":
+          pdf.save('EXAFS_RawData.pdf');
+          break;
+
+        default:
+          pdf.save('RawData.pdf');
+      }
+  
+      // Restore original style
+      originalStyles.forEach(({ el, style }) => {
+        el.setAttribute('style', style);
+      });
+  
+    }).catch((error) => {
+      console.error("Error capturing the grid container:", error);
+    });
+  };
+
+//-------------------------------------------------------------------------------------------------
+// Output CSV Data Part
+//-------------------------------------------------------------------------------------------------
+
+  // Handle checkbox state changes
+  const handleOptionChange = (e, { name, checked }) => {
+    setSelectedOptions((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleExport = () => {
+    if (selectedOptions.XANES) {
+      XANESGraph();
+    } if (selectedOptions.EXAFS) {
+      EXAFSGraph();
+    } if (selectedOptions.Statistics) {
+      statistics_csv(data);
+    }
+    setOpen(false);
+  };
+
+  const XANESGraph = () => {
+    const formattedXANESData = XANES_data.map(d => ({
+      Energy: d.x,
+      Norm_Abs: d.y 
+    }));
+
+    const XA_csvData = d3.csvFormat(formattedXANESData);
+    const XA_blob = new Blob([XA_csvData], { type: 'text/csv;charset=utf-8;' });
+    const XA_url = URL.createObjectURL(XA_blob);
+
+    const XA_a = document.createElement("a");
+    XA_a.href = XA_url;
+    XA_a.download = "XANES_Data.csv"; 
+    document.body.appendChild(XA_a);
+    XA_a.click();
+    document.body.removeChild(XA_a);
+
+    URL.revokeObjectURL(XA_url);
+  };
+
+  const EXAFSGraph = () => {
+    const formattedEXAFSData = EXAFS_data.map(d => ({
+      R: d.x,
+      RDF: d.y 
+    }));
+
+    const EX_csvData = d3.csvFormat(formattedEXAFSData);
+    const EX_blob = new Blob([EX_csvData], { type: 'text/csv;charset=utf-8;' });
+    const EX_url = URL.createObjectURL(EX_blob);
+
+    const EX_a = document.createElement("a");
+    EX_a.href = EX_url;
+    EX_a.download = "EXAFS_Data.csv"; 
+    document.body.appendChild(EX_a);
+    EX_a.click();
+    document.body.removeChild(EX_a);
+
+    URL.revokeObjectURL(EX_url);
+  };
+
+  const statistics_csv = (data) => {
+    if (!data) {
+      console.error("No stats available to export.");
+      return;
+    }
+  
+    // 1. CSV header
+    const headers = [
+      "Statistic,Value",
+    ];
+  
+    // 2. Convert each stats value to CSV format
+    const rows = [
+      `Element,${data.Element}`,
+      `Predict_Oxide,${data.Predict_Oxide === 1 ? 'Oxide' : 'Non-Oxide'}`,
+      `Predict_Valence_Group,${data.Predict_Valence_Group}`,
+      `Predict_Valence_Each,${data.Predict_Valence_Each}`,
+      `XA_Maxx(/eV),${data.XANES_statistics_Maxx}`,
+      `XA_Maxy,${data.XANES_statistics_Maxy}`,
+      `XA_E0x(/eV),${data.XANES_statistics_E0x}`,
+      `XA_E0y,${data.XANES_statistics_E0y}`,
+      `XA_Minx(/eV),${data.XANES_statistics_Minx}`,
+      `XA_Miny,${data.XANES_statistics_Miny}`,
+      `XA_PeakWidth(/eV),${(data.XANES_statistics_Maxx) - (data.XANES_statistics_Minx)}`,
+      `XA_PeakHeight,${(data.XANES_statistics_Maxy) - (data.XANES_statistics_Miny)}`,
+      `EX_Maxyxposition(/Å),${data.EXAFS_statistics_x}`,
+      `EX_Maxy,${data.EXAFS_statistics_y}`,
+    ];
+  
+    // 3. Assemble CSV contents
+    const St_csvData = headers.concat(rows).join("\n");
+  
+    const St_blob = new Blob([St_csvData], { type: 'text/csv;charset=utf-8;' });
+    const St_url = URL.createObjectURL(St_blob);
+
+    const St_a = document.createElement("a");
+    St_a.href = St_url;
+    St_a.download = "Statistics_Data.csv"; 
+    document.body.appendChild(St_a);
+    St_a.click();
+    document.body.removeChild(St_a);
+
+    URL.revokeObjectURL(St_url);
+  };
+
+//-------------------------------------------------------------------------------------------------
+// Layout
+//-------------------------------------------------------------------------------------------------
+
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.style.width = `${internalOptions.extent.width}px`;
@@ -1297,8 +1649,8 @@ export default function XAFSAnalysis({
 
   const gridContainerStyle = {
     display: 'grid',
-    gridTemplateColumns: '(1000%/750) (24000%/750) (25000%/750) (24000%/750) (1000%/750)',
-    gridTemplateRows: '(8000/660)% (10000/660)% (15000/660)% (25000/660)% (8000/660)%',
+    gridTemplateColumns: '(5%/750) (995%/750) (24000%/750) (25000%/750) (24000%/750) (995%/750) (5%/750)',
+    gridTemplateRows: '(8000/660)% (10000/660)% (3000/660)% (2000/660)% (10000/660)% (25000/660)% (4000/660)% (4000/660)%',
     gap : '10px',
     width: '100%',
     height: '100%',
@@ -1311,43 +1663,42 @@ export default function XAFSAnalysis({
     border: '1px solid #ccc',
   };
 
-
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <div style={gridContainerStyle} className="grid-container">
-        <div style={{ gridColumn:"1 / span 3", gridRow:"2 / span 4", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+        <div style={{ gridColumn:"2 / span 3", gridRow:"2 / span 7", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
           <svg ref={rootNode} />
         </div>
 
-        <div style={{ gridColumn: "1 / span 3", gridRow: "2 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
-                      textAlign: "center", fontSize: "16px", fontWeight: "bold" }}>
+        <div style={{ gridColumn: "2 / span 3", gridRow: "3 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
+                      textAlign: "center", fontSize: "18px", fontWeight: "bold" }}>
           {selectedButton}
         </div>
       
-        <div style={{ gridColumn:"2 / span 3", gridRow:"1 / span 1", position: "relative", marginTop: "auto", marginBottom: "auto",
+        <div style={{ gridColumn:"3 / span 3", gridRow:"1 / span 1", position: "relative", marginTop: "auto", marginBottom: "auto",
                     padding: "10px", boxSizing: "content-box", border: "2px solid black", textAlign: "center", fontSize: "24px"}}>
           {oxide} <br /> 
           <br />
           {valence_group}{valence_each}
         </div>
       
-        <div style={{ gridColumn:"4 / span 2", gridRow:"2 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+        <div style={{ gridColumn:"5 / span 2", gridRow:"2 / span 4", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
           <div ref={statsNode} />
         </div>
       
-        <div style={{ gridColumn:"4 / span 2", gridRow:"4 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+        <div style={{ gridColumn:"5 / span 2", gridRow:"6 / span 2", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
           <svg ref={triangleNode} />
         </div>
       
-        <div style={{ gridColumn:"3 / span 1", gridRow:"5 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
+        <div style={{ gridColumn:"4 / span 1", gridRow:"8 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto"}}>
           <Button icon color ="blue" onClick={() => handleRecalculate(data)} > 
           Recalculate 
           </Button>
           {dataUpdated && redrawScatterPlot()}
         </div>
 
-        <div style={{ gridColumn:"1 / span 2", gridRow:"5 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
-                      textAlign: "center", fontSize: "18px", id: "MinpointCount"}}>
+        <div style={{ gridColumn:"2 / span 2", gridRow:"8 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto",
+                      textAlign: "center", fontSize: "17px", id: "MinpointCount"}}>
           Min Data point: {minPoint + 1}<br />
           <input 
             type="range" 
@@ -1357,6 +1708,80 @@ export default function XAFSAnalysis({
             onChange={MinpointBar}
           />
         </div>
+
+        <div style={{ gridColumn:"5 / span 2", gridRow:"7 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto" }}>
+          <Button icon color="red" onClick={exportPDF}>
+            Export PDF
+          </Button>
+        </div>
+
+        <div style={{ gridColumn:"5 / span 2", gridRow:"8 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto" }}>
+          <Button icon color="green" onClick={() => setOpen(true)}>
+            Export XANES & EXAFS Data CSV
+          </Button>
+
+          <Modal
+            size="mini"
+            open={open}
+            onClose={() => setOpen(false)}
+            closeIcon
+          >
+            <Modal.Header>Select Data File to Export PDF</Modal.Header>
+            <Modal.Content>
+              <Form>
+                <Header as="h4">Single Data</Header>
+
+                <Form.Field>
+                  <Checkbox
+                    label="XANES (Blue Plot)"
+                    name="XANES"
+                    checked={selectedOptions.XANES}
+                    onChange={handleOptionChange}
+                  />
+                </Form.Field>
+
+                <Form.Field>
+                  <Checkbox
+                    label="EXAFS (Yellow Plot)"
+                    name="EXAFS"
+                    checked={selectedOptions.EXAFS}
+                    onChange={handleOptionChange}
+                  />
+                </Form.Field>
+
+                <Form.Field>
+                  <Checkbox
+                    label="Statistics"
+                    name="Statistics"
+                    checked={selectedOptions.Statistics}
+                    onChange={handleOptionChange}
+                  />
+                </Form.Field>
+
+              </Form>
+            </Modal.Content>
+            <Modal.Actions>
+              <Button color="green" onClick={handleExport}>
+                Export Data CSV
+              </Button>
+            </Modal.Actions>
+          </Modal>
+
+        </div>
+
+        <div style={{ gridColumn: "2 / span 3", gridRow: "7 / span 1", position: "relative", marginLeft: "auto", marginRight: "auto", marginTop: "auto", marginBottom: "auto" , display: "flex", alignItems: "center"}}>   
+          
+          <Checkbox 
+            toggle 
+            checked={isToggled} 
+            onChange={() => setIsToggled(!isToggled)} 
+          />
+
+          <span style={{ fontSize: "16px" }}>
+            &nbsp;: Toggle Point Indicator Visability
+          </span>
+        </div>
+
       </div>
     </div>
   );

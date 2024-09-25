@@ -82,7 +82,11 @@ const validate = (values) => {
     errors.EXAFS_Data = 'Required';
   }
 
-  setSubmitButtonDisable( errors.element || errors.energy || errors.abs || errors.XANES_Data || errors.EXAFS_Data);
+// if version1: setSubmitButtonDisable( errors.element || errors.energy || errors.abs || errors.XANES_Data || errors.EXAFS_Data);
+// if version2: setSubmitButtonDisable( errors.element || errors.energy || errors.abs);
+
+//  setSubmitButtonDisable( errors.element || errors.energy || errors.abs || errors.XANES_Data || errors.EXAFS_Data);
+  setSubmitButtonDisable( errors.element || errors.energy || errors.abs);
 
   return errors;
 };
@@ -200,7 +204,7 @@ const XAFSAnalysisForm = (props) => {
           options={columns}
         />
       </Form.Field>    
-
+{/*
       <Form.Field width={15}>
         <label>
           XANES Data:
@@ -238,7 +242,7 @@ const XAFSAnalysisForm = (props) => {
           {selectedEXAFSFileName || 'Required'}
         </span>
       </Form.Field>
-
+*/}
       <hr />
 
       <Form.Group widths="equal">
@@ -260,6 +264,18 @@ const XAFSAnalysisForm = (props) => {
     </Form>
   );
 };
+
+// if version2: XANES Data & EXAFS Data is not needed
+// so, you should "comment-out" as follows:
+// {/* 
+// <Form.Field width={15}>
+// <label>
+//  XANES Data:
+// ......................
+// {selectedEXAFSFileName || 'Required'}
+// </span>
+// </Form.Field>
+// */}
 
 export default reduxForm({
   form: 'XAFSAnalysis',

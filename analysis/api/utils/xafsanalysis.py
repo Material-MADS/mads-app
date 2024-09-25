@@ -42,398 +42,1362 @@ logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
 def get_xafs_analysis(data):
 
-    abs1 = data['view']['settings']['abs']
-    energy1 = data['view']['settings']['energy']
-    element_name = data['view']['settings']['element']
-    dataset = data['data']
-    dataset['Raw_Energy'] = data['data'][data['data']['RawData_Xname']]
-    dataset['Raw_Abs'] = data['data'][data['data']['RawData_Yname']]
-    dataset['Element'] = element_name
-    
-#############################################
+    if data['data']['version'] == 1:
 
-    dataset['XANES_Data'] = data['view']['settings']['XANES_Data']
-    dataset['EXAFS_Data'] = data['view']['settings']['EXAFS_Data']
+        abs1 = data['view']['settings']['abs']
+        energy1 = data['view']['settings']['energy']
+        element_name = data['view']['settings']['element']
+        dataset = data['data']
+        dataset['Raw_Energy'] = data['data'][data['data']['RawData_Xname']]
+        dataset['Raw_Abs'] = data['data'][data['data']['RawData_Yname']]
+        dataset['Element'] = element_name
 
-    #Remove None values for XANES_xpoint and XANES_ypoint
-    XANES_xpoint = [x for x in dataset['XANES_Data']['XANES_x'] if x is not None]
-    XANES_ypoint = [y for y in dataset['XANES_Data']['XANES_y'] if y is not None]
+        #############################################
 
-    EXAFS_xpoint = [x for x in dataset['EXAFS_Data']['EXAFS_x'] if x is not None]
-    EXAFS_ypoint = [y for y in dataset['EXAFS_Data']['EXAFS_y'] if y is not None]
+        dataset['XANES_Data'] = data['view']['settings']['XANES_Data']
+        dataset['EXAFS_Data'] = data['view']['settings']['EXAFS_Data']
 
-    dataset['XANES_Data']['XANES_x'] = XANES_xpoint
-    dataset['XANES_Data']['XANES_y'] = XANES_ypoint
-    dataset['EXAFS_Data']['EXAFS_x'] = EXAFS_xpoint
-    dataset['EXAFS_Data']['EXAFS_y'] = EXAFS_ypoint
+        #Remove None values for XANES_xpoint and XANES_ypoint
+        XANES_xpoint = [x for x in dataset['XANES_Data']['XANES_x'] if x is not None]
+        XANES_ypoint = [y for y in dataset['XANES_Data']['XANES_y'] if y is not None]
 
-########XANES###################################################
+        EXAFS_xpoint = [x for x in dataset['EXAFS_Data']['EXAFS_x'] if x is not None]
+        EXAFS_ypoint = [y for y in dataset['EXAFS_Data']['EXAFS_y'] if y is not None]
 
-    df = pd.DataFrame({'energy': XANES_xpoint, 'mu': XANES_ypoint})
+        dataset['XANES_Data']['XANES_x'] = XANES_xpoint
+        dataset['XANES_Data']['XANES_y'] = XANES_ypoint
+        dataset['EXAFS_Data']['EXAFS_x'] = EXAFS_xpoint
+        dataset['EXAFS_Data']['EXAFS_y'] = EXAFS_ypoint
 
-    #XA_Min_En
-    df["mu_3"]=df["mu"].rolling(3).mean().round(1)
-    threshold = 0.1
-    min_energy_point = pd.DataFrame(columns=df.columns)
-    if "route" in data['view']['settings']:
-        min_data_option = data['view']['settings']['Min_Data_Option']
-    else:
-        min_data_option = 20
-    for index, row in df.iterrows():
-        if index >= min_data_option and row['mu_3'] >= threshold:
-            min_energy_point = df[index:].nsmallest(1, 'energy')
-            dataset['XANES_statistics_Minx'] = min_energy_point['energy'].iloc[0]
-            dataset['XANES_statistics_Miny'] = min_energy_point['mu'].iloc[0]
-            break
+        ########XANES###################################################
 
-    ########Code like Larch########################################
+        df = pd.DataFrame({'energy': XANES_xpoint, 'mu': XANES_ypoint})
 
-    import numpy as np
-    import lmfit
-    from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
-                                pearson7, breit_wigner, damped_oscillator,
-                                dho, logistic, lognormal, students_t,
-                                doniach, skewed_gaussian, expgaussian,
-                                skewed_voigt, step, rectangle, exponential,
-                                powerlaw, linear, parabolic)
-    from scipy.interpolate import interp1d as scipy_interp1d
-    
-    def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
-        kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
-                'copy': False, 'bounds_error': False}
-        kwargs.update(kws)
-        return  scipy_interp1d(x, y, **kwargs)(xnew)
-    
-    def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
-        out = interp1d(x, y, xnew, kind=kind, fill_value=fill_value, **kws)
-        below = np.where(xnew<x[0])[0]
-        above = np.where(xnew>x[-1])[0]
-        if len(above) == 0 and len(below) == 0:
-            return out
-        if (len(np.where(np.diff(np.argsort(x))!=1)[0]) > 0 or
-            len(np.where(np.diff(np.argsort(xnew))!=1)[0]) > 0):
-            return out
-        for span, isbelow in ((below, True), (above, False)):
-            if len(span) < 1:
-                continue
-            ncoef = 5
-            if kind.startswith('lin'):
-                ncoef = 2
-            elif kind.startswith('quad'):
-                ncoef = 3
-            sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
-            if kind.startswith('lin'):
-                coefs = polyfit(x[sel], y[sel], 1)
-                out[span] = coefs[0]
-                if len(coefs) > 1:
-                    out[span] += coefs[1]*xnew[span]
-            elif kind.startswith('quad'):
-                coefs = polyfit(x[sel], y[sel], 2)
-                out[span] = coefs[0]
-                if len(coefs) > 1:
-                    out[span] += coefs[1]*xnew[span]
-                if len(coefs) > 2:
-                    out[span] += coefs[2]*xnew[span]**2
-            elif kind.startswith('cubic'):
-                out[span] = IUSpline(x[sel], y[sel])(xnew[span])
-        return out
-    
-    def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
-        # make uniform x, y data
-        TINY = 1.e-12
-        if xstep is None:
-            xstep = min(np.diff(x))
-        if xstep < TINY:
-            raise Warning('Cannot smooth data: must be strictly increasing ')
-        if npad is None:
-            npad = 5
-        xmin = xstep * int( (min(x) - npad*xstep)/xstep)
-        xmax = xstep * int( (max(x) + npad*xstep)/xstep)
-        npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
-        npts = min(npts1, 50*len(x))
-        x0  = np.linspace(xmin, xmax, npts)
-        y0  = np.interp(x0, x, y)
-        # put sigma in units of 1 for convolving window function
-        sigma *= 1.0 / xstep
-        if gamma is not None:
-            gamma *= 1.0 / xstep
-        wx = np.arange(2*npts)
-        if form.lower().startswith('gauss'):
-            win = gaussian(wx, center=npts, sigma=sigma)
-        elif form.lower().startswith('voig'):
-            win = voigt(wx, center=npts, sigma=sigma, gamma=gamma)
+        #XA_Min_En
+        df["mu_3"]=df["mu"].rolling(3).mean().round(1)
+        threshold = 0.1
+        min_energy_point = pd.DataFrame(columns=df.columns)
+        if "route" in data['view']['settings']:
+            min_data_option = data['view']['settings']['Min_Data_Option']
         else:
-            win = lorentzian(wx, center=npts, sigma=sigma)
-        y1 = np.concatenate((y0[npts:0:-1], y0, y0[-1:-npts-1:-1]))
-        y2 = np.convolve(win/win.sum(), y1, mode='valid')
-        if len(y2) > len(x0):
-            nex = int((len(y2) - len(x0))/2)
-            y2 = (y2[nex:])[:len(x0)]
-        return interp(x0, y2, x)
-    
-    def remove_dups(arr, tiny=1.e-6):
-        try:
-            work = np.asarray(arr)
-        except Exception:
-            print('remove_dups: argument is not an array')
-            return arr
-        if work.size <= 1:
-            return arr
-        shape = work.shape
-        work = work.flatten()
-        min_step = min(np.diff(work))
-        tval = (abs(min(work)) + abs(max(work))) /2.0
-        if min_step > 10*tiny:
-            return work
-        previous_val = np.nan
-        previous_add = 0
-        npts = len(work)
-        add = np.zeros(npts)
-        for i in range(1, npts):
-            if not np.isnan(work[i-1]):
-                previous_val = work[i-1]
-                previous_add = add[i-1]
-            val = work[i]
-            if np.isnan(val) or np.isnan(previous_val):
-                continue
-            diff = abs(val - previous_val)
-            if diff < tiny:
-                add[i] = previous_add + tiny
-        return en+add
-    
-    def find_energy_step(energy, frac_ignore=0.01, nave=10):
-        nskip = int(frac_ignore*len(energy))
-        e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
-        ediff = np.diff(energy[e_ordered][nskip:-nskip])
-        return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
-    
-    def _finde0(energy, mu_input, estep=None, use_smooth=True):
-        en = remove_dups(energy, tiny=0.00050)
-        ordered = np.where(np.diff(np.argsort(en))==1)[0]
-        mu_input = np.array(mu_input)
-        en = en[ordered]
-        mu = mu_input[ordered]
-        if len(en.shape) > 1:
-            en = en.squeeze()
-        if len(mu.shape) > 1:
-            mu = mu.squeeze()
-        if estep is None:
-            estep = find_energy_step(en)
-        nmin = max(3, int(len(en)*0.02))
-        if use_smooth:
-            dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=estep)
+            min_data_option = 20
+        for index, row in df.iterrows():
+            if index >= min_data_option and row['mu_3'] >= threshold:
+                min_energy_point = df[index:].nsmallest(1, 'energy')
+                dataset['XANES_statistics_Minx'] = min_energy_point['energy'].iloc[0]
+                dataset['XANES_statistics_Miny'] = min_energy_point['mu'].iloc[0]
+                break
+
+        ########Code like Larch########################################
+
+        import numpy as np
+        import lmfit
+        from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
+                                    pearson7, breit_wigner, damped_oscillator,
+                                    dho, logistic, lognormal, students_t,
+                                    doniach, skewed_gaussian, expgaussian,
+                                    skewed_voigt, step, rectangle, exponential,
+                                    powerlaw, linear, parabolic)
+        from scipy.interpolate import interp1d as scipy_interp1d
+
+        def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
+            kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
+                    'copy': False, 'bounds_error': False}
+            kwargs.update(kws)
+            return  scipy_interp1d(x, y, **kwargs)(xnew)
+
+        def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
+            out = interp1d(x, y, xnew, kind=kind, fill_value=fill_value, **kws)
+            below = np.where(xnew<x[0])[0]
+            above = np.where(xnew>x[-1])[0]
+            if len(above) == 0 and len(below) == 0:
+                return out
+            if (len(np.where(np.diff(np.argsort(x))!=1)[0]) > 0 or
+                len(np.where(np.diff(np.argsort(xnew))!=1)[0]) > 0):
+                return out
+            for span, isbelow in ((below, True), (above, False)):
+                if len(span) < 1:
+                    continue
+                ncoef = 5
+                if kind.startswith('lin'):
+                    ncoef = 2
+                elif kind.startswith('quad'):
+                    ncoef = 3
+                sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
+                if kind.startswith('lin'):
+                    coefs = polyfit(x[sel], y[sel], 1)
+                    out[span] = coefs[0]
+                    if len(coefs) > 1:
+                        out[span] += coefs[1]*xnew[span]
+                elif kind.startswith('quad'):
+                    coefs = polyfit(x[sel], y[sel], 2)
+                    out[span] = coefs[0]
+                    if len(coefs) > 1:
+                        out[span] += coefs[1]*xnew[span]
+                    if len(coefs) > 2:
+                        out[span] += coefs[2]*xnew[span]**2
+                elif kind.startswith('cubic'):
+                    out[span] = IUSpline(x[sel], y[sel])(xnew[span])
+            return out
+
+        def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
+            # make uniform x, y data
+            TINY = 1.e-12
+            if xstep is None:
+                xstep = min(np.diff(x))
+            if xstep < TINY:
+                raise Warning('Cannot smooth data: must be strictly increasing ')
+            if npad is None:
+                npad = 5
+            xmin = xstep * int( (min(x) - npad*xstep)/xstep)
+            xmax = xstep * int( (max(x) + npad*xstep)/xstep)
+            npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+            npts = min(npts1, 50*len(x))
+            x0  = np.linspace(xmin, xmax, npts)
+            y0  = np.interp(x0, x, y)
+            # put sigma in units of 1 for convolving window function
+            sigma *= 1.0 / xstep
+            if gamma is not None:
+                gamma *= 1.0 / xstep
+            wx = np.arange(2*npts)
+            if form.lower().startswith('gauss'):
+                win = gaussian(wx, center=npts, sigma=sigma)
+            elif form.lower().startswith('voig'):
+                win = voigt(wx, center=npts, sigma=sigma, gamma=gamma)
+            else:
+                win = lorentzian(wx, center=npts, sigma=sigma)
+            y1 = np.concatenate((y0[npts:0:-1], y0, y0[-1:-npts-1:-1]))
+            y2 = np.convolve(win/win.sum(), y1, mode='valid')
+            if len(y2) > len(x0):
+                nex = int((len(y2) - len(x0))/2)
+                y2 = (y2[nex:])[:len(x0)]
+            return interp(x0, y2, x)
+
+        def remove_dups(arr, tiny=1.e-6):
+            try:
+                work = np.asarray(arr)
+            except Exception:
+                print('remove_dups: argument is not an array')
+                return arr
+            if work.size <= 1:
+                return arr
+            shape = work.shape
+            work = work.flatten()
+            min_step = min(np.diff(work))
+            tval = (abs(min(work)) + abs(max(work))) /2.0
+            if min_step > 10*tiny:
+                return work
+            previous_val = np.nan
+            previous_add = 0
+            npts = len(work)
+            add = np.zeros(npts)
+            for i in range(1, npts):
+                if not np.isnan(work[i-1]):
+                    previous_val = work[i-1]
+                    previous_add = add[i-1]
+                val = work[i]
+                if np.isnan(val) or np.isnan(previous_val):
+                    continue
+                diff = abs(val - previous_val)
+                if diff < tiny:
+                    add[i] = previous_add + tiny
+            return work+add
+
+        def find_energy_step(energy, frac_ignore=0.01, nave=10):
+            nskip = int(frac_ignore*len(energy))
+            e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
+            ediff = np.diff(energy[e_ordered][nskip:-nskip])
+            return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+
+        def _finde0(energy, mu_input, estep=None, use_smooth=True):
+            en = remove_dups(energy, tiny=0.00050)
+            ordered = np.where(np.diff(np.argsort(en))==1)[0]
+            mu_input = np.array(mu_input)
+            en = en[ordered]
+            mu = mu_input[ordered]
+            if len(en.shape) > 1:
+                en = en.squeeze()
+            if len(mu.shape) > 1:
+                mu = mu.squeeze()
+            if estep is None:
+                estep = find_energy_step(en)
+            nmin = max(3, int(len(en)*0.02))
+            if use_smooth:
+                dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=estep)
+            else:
+                dmu = np.gradient(mu)/np.gradient(en)
+            dmu[np.where(~np.isfinite(dmu))] = -1.0
+            dm_min = dmu[nmin:-nmin].min()
+            dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
+            dmu = (dmu - dm_min)/dm_ptp
+            dhigh = 0.60 if len(en) > 20 else 0.30
+            high_deriv_pts = np.where(dmu > dhigh)[0]
+            if len(high_deriv_pts) < 3:
+                for _ in range(2):
+                    if len(high_deriv_pts) > 3:
+                        break
+                    dhigh *= 0.5
+                    high_deriv_pts = np.where(dmu > dhigh)[0]
+            if len(high_deriv_pts) < 3:
+                high_deriv_pts = np.where(np.isfinite(dmu))[0]
+            imax, dmax = 0, 0
+            for i in high_deriv_pts:
+                if i < nmin or i > len(en) - nmin:
+                    continue
+                if (dmu[i] > dmax and
+                    (i+1 in high_deriv_pts) and
+                    (i-1 in high_deriv_pts)):
+                    imax, dmax = i, dmu[i]
+            return en[imax], imax, estep
+
+        def find_e0(energy, mu=None):
+            e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
+            istart = max(3, ie0-75)
+            istop  = min(ie0+75, len(energy)-3)
+            if ie0 < 0.05*len(energy):
+                e1 = energy.mean()
+                istart = max(3, ie0-20)
+                istop = len(energy)-3
+            estep = 0.5*(max(0.01, min(1.0, estep1)) + max(0.01, min(1.0, e1/25000.)))
+            e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
+            if ix < 1 :
+                e0 = energy[istart+2]
+            return e0
+
+        max_points = df[(df['mu'].shift(1) < df['mu']) & (df['mu'].shift(-1) < df['mu'])]
+        max_energy_points = max_points[(max_points['mu'].shift(1) < max_points['mu']) & (max_points['mu'].shift(-1) < max_points['mu'])]
+
+        e0 = find_e0(XANES_xpoint, XANES_ypoint)
+
+        # Get the smallest index among values greater than e0 in XANES_xpoint
+        indices_greater_than_e0 = np.where(XANES_xpoint > e0)[0]
+        closest_index = indices_greater_than_e0[0] if len(indices_greater_than_e0) > 0 else None
+
+        if closest_index is not None:
+            max_energy_point = max_energy_points[max_energy_points['mu'] >= XANES_ypoint[closest_index]].nsmallest(1, 'energy')
         else:
-            dmu = np.gradient(mu)/np.gradient(en)
-        dmu[np.where(~np.isfinite(dmu))] = -1.0
-        dm_min = dmu[nmin:-nmin].min()
-        dm_ptp = max(1.e-10, dmu[nmin:-nmin].ptp())
-        dmu = (dmu - dm_min)/dm_ptp
-        dhigh = 0.60 if len(en) > 20 else 0.30
-        high_deriv_pts = np.where(dmu > dhigh)[0]
-        if len(high_deriv_pts) < 3:
-            for _ in range(2):
-                if len(high_deriv_pts) > 3:
-                    break
-                dhigh *= 0.5
-                high_deriv_pts = np.where(dmu > dhigh)[0]
-        if len(high_deriv_pts) < 3:
-            high_deriv_pts = np.where(np.isfinite(dmu))[0]
-        imax, dmax = 0, 0
-        for i in high_deriv_pts:
-            if i < nmin or i > len(en) - nmin:
-                continue
-            if (dmu[i] > dmax and
-                (i+1 in high_deriv_pts) and
-                (i-1 in high_deriv_pts)):
-                imax, dmax = i, dmu[i]
-        return en[imax], imax, estep
+            max_energy_point = max_points.nlargest(1, 'mu')
+
+        # Get the index of the XANES_xpoint that is exactly equal to e0
+        indices = np.where(np.abs(XANES_xpoint - e0) < 1e-10)[0]
+
+        # If indices is not empty, get the next element
+        if indices:
+            next_idx = indices[0] + 0
+
+        dataset['XANES_statistics_Maxx'] = max_energy_point['energy'].iloc[0]
+        dataset['XANES_statistics_Maxy'] = max_energy_point['mu'].iloc[0]
+        dataset['XANES_statistics_E0x'] = XANES_xpoint[next_idx]
+        dataset['XANES_statistics_E0y'] = XANES_ypoint[next_idx]
+
+        # Check the condition and update if necessary
+        if dataset['XANES_statistics_E0x'] <= dataset['XANES_statistics_Minx']:
+            dataset['XANES_statistics_Minx'] = XANES_xpoint[next_idx - 1]
+            dataset['XANES_statistics_Miny'] = XANES_ypoint[next_idx - 1]
+
+        peak_width = dataset['XANES_statistics_Maxx'] - dataset['XANES_statistics_Minx']
+
+        ###########EXAFS##############################################
+
+        EXAFS_xpoint = np.array(EXAFS_xpoint)
+        EXAFS_ypoint = np.array(EXAFS_ypoint)
+
+        condition = (1 <= EXAFS_xpoint) & (EXAFS_xpoint <= 6)
+        x_range = EXAFS_xpoint[condition]
+        y_range = EXAFS_ypoint[condition]
+        peaks, _ = find_peaks(y_range)
+        peak_xpositions = [x_range[i] for i in peaks]
+        peak_ypositions = [y_range[i] for i in peaks]
+        max_peak_index = np.argmax(peak_ypositions)
+        max_peak_xposition = peak_xpositions[max_peak_index]
+
+        dataset['EXAFS_statistics_x'] = max_peak_xposition
+        dataset['EXAFS_statistics_y'] = max(peak_ypositions)
+
+        ###########periodic table#####################
+        pt_strIO = StringIO(periodictablestring)
+        testpt = pd.read_csv(pt_strIO)
+
+        element = testpt[testpt['Element'] == element_name]
+
+        ##################################################
+
+        columns_to_extract = ['Peak_E0_μt', 'Peak_Max_μt', 'Max_y_xposition', 'Max_y', 'vdw_radius_alvarez', 'Peak_Width', 'gs_energy', 'fusion_enthalpy', 'num_unfilled']
+        data_information=[XANES_ypoint[next_idx], max_energy_point['mu'].iloc[0], max_peak_xposition, max(peak_ypositions), element['vdw_radius_alvarez'].values[0],
+                        peak_width, element['gs_energy'].values[0], element['fusion_enthalpy'].values[0], element['num_unfilled'].values[0]]
+
+        data_information_df = pd.DataFrame([data_information], columns=columns_to_extract)
+
+        ##############################################################################
+        #Oxide & Valence Group (0, 1-3, 4-6) Classification
+        ##############################################################################
+        Oxide008 = StringIO(Train_Oxide_008)
+        df008 = pd.read_csv(Oxide008)
+        #########Oxide#################
+        target_A_8 = df008.iloc[:, 1]
+        targets_A_8 = np.array(target_A_8)
+        data1_8 = df008.iloc[:, 3:8]
+        datas1_8 = np.array(data1_8)
+        model_8 = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_8.fit(datas1_8, targets_A_8)
+        pred_8 = data_information_df
+        pred1_8 = pred_8.iloc[:, :5]
+        pred_data_8 = np.array(pred1_8)
+        predictionlist_8 = []
+        result_8 = model_8.predict(pred_data_8)
+        predictionlist_8.extend(result_8)
+        df_result_8 = pd.DataFrame(predictionlist_8, columns=['Predict_Oxide'])
+        results_8 = pd.concat([pred_8, df_result_8], axis=1)
+        results_8['Oxide'] = result_8
+        results_8 = pd.concat([results_8.iloc[:, -1], results_8.iloc[:, :-1]], axis=1)
+        ###########Valence##########################
+        target_B_8 = df008.iloc[:, 2]
+        targets_B_8 = np.array(target_B_8)
+        data2_A_8 = df008.iloc[:, 1]
+        data2_B_8 = df008.iloc[:, 3:7]
+        data2_C_8 = df008.iloc[:, 8:]
+        data2_8 = pd.concat([data2_A_8, data2_B_8, data2_C_8], axis=1)
+        datas2_8 = np.array(data2_8)
+        model_8V = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_8V.fit(datas2_8, targets_B_8)
+        pred3_8 = results_8.iloc[:, :5]
+        pred4_8 = results_8.iloc[:, 6:-1]
+        pred5_8 = pd.concat([pred3_8, pred4_8], axis=1)
+        pred_data2_8 = np.array(pred5_8)
+        predictionlist_A_8 = []
+        result2_8 = model_8V.predict(pred_data2_8)
+        predictionlist_A_8.extend(result2_8)
+        df_result2_8 = pd.DataFrame(predictionlist_A_8, columns=['Predict_Valence(0, 1-3, 4-6)'])
+        #############################################################
+        #To make the display more user-friendly, the following code should also be executed
+        replace_dict = {3: '1 - 3', 4: '4 - 6'}
+        df_result2_8['Predict_Valence(0, 1-3, 4-6)'] = df_result2_8['Predict_Valence(0, 1-3, 4-6)'].replace(replace_dict)
+        #############################################################
+        results_8 = pd.concat([pred_8, df_result_8, df_result2_8], axis=1)
+
+        #results_8.to_csv('PredictData_for_Oxide&Valence_008.csv', index=False)
+        result_df008 = results_8.iloc[:, -2:]
+
+        dataset['Predict_Oxide'] = result_df008['Predict_Oxide'].values[0]
+        dataset['Predict_Valence_Group'] = result_df008['Predict_Valence(0, 1-3, 4-6)'].values[0]
+
+        ##############################################################################
+        #Oxide & Valence Each (0, 1, 2, 3, 4, 5, 6) Classification
+        ##############################################################################
+        Oxide006 = StringIO(Train_006)
+        df006 = pd.read_csv(Oxide006)
+        #########Oxide#################
+        target_A_6 = df006.iloc[:, 1]
+        targets_A_6 = np.array(target_A_6)
+        data1_6 = df006.iloc[:, 3:8]
+        datas1_6 = np.array(data1_6)
+        model_6 = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_6.fit(datas1_6, targets_A_6)
+        pred_6 = data_information_df
+        pred1_6 = pred_6.iloc[:, :5]
+        pred_data_6 = np.array(pred1_6)
+        predictionlist_6 = []
+        result_6 = model_6.predict(pred_data_6)
+        predictionlist_6.extend(result_6)
+        df_result_6 = pd.DataFrame(predictionlist_6, columns=['Predict_Oxide'])
+        results_6 = pd.concat([pred_6, df_result_6], axis=1)
+        results_6['Oxide'] = result_6
+        results_6 = pd.concat([results_6.iloc[:, -1], results_6.iloc[:, :-1]], axis=1)
+        ###########Valence##########################
+        target_B_6 = df006.iloc[:, 2]
+        targets_B_6 = np.array(target_B_6)
+        data2_A_6 = df006.iloc[:, 1]
+        data2_B_6 = df006.iloc[:, 3:7]
+        data2_C_6 = df006.iloc[:, 8:]
+        data2_6 = pd.concat([data2_A_6, data2_B_6, data2_C_6], axis=1)
+        datas2_6 = np.array(data2_6)
+        model1_6V = RandomForestClassifier(random_state=0, n_estimators=80)
+        model2_6V = MLPClassifier(random_state=0, solver='lbfgs', alpha=0.4, activation='tanh', max_iter=800)
+        model_6V  = VotingClassifier(estimators=[('rf', model1_6V), ('mlp', model2_6V)], voting='soft', weights=[0.85, 0.15])
+        model_6V.fit(datas2_6, targets_B_6)
+        pred3_6 = results_6.iloc[:, :5]
+        pred4_6 = results_6.iloc[:, 6:-1]
+        pred5_6 = pd.concat([pred3_6, pred4_6], axis=1)
+        pred_data2_6 = np.array(pred5_6)
+        predictionlist_A_6 = []
+        result2_6 = model_6V.predict(pred_data2_6)
+        predictionlist_A_6.extend(result2_6)
+        df_result2_6 = pd.DataFrame(predictionlist_A_6, columns=['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'])
+        results_6 = pd.concat([pred_6, df_result_6, df_result2_6], axis=1)
+        #results_6.to_csv('PredictData_for_Oxide&Valence_006.csv', index=False)
+
+        result_df006 = pd.concat([results_6.iloc[:, 0], results_6.iloc[:, -2:]], axis=1)
+
+        dataset['Predict_Valence_Each'] = result_df006['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'].values[0]
+
+        #df_all = pd.concat([df008, df006.iloc[:, -1]], axis=1)
+        #df_all2 = pd.merge(result_df1, df_all, on=["Data_Number"], how="inner")
+        #display(df_all2)
+        #df_all2.to_csv('PredictData_for_Oxide&Valence_all.csv', index=False)
+            
+        return dataset
+
+
+
     
-    def find_e0(energy, mu=None):
-        e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
-        istart = max(3, ie0-75)
-        istop  = min(ie0+75, len(energy)-3)
-        if ie0 < 0.05*len(energy):
-            e1 = energy.mean()
-            istart = max(3, ie0-20)
-            istop = len(energy)-3
-        estep = 0.5*(max(0.01, min(1.0, estep1)) + max(0.01, min(1.0, e1/25000.)))
-        e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
-        if ix < 1 :
-            e0 = energy[istart+2]
-        return e0
-    
-    max_points = df[(df['mu'].shift(1) < df['mu']) & (df['mu'].shift(-1) < df['mu'])]
-    max_energy_points = max_points[(max_points['mu'].shift(1) < max_points['mu']) & (max_points['mu'].shift(-1) < max_points['mu'])]
+    if data['data']['version'] == 2:
 
-    e0 = find_e0(XANES_xpoint, XANES_ypoint)
+        abs1 = data['view']['settings']['abs']
+        energy1 = data['view']['settings']['energy']
+        element_name = data['view']['settings']['element']
+        dataset = data['data']
+        dataset['Raw_Energy'] = data['data'][data['data']['RawData_Xname']]
+        dataset['Raw_Abs'] = data['data'][data['data']['RawData_Yname']]
+        dataset['Element'] = element_name
+        dataset['XANES_Data'] = {}
+        dataset['EXAFS_Data'] = {} 
 
-    # Get the smallest index among values greater than e0 in XANES_xpoint
-    indices_greater_than_e0 = np.where(XANES_xpoint > e0)[0]
-    closest_index = indices_greater_than_e0[0] if len(indices_greater_than_e0) > 0 else None
+        #############################################
+        import numpy as np
+        import lmfit
+        from lmfit.lineshapes import (gaussian, lorentzian, voigt, pvoigt, moffat,
+                                    pearson7, breit_wigner, damped_oscillator,
+                                    dho, logistic, lognormal, students_t,
+                                    doniach, skewed_gaussian, expgaussian,
+                                    skewed_voigt, step, rectangle, exponential,
+                                    powerlaw, linear, parabolic)
+        from scipy.interpolate import interp1d as scipy_interp1d
 
-    if closest_index is not None:
-        max_energy_point = max_energy_points[max_energy_points['mu'] >= XANES_ypoint[closest_index]].nsmallest(1, 'energy')
-    else:
-        max_energy_point = max_points.nlargest(1, 'mu')
 
-    # Get the index of the XANES_xpoint that is exactly equal to e0
-    indices = np.where(np.abs(XANES_xpoint - e0) < 1e-10)[0]
+        def interp1d(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
 
-    # If indices is not empty, get the next element
-    if indices:
-        next_idx = indices[0] + 1
+            kwargs  = {'kind': kind.lower(), 'fill_value': fill_value,
+                    'copy': False, 'bounds_error': False}
+            kwargs.update(kws)
+            return  scipy_interp1d(x, y, **kwargs)(xnew)
 
-    dataset['XANES_statistics_Maxx'] = max_energy_point['energy'].iloc[0]
-    dataset['XANES_statistics_Maxy'] = max_energy_point['mu'].iloc[0]
-    dataset['XANES_statistics_E0x'] = XANES_xpoint[next_idx]
-    dataset['XANES_statistics_E0y'] = XANES_ypoint[next_idx]
+        def interp(x, y, xnew, kind='linear', fill_value=np.nan, **kws):
+            
+            out = interp1d(x, y, xnew, kind=kind, fill_value=fill_value, **kws)
 
-    # Check the condition and update if necessary
-    if dataset['XANES_statistics_E0x'] <= dataset['XANES_statistics_Minx']:
-        dataset['XANES_statistics_Minx'] = XANES_xpoint[next_idx - 1]
-        dataset['XANES_statistics_Miny'] = XANES_ypoint[next_idx - 1]
+            below = np.where(xnew<x[0])[0]
+            above = np.where(xnew>x[-1])[0]
+            if len(above) == 0 and len(below) == 0:
+                return out
 
-    peak_width = dataset['XANES_statistics_Maxx'] - dataset['XANES_statistics_Minx']
+            if (len(np.where(np.diff(np.argsort(x))!=1)[0]) > 0 or
+                len(np.where(np.diff(np.argsort(xnew))!=1)[0]) > 0):
+                return out
 
-###########EXAFS##############################################
+            for span, isbelow in ((below, True), (above, False)):
+                if len(span) < 1:
+                    continue
+                ncoef = 5
+                if kind.startswith('lin'):
+                    ncoef = 2
+                elif kind.startswith('quad'):
+                    ncoef = 3
+                sel = slice(None, ncoef) if isbelow  else slice(-ncoef, None)
+                if kind.startswith('lin'):
+                    coefs = polyfit(x[sel], y[sel], 1)
+                    out[span] = coefs[0]
+                    if len(coefs) > 1:
+                        out[span] += coefs[1]*xnew[span]
+                elif kind.startswith('quad'):
+                    coefs = polyfit(x[sel], y[sel], 2)
+                    out[span] = coefs[0]
+                    if len(coefs) > 1:
+                        out[span] += coefs[1]*xnew[span]
+                    if len(coefs) > 2:
+                        out[span] += coefs[2]*xnew[span]**2
+                elif kind.startswith('cubic'):
+                    out[span] = IUSpline(x[sel], y[sel])(xnew[span])
+            return out
 
-    EXAFS_xpoint = np.array(EXAFS_xpoint)
-    EXAFS_ypoint = np.array(EXAFS_ypoint)
+        def smooth(x, y, sigma=1, gamma=None, xstep=None, npad=None, form='lorentzian'):
 
-    condition = (1 <= EXAFS_xpoint) & (EXAFS_xpoint <= 6)
-    x_range = EXAFS_xpoint[condition]
-    y_range = EXAFS_ypoint[condition]
-    peaks, _ = find_peaks(y_range)
-    peak_xpositions = [x_range[i] for i in peaks]
-    peak_ypositions = [y_range[i] for i in peaks]
-    max_peak_index = np.argmax(peak_ypositions)
-    max_peak_xposition = peak_xpositions[max_peak_index]
+            # make uniform x, y data
+            TINY = 1.e-12
+            if xstep is None:
+                xstep = min(np.diff(x))
+            if xstep < TINY:
+                raise Warning('Cannot smooth data: must be strictly increasing ')
+            if npad is None:
+                npad = 5
+            xmin = xstep * int( (min(x) - npad*xstep)/xstep)
+            xmax = xstep * int( (max(x) + npad*xstep)/xstep)
+            npts1 = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+            npts = min(npts1, 50*len(x))
+            x0  = np.linspace(xmin, xmax, npts)
+            y0  = np.interp(x0, x, y)
 
-    dataset['EXAFS_statistics_x'] = max_peak_xposition
-    dataset['EXAFS_statistics_y'] = max(peak_ypositions)
+            # put sigma in units of 1 for convolving window function
+            sigma *= 1.0 / xstep
+            if gamma is not None:
+                gamma *= 1.0 / xstep
 
-###########periodic table#####################
-    pt_strIO = StringIO(periodictablestring)
-    testpt = pd.read_csv(pt_strIO)
-    
-    element = testpt[testpt['Element'] == element_name]
+            wx = np.arange(2*npts)
+            if form.lower().startswith('gauss'):
+                win = gaussian(wx, center=npts, sigma=sigma)
+            elif form.lower().startswith('voig'):
+                win = voigt(wx, center=npts, sigma=sigma, gamma=gamma)
+            else:
+                win = lorentzian(wx, center=npts, sigma=sigma)
 
-##################################################
+            y1 = np.concatenate((y0[npts:0:-1], y0, y0[-1:-npts-1:-1]))
+            y2 = np.convolve(win/win.sum(), y1, mode='valid')
+            if len(y2) > len(x0):
+                nex = int((len(y2) - len(x0))/2)
+                y2 = (y2[nex:])[:len(x0)]
+            return interp(x0, y2, x)
 
-    columns_to_extract = ['Peak_E0_μt', 'Peak_Max_μt', 'Max_y_xposition', 'Max_y', 'vdw_radius_alvarez', 'Peak_Width', 'gs_energy', 'fusion_enthalpy', 'num_unfilled']
-    data_information=[XANES_ypoint[next_idx], max_energy_point['mu'].iloc[0], max_peak_xposition, max(peak_ypositions), element['vdw_radius_alvarez'].values[0],
-                    peak_width, element['gs_energy'].values[0], element['fusion_enthalpy'].values[0], element['num_unfilled'].values[0]]
+        def remove_dups(arr, tiny=1.e-6):
 
-    data_information_df = pd.DataFrame([data_information], columns=columns_to_extract)
+            try:
+                work = np.asarray(arr)
+            except Exception:
+                print('remove_dups: argument is not an array')
+                return arr 
 
-    ##############################################################################
-    #Oxide & Valence Group (0, 1-3, 4-6) Classification
-    ##############################################################################
-    Oxide008 = StringIO(Train_Oxide_008)
-    df008 = pd.read_csv(Oxide008)
-    #########Oxide#################
-    target_A_8 = df008.iloc[:, 1]
-    targets_A_8 = np.array(target_A_8)
-    data1_8 = df008.iloc[:, 3:8]
-    datas1_8 = np.array(data1_8)
-    model_8 = RandomForestClassifier(random_state=0, n_estimators=80)
-    model_8.fit(datas1_8, targets_A_8)
-    pred_8 = data_information_df
-    pred1_8 = pred_8.iloc[:, :5]
-    pred_data_8 = np.array(pred1_8)
-    predictionlist_8 = []
-    result_8 = model_8.predict(pred_data_8)
-    predictionlist_8.extend(result_8)
-    df_result_8 = pd.DataFrame(predictionlist_8, columns=['Predict_Oxide'])
-    results_8 = pd.concat([pred_8, df_result_8], axis=1)
-    results_8['Oxide'] = result_8
-    results_8 = pd.concat([results_8.iloc[:, -1], results_8.iloc[:, :-1]], axis=1)
-    ###########Valence##########################
-    target_B_8 = df008.iloc[:, 2]
-    targets_B_8 = np.array(target_B_8)
-    data2_A_8 = df008.iloc[:, 1]
-    data2_B_8 = df008.iloc[:, 3:7]
-    data2_C_8 = df008.iloc[:, 8:]
-    data2_8 = pd.concat([data2_A_8, data2_B_8, data2_C_8], axis=1)
-    datas2_8 = np.array(data2_8)
-    model_8V = RandomForestClassifier(random_state=0, n_estimators=80)
-    model_8V.fit(datas2_8, targets_B_8)
-    pred3_8 = results_8.iloc[:, :5]
-    pred4_8 = results_8.iloc[:, 6:-1]
-    pred5_8 = pd.concat([pred3_8, pred4_8], axis=1)
-    pred_data2_8 = np.array(pred5_8)
-    predictionlist_A_8 = []
-    result2_8 = model_8V.predict(pred_data2_8)
-    predictionlist_A_8.extend(result2_8)
-    df_result2_8 = pd.DataFrame(predictionlist_A_8, columns=['Predict_Valence(0, 1-3, 4-6)'])
-    #############################################################
-    #To make the display more user-friendly, the following code should also be executed
-    replace_dict = {3: '1 - 3', 4: '4 - 6'}
-    df_result2_8['Predict_Valence(0, 1-3, 4-6)'] = df_result2_8['Predict_Valence(0, 1-3, 4-6)'].replace(replace_dict)
-    #############################################################
-    results_8 = pd.concat([pred_8, df_result_8, df_result2_8], axis=1)
-    
-    #results_8.to_csv('PredictData_for_Oxide&Valence_008.csv', index=False)
-    result_df008 = results_8.iloc[:, -2:]
+            if work.size <= 1:
+                return arr
+            shape = work.shape
+            work = work.flatten()
 
-    dataset['Predict_Oxide'] = result_df008['Predict_Oxide'].values[0]
-    dataset['Predict_Valence_Group'] = result_df008['Predict_Valence(0, 1-3, 4-6)'].values[0]
+            min_step = min(np.diff(work))
+            tval = (abs(min(work)) + abs(max(work))) /2.0
+            if min_step > 10*tiny:
+                return work
+            previous_val = np.nan
+            previous_add = 0
 
-    ##############################################################################
-    #Oxide & Valence Each (0, 1, 2, 3, 4, 5, 6) Classification
-    ##############################################################################
-    Oxide006 = StringIO(Train_006)
-    df006 = pd.read_csv(Oxide006)
-    #########Oxide#################
-    target_A_6 = df006.iloc[:, 1]
-    targets_A_6 = np.array(target_A_6)
-    data1_6 = df006.iloc[:, 3:8]
-    datas1_6 = np.array(data1_6)
-    model_6 = RandomForestClassifier(random_state=0, n_estimators=80)
-    model_6.fit(datas1_6, targets_A_6)
-    pred_6 = data_information_df
-    pred1_6 = pred_6.iloc[:, :5]
-    pred_data_6 = np.array(pred1_6)
-    predictionlist_6 = []
-    result_6 = model_6.predict(pred_data_6)
-    predictionlist_6.extend(result_6)
-    df_result_6 = pd.DataFrame(predictionlist_6, columns=['Predict_Oxide'])
-    results_6 = pd.concat([pred_6, df_result_6], axis=1)
-    results_6['Oxide'] = result_6
-    results_6 = pd.concat([results_6.iloc[:, -1], results_6.iloc[:, :-1]], axis=1)
-    ###########Valence##########################
-    target_B_6 = df006.iloc[:, 2]
-    targets_B_6 = np.array(target_B_6)
-    data2_A_6 = df006.iloc[:, 1]
-    data2_B_6 = df006.iloc[:, 3:7]
-    data2_C_6 = df006.iloc[:, 8:]
-    data2_6 = pd.concat([data2_A_6, data2_B_6, data2_C_6], axis=1)
-    datas2_6 = np.array(data2_6)
-    model1_6V = RandomForestClassifier(random_state=0, n_estimators=80)
-    model2_6V = MLPClassifier(random_state=0, solver='lbfgs', alpha=0.4, activation='tanh', max_iter=800)
-    model_6V  = VotingClassifier(estimators=[('rf', model1_6V), ('mlp', model2_6V)], voting='soft', weights=[0.85, 0.15])
-    model_6V.fit(datas2_6, targets_B_6)
-    pred3_6 = results_6.iloc[:, :5]
-    pred4_6 = results_6.iloc[:, 6:-1]
-    pred5_6 = pd.concat([pred3_6, pred4_6], axis=1)
-    pred_data2_6 = np.array(pred5_6)
-    predictionlist_A_6 = []
-    result2_6 = model_6V.predict(pred_data2_6)
-    predictionlist_A_6.extend(result2_6)
-    df_result2_6 = pd.DataFrame(predictionlist_A_6, columns=['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'])
-    results_6 = pd.concat([pred_6, df_result_6, df_result2_6], axis=1)
-    #results_6.to_csv('PredictData_for_Oxide&Valence_006.csv', index=False)
+            npts = len(work)
+            add = np.zeros(npts)
+            for i in range(1, npts):
+                if not np.isnan(work[i-1]):
+                    previous_val = work[i-1]
+                    previous_add = add[i-1]
+                val = work[i]
+                if np.isnan(val) or np.isnan(previous_val):
+                    continue
+                diff = abs(val - previous_val)
+                if diff < tiny:
+                    add[i] = previous_add + tiny
+            return work+add 
 
-    result_df006 = pd.concat([results_6.iloc[:, 0], results_6.iloc[:, -2:]], axis=1)
+        def find_energy_step(energy, frac_ignore=0.01, nave=10):
 
-    dataset['Predict_Valence_Each'] = result_df006['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'].values[0]
-    
-    #df_all = pd.concat([df008, df006.iloc[:, -1]], axis=1)
-    #df_all2 = pd.merge(result_df1, df_all, on=["Data_Number"], how="inner")
-    #display(df_all2)
-    #df_all2.to_csv('PredictData_for_Oxide&Valence_all.csv', index=False)
+            nskip = int(frac_ignore*len(energy))
+            e_ordered = np.where(np.diff(np.argsort(energy))==1)[0]  # where energy step are in order
+            ediff = np.diff(energy[e_ordered][nskip:-nskip])
+            return ediff[np.argsort(ediff)][nskip:nskip+nave].mean()
+
+        def _finde0(energy, mu_input, estep=None, use_smooth=True):
+
+            en = remove_dups(energy, tiny=0.00050)
+            ordered = np.where(np.diff(np.argsort(en))==1)[0]
+            mu_input = np.array(mu_input)
+            en = en[ordered]
+            mu = mu_input[ordered]
+            if len(en.shape) > 1:
+                en = en.squeeze()
+            if len(mu.shape) > 1:
+                mu = mu.squeeze()
+            if estep is None:
+                estep = find_energy_step(en)
+
+            nmin = max(3, int(len(en)*0.02))
+            if use_smooth:
+                dmu = smooth(en, np.gradient(mu)/np.gradient(en), xstep=estep, sigma=estep)
+            else:
+                dmu = np.gradient(mu)/np.gradient(en)
+
+            dmu[np.where(~np.isfinite(dmu))] = -1.0
+            dm_min = dmu[nmin:-nmin].min()
+            dm_ptp = max(1.e-10, np.ptp(dmu[nmin:-nmin]))
+            dmu = (dmu - dm_min)/dm_ptp
+
+            dhigh = 0.60 if len(en) > 20 else 0.30
+            high_deriv_pts = np.where(dmu > dhigh)[0]
+            if len(high_deriv_pts) < 3:
+                for _ in range(2):
+                    if len(high_deriv_pts) > 3:
+                        break
+                    dhigh *= 0.5
+                    high_deriv_pts = np.where(dmu > dhigh)[0]
+
+            if len(high_deriv_pts) < 3:
+                high_deriv_pts = np.where(np.isfinite(dmu))[0]
+
+            imax, dmax = 0, 0
+            for i in high_deriv_pts:
+                if i < nmin or i > len(en) - nmin:
+                    continue
+                if (dmu[i] > dmax and
+                    (i+1 in high_deriv_pts) and
+                    (i-1 in high_deriv_pts)):
+                    imax, dmax = i, dmu[i]
+            return en[imax], imax, estep    
+
+        def find_e0(energy, mu=None):
+
+            e1, ie0, estep1 = _finde0(energy, mu, estep=None, use_smooth=False)
+            istart = max(3, ie0-75)
+            istop  = min(ie0+75, len(energy)-3)
+
+            if ie0 < 0.05*len(energy):
+                e1 = energy.mean()
+                istart = max(3, ie0-20)
+                istop = len(energy)-3
+
+            estep = 0.5*(max(0.01, min(1.0, estep1)) + max(0.01, min(1.0, e1/25000.)))
+            e0, ix, ex = _finde0(energy[istart:istop], mu[istart:istop], estep=estep, use_smooth=True)
+            if ix < 1 :
+                e0 = energy[istart+2]
+            
+            return e0
+
+        #########################
+        MAX_NNORM = 5
+        TINY_ENERGY = 0.0005
+
+        def remove_nans2(a, b):
+            
+            if not isinstance(a, np.ndarray):
+                try:
+                    a = np.array(a)
+                except:
+                    print( 'remove_nans2: argument 1 is not an array')
+            if not isinstance(b, np.ndarray):
+                try:
+                    b = np.array(b)
+                except:
+                    print( 'remove_nans2: argument 2 is not an array')
+
+            def fix_bad(isbad, x, y):
+                if np.any(isbad):
+                    bad = np.where(isbad)[0]
+                    x, y = np.delete(x, bad), np.delete(y, bad)
+                return x, y
+
+            a, b = fix_bad(~np.isfinite(a), a, b)
+            a, b = fix_bad(~np.isfinite(b), a, b)
+            return a, b
+
+
+        def index_nearest(array, value):
+            
+            return np.abs(array-value).argmin()
+
+        def index_of(array, value):
+            
+            if value < min(array):
+                return 0
+            return max(np.where(array<=value)[0])
+
+        def remove_nans(val, goodval=0.0, default=0.0, interp=False):
+
+            isbad = ~np.isfinite(val)
+            if not np.any(isbad):
+                return val
+
+            if isinstance(goodval, np.ndarray):
+                goodval = goodval.mean()
+            if np.any(~np.isfinite(goodval)):
+                goodval = default
+
+            if not isinstance(val, np.ndarray):
+                return goodval
+            if interp:
+                for i in np.where(isbad)[0]:
+                    if i == 0:
+                        val[i] = 2.0*val[1] - val[2]
+                    elif i == len(val)-1:
+                        val[i] = 2.0*val[i-1] - val[i-2]
+                    else:
+                        val[i] = 0.5*(val[i+1] + val[i-1])
+                isbad = ~np.isfinite(val)
+            val[np.where(isbad)] = goodval
+            return val
+
+        def remove_nans2(a, b):
+
+            if not isinstance(a, np.ndarray):
+                try:
+                    a = np.array(a)
+                except:
+                    print( 'remove_nans2: argument 1 is not an array')
+            if not isinstance(b, np.ndarray):
+                try:
+                    b = np.array(b)
+                except:
+                    print( 'remove_nans2: argument 2 is not an array')
+
+            def fix_bad(isbad, x, y):
+                if np.any(isbad):
+                    bad = np.where(isbad)[0]
+                    x, y = np.delete(x, bad), np.delete(y, bad)
+                return x, y
+
+            a, b = fix_bad(~np.isfinite(a), a, b)
+            a, b = fix_bad(~np.isfinite(b), a, b)
+            return a, b
+
+        def polyfit(x, y, deg=1, reverse=False):
+
+            pfit = np.polynomial.Polynomial.fit(x, y, deg=int(deg))
+            coefs = pfit.convert().coef
+            if reverse:
+                coefs = list(reversed(coefs))
+            return coefs
+
+
+
+        def preedge(energy, mu, e0=None, step=None, nnorm=None, nvict=0, pre1=None,
+                    pre2=None, norm1=None, norm2=None):
+
+            energy, mu = remove_nans2(energy, mu)
+            energy = remove_dups(energy, tiny=TINY_ENERGY)
+            if energy.size <= 1:
+                raise ValueError("energy array must have at least 2 points")
+            if e0 is None or e0 < energy[1] or e0 > energy[-2]:
+                e0 = find_e0(energy, mu)
+            ie0 = index_nearest(energy, e0)
+            e0 = energy[ie0]
+
+            if pre1 is None:
+                # skip first energy point, often bad
+                if ie0 > 20:
+                    pre1  = 5.0*round((energy[1] - e0)/5.0)
+                else:
+                    pre1  = 2.0*round((energy[1] - e0)/2.0)
+            pre1 = max(pre1,  (min(energy) - e0))
+            if pre2 is None:
+                pre2 = 0.5*pre1
+            if pre1 > pre2:
+                pre1, pre2 = pre2, pre1
+            ipre1 = index_of(energy-e0, pre1)
+            ipre2 = index_of(energy-e0, pre2)
+            if ipre2 < ipre1 + 2 + nvict:
+                pre2 = (energy-e0)[int(ipre1 + 2 + nvict)]
+
+            if norm2 is None:
+                norm2 = 5.0*round((max(energy) - e0)/5.0)
+            if norm2 < 0:
+                norm2 = max(energy) - e0 - norm2
+            norm2 = min(norm2, (max(energy) - e0))
+            if norm1 is None:
+                norm1 = min(25, 5.0*round(norm2/15.0))
+
+            if norm1 > norm2:
+                norm1, norm2 = norm2, norm1
+
+            norm1 = min(norm1, norm2 - 10)
+            if nnorm is None:
+                nnorm = 2
+                if norm2-norm1 < 300: nnorm = 1
+                if norm2-norm1 <  30: nnorm = 0
+            nnorm = max(min(nnorm, MAX_NNORM), 0)
+            # preedge
+            p1 = index_of(energy, pre1+e0)
+            p2 = index_nearest(energy, pre2+e0)
+            if p2-p1 < 2:
+                p2 = min(len(energy), p1 + 2)
+
+            omu  = mu*energy**nvict
+            ex = remove_nans(energy[p1:p2], interp=True)
+            mx = remove_nans(omu[p1:p2], interp=True)
+
+            precoefs = polyfit(ex, mx, 1)
+            pre_edge = (precoefs[0] + energy*precoefs[1]) * energy**(-nvict)
+            # normalization
+            p1 = index_of(energy, norm1+e0)
+            p2 = index_nearest(energy, norm2+e0)
+            if p2-p1 < 2:
+                p2 = min(len(energy), p1 + 2)
+            if p2-p1 < 2:
+                p1 = p1-2
+
+            presub = (mu-pre_edge)[p1:p2]
+            coefs = polyfit(energy[p1:p2], presub, nnorm)
+            post_edge = 1.0*pre_edge
+            norm_coefs = []
+            for n, c in enumerate(coefs):
+                post_edge += c * energy**(n)
+                norm_coefs.append(c)
+            edge_step = step
+            if edge_step is None:
+                edge_step = post_edge[ie0] - pre_edge[ie0]
+            edge_step = max(1.e-12, abs(float(edge_step)))
+            norm = (mu - pre_edge)/edge_step
+            return {'e0': e0, 'edge_step': edge_step, 'norm': norm,
+                    'pre_edge': pre_edge, 'post_edge': post_edge,
+                    'norm_coefs': norm_coefs, 'nvict': nvict,
+                    'nnorm': nnorm, 'norm1': norm1, 'norm2': norm2,
+                    'pre1': pre1, 'pre2': pre2, 'precoefs': precoefs}
+
+        def pre_edge(energy, mu=None, group=None, e0=None, step=None, nnorm=None,
+                    nvict=0, pre1=None, pre2=None, norm1=None, norm2=None,
+                    make_flat=True, _larch=None):
+            
+            # Convert energy and mu to numpy arrays if they are not already
+            energy = np.array(energy)
+            mu = np.array(mu)
+            
+            if len(energy.shape) > 1:
+                energy = energy.squeeze()
+            if len(mu.shape) > 1:
+                mu = mu.squeeze()
+
+            out_of_order = np.where(np.diff(np.argsort(energy))!=1)[0]
+            if len(out_of_order) > 0:
+                order = np.argsort(energy)
+                energy = energy[order]
+                mu = mu[order]
+            energy = remove_dups(energy, tiny=TINY_ENERGY)
+
+            pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
+                            nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
+                            norm2=norm2)
+
+            e0    = pre_dat['e0']
+            norm  = pre_dat['norm']
+            norm1 = pre_dat['norm1']
+            norm2 = pre_dat['norm2']
+            # generate flattened spectra, by fitting a quadratic to .norm
+            # and removing that.
+
+            ie0 = index_nearest(energy, e0)
+            p1 = index_of(energy, norm1+e0)
+            p2 = index_nearest(energy, norm2+e0)
+            if p2-p1 < 2:
+                p2 = min(len(energy), p1 + 2)
+
+            if make_flat:
+                pre_edge = pre_dat['pre_edge']
+                post_edge = pre_dat['post_edge']
+                edge_step = pre_dat['edge_step']
+                flat_residue = (post_edge - pre_edge)/edge_step
+                flat = norm - flat_residue + flat_residue[ie0]
+                flat[:ie0] = norm[:ie0]
+
+                enx = remove_nans(energy[p1:p2], interp=True)
+                mux = remove_nans(norm[p1:p2], interp=True)
+
+            return flat, edge_step
+###############################################################
+        mu_new = pre_edge(dataset['Raw_Energy'], dataset['Raw_Abs'])[0]
+        edge_step_new = pre_edge(dataset['Raw_Energy'], dataset['Raw_Abs'])[1]
+        e0_new = find_e0(dataset['Raw_Energy'], dataset['Raw_Abs'])
+###############################################################
+        import sys
+
+        import scipy.constants as consts
+        from numpy import arange, interp, pi, zeros, sqrt
+        from scipy.interpolate import splrep, splev, UnivariateSpline
+        from scipy.optimize import leastsq
+
+        KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
+        ETOK = 1.0/KTOE
+        sqrtpi = sqrt(pi)
+
+        FT_WINDOWS = ('Kaiser-Bessel', 'Hanning', 'Parzen', 'Welch', 'Gaussian', 'Sine')
+        FT_WINDOWS_SHORT = tuple([a[:3].lower() for a in FT_WINDOWS])
+
+        def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
+                    window='hanning', _larch=None, **kws):
+            
+            if window is None:
+                window = FT_WINDOWS_SHORT[0]
+            nam = window.strip().lower()[:3]
+            if nam not in FT_WINDOWS_SHORT:
+                raise RuntimeError("invalid window name %s" % window)
+
+            dx1 = dx
+            if dx2 is None:  dx2 = dx1
+            if xmin is None: xmin = min(x)
+            if xmax is None: xmax = max(x)
+
+            xstep = (x[-1] - x[0]) / (len(x)-1)
+            xeps  = 1.e-4 * xstep
+            x1 = max(min(x), xmin - dx1/2.0)
+            x2 = xmin + dx1/2.0  + xeps
+            x3 = xmax - dx2/2.0  - xeps
+            x4 = min(max(x), xmax + dx2/2.0)
+
+            if nam == 'fha':
+                if dx1 < 0: dx1 = 0
+                if dx2 > 1: dx2 = 1
+                x2 = x1 + xeps + dx1*(xmax-xmin)/2.0
+                x3 = x4 - xeps - dx2*(xmax-xmin)/2.0
+            elif nam == 'gau':
+                dx1 = max(dx1, xeps)
+
+            def asint(val): return int((val+xeps)/xstep)
+            i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
+            i1, i2 = max(0, i1), max(0, i2)
+            i3, i4 = min(len(x)-1, i3), min(len(x)-1, i4)
+            if i2 == i1: i1 = max(0, i2-1)
+            if i4 == i3: i3 = max(i2, i4-1)
+            x1, x2, x3, x4 = x[i1], x[i2], x[i3], x[i4]
+            if x1 == x2: x2 = x2+xeps
+            if x3 == x4: x4 = x4+xeps
+            # initial window
+            fwin =  zeros(len(x))
+            if i3 > i2:
+                fwin[i2:i3] = np.ones(i3-i2)
+
+            # now finish making window
+            if nam in ('han', 'fha'):
+                fwin[i1:i2+1] = np.sin((pi/2)*(x[i1:i2+1]-x1) / (x2-x1))**2
+                fwin[i3:i4+1] = np.cos((pi/2)*(x[i3:i4+1]-x3) / (x4-x3))**2
+            elif nam == 'par':
+                fwin[i1:i2+1] =     (x[i1:i2+1]-x1) / (x2-x1)
+                fwin[i3:i4+1] = 1 - (x[i3:i4+1]-x3) / (x4-x3)
+            elif nam == 'wel':
+                fwin[i1:i2+1] = 1 - ((x[i1:i2+1]-x2) / (x2-x1))**2
+                fwin[i3:i4+1] = 1 - ((x[i3:i4+1]-x3) / (x4-x3))**2
+            elif nam  in ('kai', 'bes'):
+                cen  = (x4+x1)/2
+                wid  = (x4-x1)/2
+                arg  = 1 - (x-cen)**2 / (wid**2)
+                arg[where(arg<0)] = 0
+                if nam == 'bes': # 'bes' : ifeffit 1.0 implementation of kaiser-bessel
+                    fwin = bessel_i0(dx* sqrt(arg)) / bessel_i0(dx)
+                    fwin[where(x<=x1)] = 0
+                    fwin[where(x>=x4)] = 0
+                else: # better version
+                    scale = max(1.e-10, bessel_i0(dx)-1)
+                    fwin = (bessel_i0(dx * sqrt(arg)) - 1) / scale
+            elif nam == 'sin':
+                fwin[i1:i4+1] = sin(pi*(x4-x[i1:i4+1]) / (x4-x1))
+            elif nam == 'gau':
+                cen  = (x4+x1)/2
+                fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
+            return fwin
+
+        def spline_eval(kraw, mu, knots, coefs, order, kout):
+            bkg = splev(kraw, [knots, coefs, order])
+            chi = UnivariateSpline(kraw, (mu-bkg), s=0)(kout)
+            return bkg, chi
+
+        def _resid(vcoefs, ncoef, kraw, mu, chi_std, knots, order, kout,
+                    ftwin, nfft, irbkg, nclamp, clamp_lo, clamp_hi):
+            global NFEV
+            NFEV += 1
+            nspl = len(vcoefs)
+            coefs = np.ones(ncoef)*vcoefs[-1]
+            coefs[:nspl] = vcoefs
+            bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
+            if chi_std is not None:
+                chi = chi - chi_std
+            out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
+            if nclamp == 0:
+                return out
+            scale = 1.0 + 100*(out*out).mean()
+            return  np.concatenate((out,
+                                    abs(clamp_lo)*scale*chi[:nclamp],
+                                    abs(clamp_hi)*scale*chi[-nclamp:]))
+
+        def realimag(arr):
+            return np.array([(i.real, i.imag) for i in arr]).flatten()
+
+        def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
+            cchi = zeros(nfft, dtype='complex128')
+            cchi[0:len(chi)] = chi
+            return (kstep / sqrtpi) * np.fft.fft(cchi)[:int(nfft/2)]
+
+        def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None, ek0=None,
+                edge_step=None, kmin=0, kmax=None, kweight=1, dk=0.1,
+                win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
+                pre_edge_kws=None, nclamp=3, clamp_lo=0, clamp_hi=1,
+                calc_uncertainties=False, err_sigma=1, _larch=None, **kws):
+
+            msg = sys.stdout.write
+            if _larch is not None:
+                msg = _larch.writer.write
+            if 'kw' in kws:
+                kweight = kws.pop('kw')
+            if len(kws) > 0:
+                msg('Unrecognized arguments for autobk():\n')
+                msg('    %s\n' % (', '.join(kws.keys())))
+                return
+
+            energy = np.array(energy)
+            mu = np.array(mu)
+            
+            if len(energy.shape) > 1:
+                energy = energy.squeeze()
+            if len(mu.shape) > 1:
+                mu = mu.squeeze()
+            energy = remove_dups(energy, tiny=TINY_ENERGY)
+
+            if e0 is not None and ek0 is None:  # command-line e0 still valid
+                ek0 = e0
+
+            if ek0 is None or edge_step is None:
+                msg('autobk() could not determine ek0 or edge_step!: trying running pre_edge first\n')
+                return
+
+            # get array indices for rkbg and ek0: irbkg, iek0
+            iek0 = index_of(energy, ek0)
+            rgrid = np.pi/(kstep*nfft)
+            rbkg = max(rbkg, 2*rgrid)
+
+            # save ungridded k (kraw) and grided k (kout)
+            # and ftwin (*k-weighting) for FT in residual
+            enpe = energy[iek0:] - ek0
+            kraw = np.sign(enpe)*np.sqrt(ETOK*abs(enpe))
+            if kmax is None:
+                kmax = max(kraw)
+            else:
+                kmax = max(0, min(max(kraw), kmax))
+            kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
+            iemax = min(len(energy), 2+index_of(energy, ek0+kmax*kmax/ETOK)) - 1
+
+            # interpolate provided chi(k) onto the kout grid
+            if chi_std is not None and k_std is not None:
+                chi_std = np.interp(kout, k_std, chi_std)
+            # pre-load FT window
+            ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
+                                            window=win, dx=dk, dx2=dk)
+            # calc k-value and initial guess for y-values of spline params
+            nspl = 1 + int(2*rbkg*(kmax-kmin)/np.pi)
+            irbkg = int(1 + (nspl-1)*np.pi/(2*rgrid*(kmax-kmin)))
+            if nknots is not None:
+                nspl = nknots
+            nspl = max(5, min(128, nspl))
+            spl_y, spl_k  = np.ones(nspl), np.zeros(nspl)
+
+            for i in range(nspl):
+                q  = kmin + i*(kmax-kmin)/(nspl - 1)
+                ik = index_nearest(kraw, q)
+                i1 = min(len(kraw)-1, ik + 5)
+                i2 = max(0, ik - 5)
+                spl_k[i] = kraw[ik]
+                spl_y[i] = (2*mu[ik+iek0] + mu[i1+iek0] + mu[i2+iek0] ) / 4.0
+
+            order = 3
+            qmin, qmax  = spl_k[0], spl_k[nspl-1]
+            knots = [spl_k[0] - 1.e-4*(order-i) for i in range(order)]
+
+            for i in range(order, nspl):
+                knots.append((i-order)*(qmax - qmin)/(nspl-order+1))
+            qlast = knots[-1]
+            for i in range(order+1):
+                knots.append(qlast + 1.e-4*(i+1))
+
+            # coefs = [mu[index_nearest(energy, ek0 + q**2/ETOK)] for q in knots]
+            knots, coefs, order = splrep(spl_k, spl_y, k=order)
+            coefs[nspl:] = coefs[nspl-1]
+            ncoefs = len(coefs)
+            kraw_ = kraw[:iemax-iek0+1]
+            mu_  = mu[iek0:iemax+1]
+            initbkg, initchi = spline_eval(kraw_, mu_, knots, coefs, order, kout)
+            global NFEV
+            NFEV = 0
+
+            vcoefs = 1.0*coefs[:nspl]
+            userargs = (len(coefs), kraw_, mu_, chi_std, knots, order, kout,
+                    ftwin, nfft, irbkg, nclamp, clamp_lo, clamp_hi)
+
+            lsout = leastsq(_resid, vcoefs, userargs, maxfev=2000*(ncoefs+1),
+                            gtol=0.0, ftol=1.e-6, xtol=1.e-6, epsfcn=1.e-6,
+                            full_output=1, col_deriv=0, factor=100, diag=None)
+
+            best, covar, _infodict, errmsg, ier = lsout
+            final_coefs        = coefs[:]
+            final_coefs[:nspl] = best[:]
+            final_coefs[nspl:] = best[-1]
+
+            chisqr = ((_resid(best, *userargs))**2).sum()
+            redchi = chisqr / (2*irbkg+2*nclamp - nspl)
+
+            coefs_std = np.array([np.sqrt(redchi*covar[i, i]) for i in range(nspl)])
+            bkg, chi = spline_eval(kraw[:iemax-iek0+1], mu[iek0:iemax+1],
+                                knots, final_coefs, order, kout)
+            obkg = mu[:]*1.0
+            obkg[iek0:iek0+len(bkg)] = bkg
+
+            k = kout
+        #    chi = chi/edge_step
+            chi = chi
+            
+            knots_y  = np.array([coefs[i] for i in range(nspl)])
+            init_bkg = mu[:]*1.0
+            init_bkg[iek0:iek0+len(bkg)] = initbkg
+            # now fill in 'autobk_details' group
+
+            if  calc_uncertainties and covar is not None:
+                autobk_delta_chi(group, err_sigma=err_sigma)
+
+            return k, chi
+
+        def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
+                        window='kaiser', nfft=2048, kstep=0.05, _larch=None):
+
+            if dk2 is None: dk2 = dk
+            kweight = int(kweight)
+            npts = int(1.01 + max(k)/kstep)
+            k_max = max(max(k), kmax+dk2)
+            k_   = kstep * np.arange(int(1.01+k_max/kstep), dtype='float64')
+            chi_ = interp(k_, k, chi)
+            win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
+            return ((chi_[:npts] *k_[:npts]**kweight), win[:npts])
+
+        def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=None,
+                dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
+                nfft=2048, kstep=None, _larch=None, **kws):
+
+            # allow kweight keyword == kw
+            if kweight is None:
+                if 'kw' in kws:
+                    kweight = kws['kw']
+                else:
+                    kweight = 2
+
+            if kstep is None:
+                kstep = k[1] - k[0]
+
+            cchi, win  = xftf_prep(k, chi, kmin=kmin, kmax=kmax, kweight=kweight,
+                                    dk=dk, dk2=dk2, nfft=nfft, kstep=kstep,
+                                    window=window, _larch=_larch)
+
+            out = xftf_fast(cchi*win, kstep=kstep, nfft=nfft)
+            rstep = pi/(kstep*nfft)
+
+            irmax = int(min(nfft/2, 1.01 + rmax_out/rstep))
+
+            r   = rstep * arange(irmax)
+            mag = sqrt(out.real**2 + out.imag**2)
+
+            r = r[:irmax]
+            chir_mag = mag[:irmax]
+
+            return r, chir_mag
+
+        k_new = autobk(dataset['Raw_Energy'], mu=mu_new, edge_step = edge_step_new, e0=e0_new)[0]
+        chi_new = autobk(dataset['Raw_Energy'], mu=mu_new, edge_step = edge_step_new, e0=e0_new)[1]
+
+        r_new = xftf(k=k_new, chi=chi_new, kweight=3, kmin=2, kmax=16, dk=0.7, window='hanning')[0]
+        chir_mag_new = xftf(k=k_new, chi=chi_new, kweight=3, kmin=2, kmax=16, dk=0.7, window='hanning')[1]
+
+
+        #dataset['XANES_Data'] = data['view']['settings']['XANES_Data']
+        #dataset['EXAFS_Data'] = data['view']['settings']['EXAFS_Data']
+
+        #Remove None values for XANES_xpoint and XANES_ypoint
+        #XANES_xpoint = [x for x in dataset['XANES_Data']['XANES_x'] if x is not None]
+        #XANES_ypoint = [y for y in dataset['XANES_Data']['XANES_y'] if y is not None]
+
+        #EXAFS_xpoint = [x for x in dataset['EXAFS_Data']['EXAFS_x'] if x is not None]
+        #EXAFS_ypoint = [y for y in dataset['EXAFS_Data']['EXAFS_y'] if y is not None]
+
+        #dataset['XANES_Data'] = []
+        #dataset['EXAFS_Data'] = []
+
+        #dataset['XANES_x'] = dataset['Raw_Energy']  #XANES_xpoint
+        #dataset['XANES_y'] = mu_new.tolist()                 #XANES_ypoint
+
+        #dataset['EXAFS_x'] = r_new.tolist()                  #EXAFS_xpoint
+        #dataset['EXAFS_y'] = chir_mag_new.tolist()           #EXAFS_ypoint
         
-    return dataset
+        dataset['XANES_Data']['XANES_x'] = dataset['Raw_Energy']
+        dataset['XANES_Data']['XANES_y'] = mu_new.tolist()
+
+        dataset['EXAFS_Data']['EXAFS_x'] = r_new.tolist()
+        dataset['EXAFS_Data']['EXAFS_y'] = chir_mag_new.tolist()
+
+        ########XANES###################################################
+
+        df = pd.DataFrame({'energy': dataset['XANES_Data']['XANES_x'], 'mu': dataset['XANES_Data']['XANES_y']})
+
+        #XA_Min_En
+        df["mu_3"]=df["mu"].rolling(3).mean().round(1)
+        threshold = 0.1
+        min_energy_point = pd.DataFrame(columns=df.columns)
+        if "route" in data['view']['settings']:
+            min_data_option = data['view']['settings']['Min_Data_Option']
+        else:
+            min_data_option = 20
+        for index, row in df.iterrows():
+            if index >= min_data_option and row['mu_3'] >= threshold:
+                min_energy_point = df[index:].nsmallest(1, 'energy')
+                dataset['XANES_statistics_Minx'] = min_energy_point['energy'].iloc[0]
+                dataset['XANES_statistics_Miny'] = min_energy_point['mu'].iloc[0]
+                break
+
+        max_points = df[(df['mu'].shift(1) < df['mu']) & (df['mu'].shift(-1) < df['mu'])]
+        max_energy_points = max_points[(max_points['mu'].shift(1) < max_points['mu']) & (max_points['mu'].shift(-1) < max_points['mu'])]
+
+        e0 = e0_new
+
+        # Get the smallest index among values greater than e0 in XANES_xpoint
+        indices_greater_than_e0 = np.where(dataset['XANES_Data']['XANES_x'] > e0)[0]
+        closest_index = indices_greater_than_e0[0] if len(indices_greater_than_e0) > 0 else None
+
+        if closest_index is not None:
+            max_energy_point = max_energy_points[max_energy_points['mu'] >= dataset['XANES_Data']['XANES_y'][closest_index]].nsmallest(1, 'energy')
+        else:
+            max_energy_point = max_points.nlargest(1, 'mu')
+
+        # Get the index of the XANES_xpoint that is exactly equal to e0
+        indices = np.where(np.abs(dataset['XANES_Data']['XANES_x'] - e0) < 1e-10)[0]
+
+        # If indices is not empty, get the next element
+        if indices:
+            next_idx = indices[0] + 1
+
+        dataset['XANES_statistics_Maxx'] = max_energy_point['energy'].iloc[0]
+        dataset['XANES_statistics_Maxy'] = max_energy_point['mu'].iloc[0]
+        dataset['XANES_statistics_E0x'] = dataset['XANES_Data']['XANES_x'][next_idx]
+        dataset['XANES_statistics_E0y'] = dataset['XANES_Data']['XANES_y'][next_idx]
+
+        # Check the condition and update if necessary
+        if dataset['XANES_statistics_E0x'] <= dataset['XANES_statistics_Minx']:
+            dataset['XANES_statistics_Minx'] = dataset['XANES_Data']['XANES_x'][next_idx - 1]
+            dataset['XANES_statistics_Miny'] = dataset['XANES_Data']['XANES_y'][next_idx - 1]
+
+        peak_width = dataset['XANES_statistics_Maxx'] - dataset['XANES_statistics_Minx']
+
+        ###########EXAFS##############################################
+
+        EXAFS_xpoint = dataset['EXAFS_Data']['EXAFS_x']
+        EXAFS_ypoint = dataset['EXAFS_Data']['EXAFS_y']
+
+        EXAFS_xpoint = np.array(EXAFS_xpoint)
+        EXAFS_ypoint = np.array(EXAFS_ypoint)
+
+        condition = (1 <= EXAFS_xpoint) & (EXAFS_xpoint <= 6)
+        x_range = EXAFS_xpoint[condition]
+        y_range = EXAFS_ypoint[condition]
+        peaks, _ = find_peaks(y_range)
+        peak_xpositions = [x_range[i] for i in peaks]
+        peak_ypositions = [y_range[i] for i in peaks]
+        max_peak_index = np.argmax(peak_ypositions)
+        max_peak_xposition = peak_xpositions[max_peak_index]
+
+        dataset['EXAFS_statistics_x'] = max_peak_xposition
+        dataset['EXAFS_statistics_y'] = max(peak_ypositions)
+
+        ###########periodic table#####################
+        pt_strIO = StringIO(periodictablestring)
+        testpt = pd.read_csv(pt_strIO)
+
+        element = testpt[testpt['Element'] == element_name]
+
+        ##################################################
+
+        columns_to_extract = ['Peak_E0_μt', 'Peak_Max_μt', 'Max_y_xposition', 'Max_y', 'vdw_radius_alvarez', 'Peak_Width', 'gs_energy', 'fusion_enthalpy', 'num_unfilled']
+        data_information=[dataset['XANES_Data']['XANES_y'][next_idx], max_energy_point['mu'].iloc[0], max_peak_xposition, max(peak_ypositions), element['vdw_radius_alvarez'].values[0],
+                        peak_width, element['gs_energy'].values[0], element['fusion_enthalpy'].values[0], element['num_unfilled'].values[0]]
+
+        data_information_df = pd.DataFrame([data_information], columns=columns_to_extract)
+
+        ##############################################################################
+        #Oxide & Valence Group (0, 1-3, 4-6) Classification
+        ##############################################################################
+        Oxide008 = StringIO(Train_Oxide_008)
+        df008 = pd.read_csv(Oxide008)
+        #########Oxide#################
+        target_A_8 = df008.iloc[:, 1]
+        targets_A_8 = np.array(target_A_8)
+        data1_8 = df008.iloc[:, 3:8]
+        datas1_8 = np.array(data1_8)
+        model_8 = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_8.fit(datas1_8, targets_A_8)
+        pred_8 = data_information_df
+        pred1_8 = pred_8.iloc[:, :5]
+        pred_data_8 = np.array(pred1_8)
+        predictionlist_8 = []
+        result_8 = model_8.predict(pred_data_8)
+        predictionlist_8.extend(result_8)
+        df_result_8 = pd.DataFrame(predictionlist_8, columns=['Predict_Oxide'])
+        results_8 = pd.concat([pred_8, df_result_8], axis=1)
+        results_8['Oxide'] = result_8
+        results_8 = pd.concat([results_8.iloc[:, -1], results_8.iloc[:, :-1]], axis=1)
+        ###########Valence##########################
+        target_B_8 = df008.iloc[:, 2]
+        targets_B_8 = np.array(target_B_8)
+        data2_A_8 = df008.iloc[:, 1]
+        data2_B_8 = df008.iloc[:, 3:7]
+        data2_C_8 = df008.iloc[:, 8:]
+        data2_8 = pd.concat([data2_A_8, data2_B_8, data2_C_8], axis=1)
+        datas2_8 = np.array(data2_8)
+        model_8V = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_8V.fit(datas2_8, targets_B_8)
+        pred3_8 = results_8.iloc[:, :5]
+        pred4_8 = results_8.iloc[:, 6:-1]
+        pred5_8 = pd.concat([pred3_8, pred4_8], axis=1)
+        pred_data2_8 = np.array(pred5_8)
+        predictionlist_A_8 = []
+        result2_8 = model_8V.predict(pred_data2_8)
+        predictionlist_A_8.extend(result2_8)
+        df_result2_8 = pd.DataFrame(predictionlist_A_8, columns=['Predict_Valence(0, 1-3, 4-6)'])
+        #############################################################
+        #To make the display more user-friendly, the following code should also be executed
+        replace_dict = {3: '1 - 3', 4: '4 - 6'}
+        df_result2_8['Predict_Valence(0, 1-3, 4-6)'] = df_result2_8['Predict_Valence(0, 1-3, 4-6)'].replace(replace_dict)
+        #############################################################
+        results_8 = pd.concat([pred_8, df_result_8, df_result2_8], axis=1)
+
+        #results_8.to_csv('PredictData_for_Oxide&Valence_008.csv', index=False)
+        result_df008 = results_8.iloc[:, -2:]
+
+        dataset['Predict_Oxide'] = result_df008['Predict_Oxide'].values[0]
+        dataset['Predict_Valence_Group'] = result_df008['Predict_Valence(0, 1-3, 4-6)'].values[0]
+
+        ##############################################################################
+        #Oxide & Valence Each (0, 1, 2, 3, 4, 5, 6) Classification
+        ##############################################################################
+        Oxide006 = StringIO(Train_006)
+        df006 = pd.read_csv(Oxide006)
+        #########Oxide#################
+        target_A_6 = df006.iloc[:, 1]
+        targets_A_6 = np.array(target_A_6)
+        data1_6 = df006.iloc[:, 3:8]
+        datas1_6 = np.array(data1_6)
+        model_6 = RandomForestClassifier(random_state=0, n_estimators=80)
+        model_6.fit(datas1_6, targets_A_6)
+        pred_6 = data_information_df
+        pred1_6 = pred_6.iloc[:, :5]
+        pred_data_6 = np.array(pred1_6)
+        predictionlist_6 = []
+        result_6 = model_6.predict(pred_data_6)
+        predictionlist_6.extend(result_6)
+        df_result_6 = pd.DataFrame(predictionlist_6, columns=['Predict_Oxide'])
+        results_6 = pd.concat([pred_6, df_result_6], axis=1)
+        results_6['Oxide'] = result_6
+        results_6 = pd.concat([results_6.iloc[:, -1], results_6.iloc[:, :-1]], axis=1)
+        ###########Valence##########################
+        target_B_6 = df006.iloc[:, 2]
+        targets_B_6 = np.array(target_B_6)
+        data2_A_6 = df006.iloc[:, 1]
+        data2_B_6 = df006.iloc[:, 3:7]
+        data2_C_6 = df006.iloc[:, 8:]
+        data2_6 = pd.concat([data2_A_6, data2_B_6, data2_C_6], axis=1)
+        datas2_6 = np.array(data2_6)
+        model1_6V = RandomForestClassifier(random_state=0, n_estimators=80)
+        model2_6V = MLPClassifier(random_state=0, solver='lbfgs', alpha=0.4, activation='tanh', max_iter=800)
+        model_6V  = VotingClassifier(estimators=[('rf', model1_6V), ('mlp', model2_6V)], voting='soft', weights=[0.85, 0.15])
+        model_6V.fit(datas2_6, targets_B_6)
+        pred3_6 = results_6.iloc[:, :5]
+        pred4_6 = results_6.iloc[:, 6:-1]
+        pred5_6 = pd.concat([pred3_6, pred4_6], axis=1)
+        pred_data2_6 = np.array(pred5_6)
+        predictionlist_A_6 = []
+        result2_6 = model_6V.predict(pred_data2_6)
+        predictionlist_A_6.extend(result2_6)
+        df_result2_6 = pd.DataFrame(predictionlist_A_6, columns=['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'])
+        results_6 = pd.concat([pred_6, df_result_6, df_result2_6], axis=1)
+        #results_6.to_csv('PredictData_for_Oxide&Valence_006.csv', index=False)
+
+        result_df006 = pd.concat([results_6.iloc[:, 0], results_6.iloc[:, -2:]], axis=1)
+
+        dataset['Predict_Valence_Each'] = result_df006['Predict_Valence(0, 1, 2, 3, 4, 5, 6)'].values[0]
+
+        #df_all = pd.concat([df008, df006.iloc[:, -1]], axis=1)
+        #df_all2 = pd.merge(result_df1, df_all, on=["Data_Number"], how="inner")
+        #display(df_all2)
+        #df_all2.to_csv('PredictData_for_Oxide&Valence_all.csv', index=False)
+            
+        return dataset
+
 #-------------------------------------------------------------------------------------------------
 periodictablestring = """Element,fusion_enthalpy,gs_energy,num_unfilled,vdw_radius_alvarez
 H,0.06,-3.331290765,1,120
