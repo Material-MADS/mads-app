@@ -34,7 +34,7 @@ import GapMinderView from './GapMinderView';
 import ImageViewView from './ImageView';
 import FeatureEngineeringView from './FeatureEngineeringView';
 import MonteCatView from './MonteCatView';
-import CatalystPropertyConversionView from './CatalystPropertyConversionView';
+import featureAssignmentView from './FeatureAssignmentView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -359,6 +359,35 @@ export const config = [
   },
   //------------------------------------------
 
+  // THIS IS A Feature Assignment Conversion COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'featureAssignment',
+    name: 'FeatureAssignment',
+    category: 'Data Processing',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: featureAssignmentView,
+    customBtns: [
+      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
+      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
+    ],
+    settings: {
+      conversionMethod: '',
+      catalyst: [],
+      targetColumns: [],
+      compositionColumns: [],
+      options: {
+        extent: {
+          width: 400,
+          height: 300,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+  
   // Feature Engineering - A Customizable Feature Engienering
   //----------------------------------------------------------------
   {
@@ -426,34 +455,6 @@ export const config = [
   },
   //------------------------------------------
 
-  // THIS IS A Catalyst Property Conversion COMPONENT FOR COPYING WHEN CREATING NEW ONES
-  //----------------------------------------------------------------
-  {
-    type: 'catalystPropertyConversion',
-    name: 'CatalystPropertyConversion',
-    category: 'Data Processing',
-    version: 1.0,
-    devStage: "Stable Release",
-    component: CatalystPropertyConversionView ,
-    customBtns: [
-      {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
-      {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
-    ],
-    settings: {
-      conversionMethod: '',
-      catalyst: [],
-      targetColumns: [],
-      compositionColumns: [],
-      options: {
-        extent: {
-          width: 400,
-          height: 300,
-        },
-      },
-    },
-    enabled: true,
-  },
-  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================
