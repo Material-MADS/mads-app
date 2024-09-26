@@ -7,9 +7,9 @@
 //　　　　　 Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Storybook test displays for the React Component for the Visualization
-//              View of the 'CatalystPropertyConversion' module
+//              View of the 'FeatureAssignment' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'CatalystPropertyConversion' is a visualization component that do nothing really.
+// Notes: 'FeatureAssignment' is a visualization component that do nothing really.
 // ------------------------------------------------------------------------------------------------
 // References: React & storybook Libs, image test data, component Vis
 =================================================================================================*/
@@ -20,7 +20,7 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 
-import CatalystPropertyConversion from './CatalystPropertyConversionVis';
+import FeatureAssignment from './FeatureAssignmentVis';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -37,11 +37,11 @@ import CatalystPropertyConversion from './CatalystPropertyConversionVis';
 //-------------------------------------------------------------------------------------------------
 // Adding the various stories configured above to the storybook environment.
 //-------------------------------------------------------------------------------------------------
-const stories = storiesOf('CatalystPropertyConversion', module);
+const stories = storiesOf('FeatureAssignment', module);
 stories
-  .add('...Empty', () => <CatalystPropertyConversion />)
+  .add('...Empty', () => <FeatureAssignment />)
   .add('...With Something', () => (
-    <CatalystPropertyConversion
+    <FeatureAssignment
       data = { {} }
       options = { {
         something: "Something",
