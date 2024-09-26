@@ -3,16 +3,16 @@
 #          Hokkaido University (2018)
 #          Last Update: Q3 2023
 # ________________________________________________________________________________________________
-# Authors:Yoshiki Hasukawa (Student Developer, Component Design and Editor of Catalyst Property 
-#         Conversion Code) [2024] 
-#         Fernando Garcia-Escobar, (Developer Of Catalyst Property Conversion Code) [2024] 
+# Authors:Yoshiki Hasukawa (Student Developer, Component Design and Editor of Feature Assignment 
+#         Code) [2024] 
+#         Fernando Garcia-Escobar, (Developer Of Feature Assignment Code) [2024] 
 #         Mikael Nicander Kuwahara (Lead Developer) [2021-]
 # _______________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              'Catalyst Property Conversion' components
+#              'Feature Assignment' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
-#         allows serverside work for the 'Catalyst Property Conversion' component.
+#         allows serverside work for the 'Feature Assignment' component.
 # ------------------------------------------------------------------------------------------------
 # References: logging, numpy libs
 #=================================================================================================
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 #-------------------------------------------------------------------------------------------------
-def get_catalyst_property_conversion(data):
+def get_feature_assignment(data):
     # logger.info(data)
     result = {}
     start_time = round(time.time(), 2)

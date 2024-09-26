@@ -47,7 +47,7 @@ import PeriodicTable from '../VisComponents/PeriodicTableVis';
 //=======================
 
 const firstOrderDescriptors = ["x", '1/(x)', '(x)^2', '1/(x)^2', '(x)^3', '1/(x)^3', 'sqrt(x)', '1/sqrt(x)', 'exp(x)', '1/exp(x)', 'ln(x)', '1/ln(x)'];
-const selectedDataSourceList = ['Data Management', 'Catalyst Property Conversion Component'];
+const selectedDataSourceList = ['Data Management', 'Feature Assignment Component'];
 const periodicTable = ['all', 'atomic_number', 'atomic_radius_simple', 'atomic_radius_rahm', 'atomic_volume', 'atomic_weight', 'boiling_point', 'bulk_modulus', 'c6_gb', 'covalent_radius_cordero', 'covalent_radius_pyykko_simple', 'covalent_radius_pyykko_double', 'covalent_radius_pyykko_triple', 'covalent_radius_slater', 'density', 'dipole_polarizability', 'electron_negativity', 'electron_affinity', 'en_allen', 'en_ghosh', 'en_pauling', 'first_ion_en', 'fusion_enthalpy', 'gs_bandgap', 'gs_energy', 'gs_est_bcc_latcnt', 'gs_est_fcc_latcnt', 'gs_mag_moment', 'gs_volume_per', 'hhi_p', 'hhi_r', 'heat_capacity_mass', 'heat_capacity_molar', 'icsd_volume', 'evaporation_heat', 'heat_of_formation', 'lattice_constant', 'mendeleev_number', 'melting_point', 'molar_volume', 'num_unfilled', 'num_valence', 'num_d_unfilled', 'num_d_valence', 'num_f_unfilled', 'num_f_valence', 'num_p_unfilled', 'num_p_valence', 'num_s_unfilled', 'num_s_valence', 'period', 'specific_heat', 'thermal_conductivity', 'vdw_radius_simple', 'vdw_radius_alvarez', 'vdw_radius_mm3', 'vdw_radius_uff', 'sound_velocity', 'Polarizability'];
 
 
@@ -73,7 +73,7 @@ const validate = (values, props) => {
     if (testTargetColumns && testTargetColumns.some(e => !e)) {
       values.targetColumns =  []
     }
-  } else if (values.selectedDataSource === 'Catalyst Property Conversion Component') {
+  } else if (values.selectedDataSource === 'Feature Assignment Component') {
     const cpcId = values.propertyConversionId;
     const cpcIdBoolean = cpcId ? props.dataset[cpcId] : true;
     if (!cpcIdBoolean) {
@@ -96,7 +96,7 @@ const validate = (values, props) => {
 
   if (values.selectedDataSource === 'Data Management') {
     setSubmitButtonDisable(errors.descriptorColumns || errors.targetColumns || errors.firstOrderDescriptors)
-  } else if (values.selectedDataSource === 'Catalyst Property Conversion Component') {
+  } else if (values.selectedDataSource === 'Feature Assignment Component') {
     if (Object.keys(values.propertyConversionDS).length === 0) {
       errors.propertyConversionDS = 'Required';
     }
@@ -135,7 +135,7 @@ const FeatureEngineeringForm = (props) => {
     views: state.views,
     dataset: state.dataset,
   }));
-  const idCPC = views.filter((view) => view.name === 'CatalystPropertyConversion').map((view) => view.id)
+  const idCPC = views.filter((view) => view.name === 'FeatureAssignment').map((view) => view.id)
   const idHaveData = idCPC.filter((id) => dataset.hasOwnProperty(id)).filter((id) => dataset[id])
 
   initialValues.options = {...defaultOptions, ...(initialValues.options) };
@@ -159,7 +159,7 @@ const FeatureEngineeringForm = (props) => {
   }
 
   useEffect(() => {
-    if (initialValues.selectedDataSource === 'Catalyst Property Conversion Component') {
+    if (initialValues.selectedDataSource === 'Feature Assignment Component') {
       props.change('propertyConversionDS', dataset[cpcId]);
       const testTargetCPC = initialValues.targetColumns.map((preTarget) => targetColumnsCPC.some((latestTarget) => preTarget === latestTarget));
       if (testTargetCPC.some((e) => !e)) {
@@ -174,7 +174,7 @@ const FeatureEngineeringForm = (props) => {
     <Form onSubmit={handleSubmit}>
 
       <Form.Field> 
-        <label>Selected Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='You can choose to use the Dataset of Data Management or Catalyst Property Conversion Component.' size='small' />:</label>
+        <label>Selected Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='You can choose to use the Dataset of Data Management or Feature Assignment Component.' size='small' />:</label>
         <Field
           name="selectedDataSource"
           component={SemanticDropdown}
@@ -193,13 +193,13 @@ const FeatureEngineeringForm = (props) => {
       {/* These Form Fields are for using Feature Engineering Source */}
       {!fieldsAreShowing &&
         <Form.Field >
-          <label>Catalyst Property Conversion Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Choose which Catalyst Property Conversion Component to use.' size='small' />:</label>
-          { ( idHaveData.length === 0 ) ? <label style={{margin:'0px auto'}}>There is no available Catalyst Property Conversion Data Source</label> :
+          <label>Feature Assignment Data Source<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Choose which Feature Assignment Component to use.' size='small' />:</label>
+          { ( idHaveData.length === 0 ) ? <label style={{margin:'0px auto'}}>There is no available Feature Assignment Data Source</label> :
             idHaveData.map((id) => {
               return (
                 <Form.Field key={id}>
                   <Checkbox
-                    label={'Catalyst Property Conversion id :' + id}
+                    label={'Feature Assignment id :' + id}
                     name='propertyConversionDS'
                     value={id}
                     checked={cpcId === id}
@@ -213,7 +213,7 @@ const FeatureEngineeringForm = (props) => {
       <hr />
 
       <Form.Field>
-        <label>Base Descriptor Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select discriptors to generate First Order Descriptors When Selected Data Source is Data Management, you can choose Base Descriptor Columns from columns of Data Management. When Selected Data Source is Catalyst Property Conversion Component, you can choose from Columns of Catalyst Property Conversion Component.' size='small' /></label>
+        <label>Base Descriptor Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select discriptors to generate First Order Descriptors When Selected Data Source is Data Management, you can choose Base Descriptor Columns from columns of Data Management. When Selected Data Source is Feature Assignment Component, you can choose from Columns of Feature Assignment Component Component.' size='small' /></label>
         <Field
           name="descriptorColumns"
           placeholder="Descriptor Columns"
@@ -225,7 +225,7 @@ const FeatureEngineeringForm = (props) => {
       </Form.Field>
 
       <Form.Field>
-        <label>Target Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select targets for the dataset. When Selected Data Source is Data Management, you can choose Target Columns from columns of Data Management. When Selected Data Source is Catalyst Property Conversion Component, you can choose from Target Columns of Catalyst Property Conversion Component.' size='small' /></label>
+        <label>Target Columns<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='select targets for the dataset. When Selected Data Source is Data Management, you can choose Target Columns from columns of Data Management. When Selected Data Source is Feature Assignment Component, you can choose from Target Columns of Feature Assignment Component.' size='small' /></label>
         <Field
           name="targetColumns"
           placeholder="Target Columns"

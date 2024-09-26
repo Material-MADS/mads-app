@@ -7,9 +7,9 @@
 //　　　　　 Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
-//              'CatalystPropertyConversion' module
+//              'FeatureAssignment' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'CatalystPropertyConversion' is a component that makes amazing things.
+// Notes: 'featureAssignment' is a component that makes amazing things.
 // ------------------------------------------------------------------------------------------------
 // References: React & prop-types Libs, 3rd party jquery, internal support methods fr. VisCompUtils
 =================================================================================================*/
@@ -23,8 +23,8 @@ import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import $ from "jquery";
 
-import csvinput from './images/catalystPropertyConversion/csvinput.png';
-import csvoutput from './images/catalystPropertyConversion/csvoutput.png';
+import csvinput from './images/featureAssignment/csvinput.png';
+import csvoutput from './images/featureAssignment/csvoutput.png';
 //-------------------------------------------------------------------------------------------------
 
 
@@ -32,7 +32,7 @@ import csvoutput from './images/catalystPropertyConversion/csvoutput.png';
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: "Empty 'CatalystPropertyConversion' Component",
+  title: "Empty 'featureAssignment' Component",
   extent: { width: undefined, height: undefined },
 };
 
@@ -41,7 +41,7 @@ const defaultOptions = {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
-export default function CatalystPropertyConversion({
+export default function FeatureAssignment({
   data,
   mappings,
   options,
@@ -105,7 +105,7 @@ export default function CatalystPropertyConversion({
   // Add the VizComp to the DOM
   return (
     <div style={{width: internalOptions.extent.width, height: internalOptions.extent.height, overflow: 'hidden', boxSizing: 'border-box'}}>
-      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Catalyst Property Conversion( id: {id})</Header>
+      <Header as='h2' style={{margin:'15px auto 30px auto', textAlign:'center'}}>Feature Assignment( id: {id})</Header>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={saDisabled} name={'Simple Average'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={waaDisabled} name={'Format A'}/>
       <DataItemActions data={data} conversionmethod={conversionMethod} disabled={wabDisabled} name={'Format B'}/>
@@ -279,7 +279,7 @@ const ViewTable = ({dataset}) => {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's Allowed and expected Property Types
 //-------------------------------------------------------------------------------------------------
-CatalystPropertyConversion.propTypes = {
+FeatureAssignment.propTypes = {
   data: PropTypes.shape({ }),
   conversionMethod: PropTypes.string,
   catalyst: PropTypes.array,
@@ -298,7 +298,7 @@ CatalystPropertyConversion.propTypes = {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's default initial start Property Values
 //-------------------------------------------------------------------------------------------------
-CatalystPropertyConversion.defaultProps = {
+FeatureAssignment.defaultProps = {
   data: {},
   conversionMethod: '',
   catalyst: [],
