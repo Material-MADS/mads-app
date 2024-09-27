@@ -275,8 +275,11 @@ def get_xafs_analysis(data):
 
         if closest_index is not None:
             max_energy_point = max_energy_points[max_energy_points['mu'] >= XANES_ypoint[closest_index]].nsmallest(1, 'energy')
-        else:
-            max_energy_point = max_points.nlargest(1, 'mu')
+        #else:
+        #    max_energy_point = max_points.nlargest(1, 'mu')
+
+        if max_energy_point.empty:
+            max_energy_point = max_points[max_points['energy'] > e0].nsmallest(1, 'energy')
 
         # Get the index of the XANES_xpoint that is exactly equal to e0
         indices = np.where(np.abs(XANES_xpoint - e0) < 1e-10)[0]
@@ -1233,8 +1236,11 @@ def get_xafs_analysis(data):
 
         if closest_index is not None:
             max_energy_point = max_energy_points[max_energy_points['mu'] >= dataset['XANES_Data']['XANES_y'][closest_index]].nsmallest(1, 'energy')
-        else:
-            max_energy_point = max_points.nlargest(1, 'mu')
+        #else:
+        #    max_energy_point = max_points.nlargest(1, 'mu')
+
+        if max_energy_point.empty:
+            max_energy_point = max_points[max_points['energy'] > e0].nsmallest(1, 'energy')
 
         # Get the index of the XANES_xpoint that is exactly equal to e0
         indices = np.where(np.abs(dataset['XANES_Data']['XANES_x'] - e0) < 1e-10)[0]
