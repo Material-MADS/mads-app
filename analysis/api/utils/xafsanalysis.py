@@ -1179,32 +1179,7 @@ def get_xafs_analysis(data):
 
         r_new = xftf(k=k_new, chi=chi_new, kweight=3, kmin=2, kmax=16, dk=0.7, window='hanning')[0]
         chir_mag_new = xftf(k=k_new, chi=chi_new, kweight=3, kmin=2, kmax=16, dk=0.7, window='hanning')[1]
-
-        logger.info(k_new)
-        logger.info(chi_new)
-
-        logger.info(r_new)
-        logger.info(chir_mag_new)
-
-        #dataset['XANES_Data'] = data['view']['settings']['XANES_Data']
-        #dataset['EXAFS_Data'] = data['view']['settings']['EXAFS_Data']
-
-        #Remove None values for XANES_xpoint and XANES_ypoint
-        #XANES_xpoint = [x for x in dataset['XANES_Data']['XANES_x'] if x is not None]
-        #XANES_ypoint = [y for y in dataset['XANES_Data']['XANES_y'] if y is not None]
-
-        #EXAFS_xpoint = [x for x in dataset['EXAFS_Data']['EXAFS_x'] if x is not None]
-        #EXAFS_ypoint = [y for y in dataset['EXAFS_Data']['EXAFS_y'] if y is not None]
-
-        #dataset['XANES_Data'] = []
-        #dataset['EXAFS_Data'] = []
-
-        #dataset['XANES_x'] = dataset['Raw_Energy']  #XANES_xpoint
-        #dataset['XANES_y'] = mu_new.tolist()                 #XANES_ypoint
-
-        #dataset['EXAFS_x'] = r_new.tolist()                  #EXAFS_xpoint
-        #dataset['EXAFS_y'] = chir_mag_new.tolist()           #EXAFS_ypoint
-        
+       
         dataset['XANES_Data']['XANES_x'] = dataset['Raw_Energy']
         dataset['XANES_Data']['XANES_y'] = mu_new.tolist()
 
