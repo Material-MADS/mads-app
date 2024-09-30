@@ -51,7 +51,7 @@ const defaultOptions = {
   extent: { width: 450, height: 450 },
   margin: { top: 56, right: 51, bottom: 55, left: 51},
   marker: {
-    size: 4,
+    size: 3,
     color: 'blue',
     opacity: 0.8,
   },
