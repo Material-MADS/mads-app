@@ -603,7 +603,7 @@ export const config = [
     name: 'XAFSAnalysis',
     category: 'Analysis',
     version: 1.0,
-    devStage: "Draft",
+    devStage: "Stable Release",
     component: XAFSAnalysisView,
     settings: {
       element: '',
