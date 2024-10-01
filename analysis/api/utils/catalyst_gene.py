@@ -185,7 +185,10 @@ def get_catalyst_gene(data):
         yData = []
         xData = []
         heatVal = []
+        data = []
         for i in range(len(df_for_heatmap.index)):
+
+            dic_data = {}
 
             catalysts.append(df_for_heatmap["Catalyst"].values.tolist()[i])
 
@@ -194,18 +197,24 @@ def get_catalyst_gene(data):
 
                 xData.append(j)
 
-                heatVal.append(array_heatmap[i, j])            
+                heatVal.append(array_heatmap[i, j])  
+
+                dic_data['xData'] = j
+                dic_data['yData'] = i
+                dic_data['Catalyst'] = df_for_heatmap["Catalyst"].values.tolist()[i]
+                dic_data['heatVal'] = array_heatmap[i, j]    
+
+            data.append(dic_data)       
         
         logger.info(catalysts == dendrogram_result['ivl']) 
         # logger.info(dendrogram_result['ivl'])
         result['heatmapData'] = {}
+        result['heatmapData']['Datas'] = data
         result['heatmapData']['xData'] = xData
         result['heatmapData']['yData'] = yData
         result['heatmapData']['heatVal'] = heatVal
         result['heatmapData']['xTicks'] = heat_map_columns
         result['heatmapData']['yTicks'] = catalysts
-
-
 
 #############################################################################################################################################################
 ##########  edit_distance and sort data by distance from the root_catalyst_gene  ############################################################################
