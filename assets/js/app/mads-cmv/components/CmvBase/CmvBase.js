@@ -163,6 +163,10 @@ export default function CmvBase({
           version={componentDef.version}
           devStage={componentDef.devStage}
           tellWSSomething={tellWSSomething}
+          devInfo={componentDef.devInfo || []}
+          superInfo={componentDef.supervisors || []}
+          academicInfo={componentDef.academicInfo || []}
+          description={componentDef.description || ""}
         />
       );
 
