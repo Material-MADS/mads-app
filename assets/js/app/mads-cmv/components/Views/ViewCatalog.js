@@ -74,6 +74,34 @@ export const specialPass = ['micke.kuwahara@gmail.com', 'micke.kuwahara@sci.hoku
 
 
 //-------------------------------------------------------------------------------------------------
+// COMPONENT CONFIGURATION INSTRUCTIONS
+//-------------------------------------------------------------------------------------------------
+// type: [Mandatory] The name which this component is identified by on the server side (processor.py)
+// name: [Mandatory] The name that is displayed to the user
+// category: [Optional] Grouping of components. if left out, 'Undefined' is assigned, any value is possible but current in use are {'Visualization','Data Processing','Analysis','Machine Learning','Static Data Visual Support','Other','Template'}
+//           The developer should also place the component configuration json in its right place in this file for good overview and because the categories will appear in the same order they are first found and created (Not aphabetically)
+// version: [Optional] any numerical string value to indicate for the developer and the user what version this component are at. Any value different than 1.0 will be displayed
+// devStage: [Optional] Any value or no value beside 'Stable Release' will generate a warning popup that the component is under development. Beside that any string will work, depending on what the developer wants to communicate,
+// description: [Optional] Some basic info about what this component basically can do and offer
+// devInfo: [Optional] An array of objects containing name, affiliation and URL-link about the developer(s), [{name: "", affiliation: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component
+// supervisors: [Optional] An array of objects containing name, affiliation and URL-link about the supervising and support staff, that provided help during the development of this component, [{name: "", affiliation: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component if it exists
+// academicInfo: [Optional] An array of objects containing title and URL-link about any academic papers related to the component, [{title: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component
+// component: [Mandatory] The actual View object for the component, as imported at the top of this file. A must, or nothing will work.
+// customBtns: [Optional] An array of custom buttons that will appear at the top of the component (default color yellow). These buttons are assigned behavior inside the component's Vis code.
+//             {name: '', icon: '', text: ''} 'name' is the id found by code, 'icon' is the semantic-ui-react icon name that will be displayed on the button and 'text' is what the user will see when hovering the button
+// settings: {            [Mandatory] any settings or options besides extent: {width, height} (initial size of the component (in pixels)) are optional and component based
+//   options: {
+//     extent: {
+//       width: 400,
+//       height: 300,
+//     },
+//   },
+// },
+// enabled: if true the component will appear for the user in the list of available components, if false it will be hidden and not available
+//-------------------------------------------------------------------------------------------------
+
+
+//-------------------------------------------------------------------------------------------------
 // The Catalog Config
 //-------------------------------------------------------------------------------------------------
 export const config = [
@@ -89,6 +117,8 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component is a basic table that gets filled by the current loaded data and allows various interaction.",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: TableView,
     settings: {
       columns: [],
@@ -103,6 +133,7 @@ export const config = [
   },
   //------------------------------------------
 
+
   // Scatter - A Customizable Scatter Plot
   //------------------------------------------
   {
@@ -111,6 +142,8 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component provides a classic scatter plot with various ways to display the available data and to interact with the plot",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: ScatterView,
     settings: {
       options: {
@@ -132,6 +165,9 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to display the active data as bar charts in many various ways",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: BarView,
     settings: {
       options: {
@@ -156,6 +192,9 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in such way that it be displayed as a Pie chart",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: PieView,
     settings: {
       bins: 7,
@@ -179,6 +218,8 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it in a 3-dimensional Scatter plot chart",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: Scatter3DView,
     settings: {
       method: "Manual",
@@ -210,6 +251,8 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it in a line chart",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: LineView,
     settings: {
       options: {
@@ -237,6 +280,8 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it in a violin plot",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: ViolinPlotView,
     settings: {
       options: {
@@ -262,6 +307,8 @@ export const config = [
     category: 'Visualization',
     version: 0.2,
     devStage: "Alfa Teaser",
+    description: "This component is attempting to display complex data in similar ways as the famous statistical web site GapMinder",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: GapMinderView,
     settings: {
       options: {
@@ -285,6 +332,9 @@ export const config = [
     category: 'Data Processing',
     version: 1.0,
     devStage: "Stable Release",
+    description: "The ImageView Component can do multiple forms of image processing using a range of algorithms and features from the SciKitImage python library and also CSS",
+    devInfo: [{name: "Micke Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    academicInfo: [{title: "Improving scientific image processing accessibility through development of graphical user interfaces for scikit-image", link: "https://pubs.rsc.org/en/content/articlelanding/2023/dd/d3dd00061c"}],
     component: ImageViewView,
     customBtns: [
       {name: 'saveImg', icon: 'save', text: 'Save Image'},
@@ -359,7 +409,7 @@ export const config = [
   },
   //------------------------------------------
 
-  // THIS IS A Feature Assignment Conversion COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  // Feature Assignment Conversion
   //----------------------------------------------------------------
   {
     type: 'featureAssignment',
@@ -367,6 +417,10 @@ export const config = [
     category: 'Data Processing',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to assign features for machine learning",
+    devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
     component: featureAssignmentView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -387,7 +441,7 @@ export const config = [
     enabled: true,
   },
   //------------------------------------------
-  
+
   // Feature Engineering - A Customizable Feature Engienering
   //----------------------------------------------------------------
   {
@@ -396,6 +450,10 @@ export const config = [
     category: 'Data Processing',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to engineer features used in machine learning",
+    devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
     component: FeatureEngineeringView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -427,11 +485,14 @@ export const config = [
     category: 'Data Processing',
     version: 1.0,
     devStage: "Stable Release",
+    description: "The MonteCat Component carries out an automated Descriptor search using successive randomized Additions and Removals, selecting Descriptors that lead to a high model Score through the Metropolis-Hastings algorithm.",
+    devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    academicInfo: [{title: "MonteCat: A Basin-Hopping-Inspired Catalyst Descriptor Search Algorithm for Machine Learning Models", link: "https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952"}, {title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
     component: MonteCatView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
       {name: 'outputcsvfile', icon: 'file image outline', text: 'Output CSV File Data Format. Click here'},
-      {name: 'paperLink', icon: 'linkify', text: 'Learn more about montecat.'},
     ],
     settings: {
       selectedDataSource: 'Data Management',
@@ -467,6 +528,8 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display and interact with it as a Parellel coordinates chart",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: ParCoordsView,
     settings: {
       axes: [],
@@ -486,6 +549,8 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it as single or multiple histograms",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: HistView,
     settings: {
       options: {
@@ -509,6 +574,8 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to apply Feature Importance algorithms on the current active data and display the results accordingly",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: RFFeatureView,
     settings: {
       featureColumns: [],
@@ -530,6 +597,8 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it in a heat map",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: HeatMapView,
     settings: {
       options: {
@@ -552,6 +621,9 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage data in order to display it in a pairwise-correlation chart",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    supervisors: [{name: "Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
     component: PairwiseCorrelationView,
     settings: {
       options: {
@@ -572,6 +644,9 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to manage node data in order to display it a highly interactive node graph",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: NodeGraphView,
     customBtns: [
       {name: 'toggleNodeResettling', icon: 'recycle', text: 'Toggle Node Pinning'},
@@ -606,6 +681,8 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to apply regression algorithms on the current active data and then display the result accordingly",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: RegressionView,
     settings: {
       method: 'Linear',
@@ -631,6 +708,8 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to apply classification algorithms on the current active data and then display the result accordingly",
+    devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: ClassificationView,
     settings: {
       method: 'RandomForest',
@@ -654,6 +733,8 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to apply clustering algorithms on the current active data and then display the result accordingly",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
     component: ClusteringView,
     settings: {
       method: 'KMeans',
@@ -676,6 +757,12 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: GaussianProcessView,
     settings: {
       featureColumns: [],
@@ -703,6 +790,12 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: StatisticsView,
     customBtns: [
       {name: 'saveCSVData', icon: 'download', text: 'Download Data as CSV'},
@@ -728,6 +821,12 @@ export const config = [
     category: 'Machine Learning',
     version: 0.3,
     devStage: "Alfa Teaser",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: TensorFlowView,
     settings: {
       options: {
@@ -754,6 +853,12 @@ export const config = [
     category: 'Static Data Visual Support',
     version: 1.0,
     devStage: "Stable Release",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: PeriodicTableView,
     settings: {
       columns: [],
@@ -771,6 +876,12 @@ export const config = [
     category: 'Static Data Visual Support',
     version: 1.0,
     devStage: "Stable Release",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: Molecule3DView,
     settings: {
       options: {
@@ -799,6 +910,12 @@ export const config = [
     category: 'Other',
     version: 0.1,
     devStage: "Draft",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: CadsiesView,
     settings: {
       options: {
@@ -826,6 +943,12 @@ export const config = [
     category: 'Other',
     version: 0.1,
     devStage: "Draft",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: CustomView,
     settings: {
       options: {
@@ -851,6 +974,12 @@ export const config = [
     category: 'Template',
     version: 0.1,
     devStage: "Draft",
+    // description: "This component allows the user to manage data in order to display it in a bar chart",
+    // devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // supervisors: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
+    // academicInfo: [{title: "", link: ""}],
     component: Cads_Component_TemplateView,
     settings: {
       options: {
