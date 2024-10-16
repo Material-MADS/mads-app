@@ -48,8 +48,8 @@ PRIVATE_STORAGE_AUTH_FUNCTION = 'datamanagement.models.allow_custom_users'
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# SERVER_EMAIL = 'material.mads@gmail.com'
-SERVER_EMAIL = 'cads.team@sci.hokudai.ac.jp'
+SERVER_EMAIL = 'material.mads@gmail.com'
+# SERVER_EMAIL = 'cads.team@sci.hokudai.ac.jp'
 
 # EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST = config('EMAIL_HOST')
