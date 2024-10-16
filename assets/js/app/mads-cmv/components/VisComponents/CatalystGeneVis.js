@@ -25,6 +25,7 @@ import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
 import SemCheckbox from '../FormFields/Checkbox';
 import { Field, reduxForm, Label } from 'redux-form';
+import * as deepEqual from 'deep-equal'
 
 
 // Available Visual Components to be used with this customizable one
@@ -256,9 +257,8 @@ function Clustering({
   const columnsForGene = data.columnsForGene;
   const rootNode = useRef(null);
   const [isXlabelArea, setIsXlabelArea] = useState(true);
-  
-  console.log(data);
-  console.log(internalData)
+  const [lastIndices, setLastIndices] = useState(selectedIndices)
+  console.log("selectedIndices", selectedIndices)
   
   useEffect(() => {
     if (!rootNode.current) return;
@@ -280,6 +280,14 @@ function Clustering({
     const yAxisRange = maxY - minY;
     const xRange = new Bokeh.Range1d({ start: minX-1, end: maxX +1});
     const yRange = new Bokeh.Range1d({ start: minY, end: maxY +1});
+    const handleSelectedIndicesChange = () => {
+      const indices = source.selected.indices;
+      console.log("indices", indices)
+      if (onSelectedIndicesChange && !deepEqual(lastIndices, indices)) {
+        onSelectedIndicesChange(indices);
+        setLastIndices([...indices]);
+      }
+    }
 
     let colors = internalOptions.colors;
     if(!colors){
@@ -298,6 +306,9 @@ function Clustering({
         catalyst: internalData['yData'].map(y => [...internalData["yTicks"]][y] )
       }
     });
+
+    source.selected.indices = [...lastIndices];
+    source.connect(source.selected.change, () => handleSelectedIndicesChange());
 
 
     const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY)
@@ -357,11 +368,7 @@ function Clustering({
     
 
     let activeToolTipTitles = internalOptions.toolTipTitles || defaultOptions.toolTipTitles;
-    const tooltip = 
-    [
-      [activeToolTipTitles[0], '@'+"catalyst"],
-      [activeToolTipTitles[1], '@'+"heatVal"],
-    ]
+    const tooltip = [[activeToolTipTitles[0], '@'+"catalyst"],[activeToolTipTitles[1], '@'+"heatVal"],]
     plot.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
 
     const color_bar = new Bokeh.ColorBar({
@@ -570,7 +577,6 @@ function ParallelGene({
       text_align: 'center',
       text_baseline: 'bottom'
     });
-    console.log(isXlabelArea)
 
 
     if ((xTickLabels.length > 0) && isXlabelArea) {
@@ -643,6 +649,9 @@ function GeneTable({
   const internalData = data.dfDistanceIntroduced;
   const xTickLabels = Object.keys(data.areaData);
   const rootNode = useRef(null);
+  console.log(selectedIndices);
+
+
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
@@ -763,7 +772,7 @@ export default function CatalystGene({
       internalOptions.title = "EMPTY CUSTOM COMPONENT";
       delete data.resetRequest;
     }
-  }, [data]);
+  }, [data, selectedIndices]);
 
   const internalData = data
   const internalOptions = Object.assign({}, defaultOptions, options);
