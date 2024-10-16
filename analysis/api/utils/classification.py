@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_classification(data):
+    logger.info('AAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
     feature_columns  = data['view']['settings']['featureColumns']
     target_column = data['view']['settings']['targetColumn']
     method = data['view']['settings']['method']
