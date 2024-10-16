@@ -515,7 +515,6 @@ export const config = [
         links: {},
         graphLayout: {},
         nodes: {},
-        colorMap: 'Category20c',
         extent: { width: 700, height: 700 },
       }
     },

@@ -20,7 +20,7 @@
 //-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
 import { Field, reduxForm, Label } from 'redux-form';
-import { Form, Popup } from 'semantic-ui-react';
+import { Form, Popup, Dropdown, Container, Header, Segment } from 'semantic-ui-react';
 
 import MultiSelectDropdown from '../FormFields/MultiSelectDropdown';
 import SemanticDropdown from '../FormFields/Dropdown';
@@ -55,6 +55,8 @@ const setSubmitButtonDisable = (disableState) => {
 
 //=======================
 const validate = (values, props) => {
+
+  // console.log(props)
   const errors = {};
   if (!values.sourceNodeColumn) {
     errors.sourceNodeColumn = 'Required'
@@ -63,10 +65,17 @@ const validate = (values, props) => {
     errors.targetNodeColumn = 'Required'
   }
   if ((values.sourceNodeColumn && !values.targetNodeColumn)){ 
-    errors.mix = 'Required';
-  }   
+    errors.mix = 'Required'
+  }
+  if (values.clusteringEnabled && !values.clusteringMethod) {
+    errors.clusteringMethod = 'Required'
+  }
+  if (values.layoutEnabled && !values.graphLayout) {
+    errors.graphLayout = 'Required'
+  }
 
-  setSubmitButtonDisable( errors.sourceNodeColumn || errors.targetNodeColumns || errors.mix )
+  setSubmitButtonDisable( errors.sourceNodeColumn || errors.targetNodeColumns || errors.mix
+     || errors.clusteringMethod || errors.graphLayout )
   return errors
 }
 //=======================
@@ -95,12 +104,17 @@ const NetworkAnalysisForm = (props) => {
     props: { style: '' },
   }));
   
-  const [remainDisabled, setRemainDisabled] = useState(
-    !initialValues.remainerEnabled
-  );
+  // const [remainDisabled, setRemainDisabled] = useState(
+  //   !initialValues.remainerEnabled
+  // );
+  // const [deleteDisabled, setDeleteDisabled] = useState(
+  //   !initialValues.deleterEnabled
+  // );
   // console.log(initialValues)
 
   const [centralityType, setCentralityType] = useState( initialValues.centrality );
+  const [clusterType, setClusterType] = useState( initialValues.cluster );
+  const [layoutType, setLayoutType] = useState( initialValues.layout );
   const [markNode, setMarkNode] = useState( initialValues.markNode );
   const centralitys = [
                      'Not Applicable',
@@ -111,9 +125,69 @@ const NetworkAnalysisForm = (props) => {
                      'Betweenness',
                      'Closeness',
                     ];
+  const clusterMethods = [
+                        'Greedy',
+                        'Louvain',
+                        'Girvan-Newman',
+                        'Label Propagation',
+                      ];
+  const layouts = [
+                  'Force-Directed Layouts',
+                  'Circular Layout',
+                  // "Spectral Layout",
+                  // "Hierarchical Layout"
+                ];
+  const gradients = [
+    { key: 'RtB', text: 'Red to Blue', value: 'RtB', colors: ['#ff0000', '#0000ff'] },
+    { key: 'BtO', text: 'Black to Orange', value: 'BtO', colors: ['#000000', '#ffa500'] },
+    { key: 'YtG', text: 'Yellow to Green', value: 'YtG', colors: ['#ffff00', '#00ff00'] },
+    { key: 'PtP', text: 'Pink to Purple', value: 'PtP', colors: ['#ff69b4','#800080'] },
+    { key: 'alG', text: 'All Gray', value: 'alG', colors: ['#808080', '#808080'] }
+  ];
+
+  const [colorDisabled, setColorDisabled] = useState(
+    !initialValues.colorAssignmentEnabled
+  );
+
   const [clusteringDisabled, setClusteringDisabled] = useState(
     !initialValues.clusteringEnabled
   );
+  const [layoutDisabled, setLayoutDisabled] = useState(
+    !initialValues.layoutEnabled
+  );
+
+  const [selectedNodeGradient, setSelectedNodeGradient] = useState(!initialValues.nodeGradient ? gradients[0] 
+    : gradients.find(gradient => gradient.key === initialValues.nodeGradient));
+  const onNodeGradientChange = (value) => {
+    const selected = gradients.find(gradient => gradient.value == value);
+    setSelectedNodeGradient(selected);
+  };
+  const [selectedLinkGradient, setSelectedLinkGradient] = useState(!initialValues.linkGradient ? gradients[4] 
+    : gradients.find(gradient => gradient.key === initialValues.linkGradient));
+  const onLinkGradientChange = (value) => {
+    const selected = gradients.find(gradient => gradient.value == value);
+    setSelectedLinkGradient(selected);
+  };
+  const generateGradient = (colors, steps) => {
+    const stepFactor = 1 / (steps - 1);
+    const gradientColors = [];
+
+    for (let i = 0; i < steps; i++) {
+      const r = Math.round(colors[0][0] + stepFactor * i * (colors[1][0] - colors[0][0]));
+      const g = Math.round(colors[0][1] + stepFactor * i * (colors[1][1] - colors[0][1]));
+      const b = Math.round(colors[0][2] + stepFactor * i * (colors[1][2] - colors[0][2]));
+      gradientColors.push(`#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`);
+    }
+  
+    return gradientColors;
+  };
+  const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.slice(1), 16);
+    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+  };
+
+  
+  
 
   // The form itself, as being displayed in the DOM
   return (
@@ -166,6 +240,80 @@ const NetworkAnalysisForm = (props) => {
 
       <hr />
       <Form.Field>
+        <label>Change Colors <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content='Check this box if you want to change color gradation of Nodes or Links' size='small' /></label>
+        <Field
+          name="colorAssignmentEnabled"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setColorDisabled(!data);
+          }}
+        />
+      </Form.Field>
+
+      {!colorDisabled && <div>
+        <Form.Field>
+          <label>Node Color Palette</label>
+          <Field
+            name="nodeGradient"
+            component={SemanticDropdown}
+            options={gradients}
+            placeholder="Node Color Map"
+            onChange={(event, value) => onNodeGradientChange(value)}
+          />
+        </Form.Field>
+        <div style={{ display: 'flex' }}>
+          {generateGradient(selectedNodeGradient.colors.map(hexToRgb), 20).map((color, index) => (
+            <div
+              key={index}
+              style={{
+                width: '20px',
+                height: '20px',
+                backgroundColor: color
+              }}
+            ></div>
+          ))}
+        </div>
+        <br />
+        <Form.Field>
+          <label>Link/Edge Color Palette</label>
+          <Field
+            name="linkGradient"
+            component={SemanticDropdown}
+            options={gradients}
+            placeholder="Link Color Map"
+            onChange={(event, value) => onLinkGradientChange(value)}
+          />
+        </Form.Field>
+        <div style={{ display: 'flex' }}>
+          {generateGradient(selectedLinkGradient.colors.map(hexToRgb), 20).map((color, index) => (
+            <div
+              key={index}
+              style={{
+                width: '20px',
+                height: '20px',
+                backgroundColor: color
+              }}
+            ></div>
+          ))}
+        </div>
+      </div>}
+
+      <hr />
+      <Form.Field>
+      <label>Make it an undirected graph <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content='By default, a directed graph is generated. 
+          Check this box if you want to make it an undirected graph' size='small' /></label>
+        <Field
+          name="makeUndirectedGraph"
+          component={SemCheckbox}
+          toggle
+        />
+      </Form.Field>
+
+      <hr />
+      <Form.Field>
       <label>Marking Node <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
           content='You can mark the nodes you have entered. 
           Enter the name of the desired node with an exact match. 
@@ -194,8 +342,20 @@ const NetworkAnalysisForm = (props) => {
         />
       </Form.Field>
 
-      {/* {!clusteringDisabled && <div>
+      {!clusteringDisabled && <div>
         <Form.Field>
+          <label>Clustering Method</label>
+          <Field
+          fluid
+          name="clusteringMethod"
+          component={SemanticDropdown}
+          placeholder="greedy"
+          options={getDropdownOptions(clusterMethods)}
+          onChange={(e, data) => setClusterType(data)}
+        />
+        </Form.Field>
+
+        {/* <Form.Field>
           <label>Clustering Forse</label>
           <Field
           fluid
@@ -208,7 +368,49 @@ const NetworkAnalysisForm = (props) => {
             max={0.0005}
         />
         </Form.Field> */}
-      {/* </div>} */}
+      </div>}
+
+      <hr />
+      <Form.Field>
+        <label>Change Layout <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content='Check this box if you want to change layout. Default is Force-Directed Layouts applied' size='small' /></label>
+        <Field
+          name="layoutEnabled"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setLayoutDisabled(!data);
+          }}
+        />
+      </Form.Field>
+
+      {!layoutDisabled && <div>
+        <Form.Field>
+          <label>Graph Layouts </label>
+          <Field
+          fluid
+          name="graphLayout"
+          component={SemanticDropdown}
+          placeholder="Force-Directed Layouts"
+          options={getDropdownOptions(layouts)}
+          onChange={(e, data) => setLayoutType(data)}
+        />
+        </Form.Field>
+      </div>}
+
+      <hr />
+      <Form.Field>
+      <label>Delete isolated networks? <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content='Check this box if you want to delete networks not connected to the largest network' size='small' /></label>
+        <Field
+          name="deleteIsolatedNetworks"
+          component={SemCheckbox}
+          toggle
+          // onChange={(e, data) => {
+          //   setDeleteDisabled(!data);
+          // }}
+        />
+      </Form.Field>
 
       <hr />
       <Form.Field>
@@ -218,9 +420,9 @@ const NetworkAnalysisForm = (props) => {
           name="remainLonelyNodes"
           component={SemCheckbox}
           toggle
-          onChange={(e, data) => {
-            setRemainDisabled(!data);
-          }}
+          // onChange={(e, data) => {
+          //   setRemainDisabled(!data);
+          // }}
         />
       </Form.Field>
 

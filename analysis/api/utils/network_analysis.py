@@ -20,10 +20,13 @@
 import logging
 import numpy as np
 import pandas as pd
+import scipy.sparse
 import networkx as nx
 import networkx.algorithms.centrality as nxc
 
 from networkx.algorithms.community import greedy_modularity_communities
+from networkx.algorithms.community import louvain_communities
+from networkx.algorithms.community import girvan_newman
 from networkx.algorithms.community import label_propagation_communities
 
 logger = logging.getLogger(__name__)
@@ -33,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_network_analysis(data):
-    logger.info(data)
+    # logger.info(data)
 
     links = data['data']['linkList']
     df = pd.DataFrame(links)
@@ -43,7 +46,7 @@ def get_network_analysis(data):
     colors = []
     node_colors = {}
 
-    if(data['data']['clustering'] == True):
+    if(data['data']['clusteringMethod'] == 'Greedy'):
         for i, c in enumerate(greedy_modularity_communities(G)):
             connecteds.append(c)
             colors.append(i)
@@ -52,6 +55,31 @@ def get_network_analysis(data):
                 if node in c:
                     node_colors[node] = (colors[i])
                     break
+
+    elif(data['data']['clusteringMethod'] == 'Louvain'):
+        communities = louvain_communities(G)
+        for i, community in enumerate(communities):
+            for node in community:
+                node_colors[node] = i
+        colors = [node_colors[node] for node in G.nodes()]
+
+    elif(data['data']['clusteringMethod'] == 'Girvan-Newman'):
+        comp = girvan_newman(G)
+        limited = tuple(sorted(c) for c in next(comp))
+        node_colors = {}
+        for i, community in enumerate(limited):
+            for node in community:
+                node_colors[node] = i
+        colors = [node_colors[node] for node in G.nodes()]
+    
+    elif(data['data']['clusteringMethod'] == 'Label Propagation'):
+        communities = label_propagation_communities(G)
+        node_colors = {}
+        for i, community in enumerate(communities):
+            for node in community:
+                node_colors[node] = i
+        colors = [node_colors[node] for node in G.nodes()]
+
     # logger.info('node_colors')
     # logger.info(node_colors)
 
@@ -87,9 +115,38 @@ def get_network_analysis(data):
         non = {key: val*0+1 for key, val in no.items()}
         data['data']['cerl'] = non
     
+    # -------------------------------------------------------------------------------------------------------
+    # if(data['data']['graphLayout'] == "Spectral Layout"):
+    #     node_names = {i: f"Node_{i}" for i in range(len(G.nodes))}
+    #     # ノードの名前でグラフを再構成
+    #     G = nx.relabel_nodes(G, node_names)
+    #     # ラプラシアン行列の計算
+    #     L = nx.laplacian_matrix(G)
+    #     # 固有値・固有ベクトルの計算
+    #     eigenvalues, eigenvectors = scipy.sparse.linalg.eigsh(L.asfptype(), k=2, which='SM')
+    #     # 座標の取得
+    #     pos = {node: (eigenvectors[i, 0], eigenvectors[i, 1]) for i, node in enumerate(G.nodes())}
+    #     nodes = [{"id": node, "x": float(pos[node][0]), "y": float(pos[node][1])} for node in G.nodes()]
+    #     # logger.info(nodes)
+    #     # logger.info(data['data']['linkList']['lw'])
+    #     links = [{"sn": u, "tn": v, 'lw': 1} for u, v in G.edges()]
 
-    # data['data']['test'] = {'test1','test2'}
-    # data['data']['justtest'] = "what is happening???"
+    #     graph_data = {"nodes": nodes, "links": links}
+    #     data['data']['graphData'] = graph_data
+    # else:
+    #     data['data']['graphData'] = None
+    # -------------------------------------------------------------------------------------------------------
+    
+    # Statistic Analysis
+    components = nx.connected_components(G)
+    for component in components:
+        subgraph = G.subgraph(component)
+    data['data']['density'] = nx.density(G)
+    data['data']['aplength'] = nx.average_shortest_path_length(subgraph)
+    data['data']['diameter'] = nx.diameter(subgraph)
+    data['data']['globalcluscoe'] = nx.average_clustering(G)
+    # data['data']['assortativity'] = nx.attribute_assortativity_coefficient(G, 'sn')
+
 
     result = data['data']
 

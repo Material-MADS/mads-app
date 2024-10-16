@@ -39,6 +39,7 @@ export default class NetworkAnalysisView extends withCommandInterface(NetworkAna
   handleSubmit = (values) => {
     const { id, view, updateView, colorTags, actions, dataset } = this.props;
     let newValues = { ...values };
+
     console.log('newValues')
     console.log(newValues)
 
@@ -66,15 +67,28 @@ export default class NetworkAnalysisView extends withCommandInterface(NetworkAna
     // console.log(view)
     // console.log(newValues)
     if(newValues.centrality == 'Not Applicable') {newValues.centrality = ''}
+    if(newValues.graphLayout == undefined) {newValues.graphLayout = 'Force-Directed Layouts'}
+    if(newValues.clusteringMethod == undefined) {newValues.clusteringMethod = 'Greedy'}
+    if(newValues.nodeGradient == undefined) {newValues.nodeGradient = 'RtB'}
+    if(newValues.linkGradient == undefined) {newValues.linkGradient = 'alG'}
     let remainNodes = (newValues.remainLonelyNodes ? true : false)
+    let deleteNetworks = (newValues.deleteIsolatedNetworks ? true : false)
     let clustering = (newValues.clusteringEnabled ? true : false)
+    let makeUndirectedGraph = (newValues.makeUndirectedGraph ? true : false)
 
+    console.log(newValues.options.gradient)
     let data = {
       linkList: linklists,
       centralityType: newValues.centrality,
       remainLonelyNodes: remainNodes,
+      deleteIsolatedNetworks: deleteNetworks,
       markNode: newValues.markNode,
       clustering: clustering,
+      clusteringMethod: newValues.clusteringMethod,
+      graphLayout: newValues.graphLayout,
+      nodeGradient: newValues.nodeGradient,
+      linkGradient: newValues.linkGradient,
+      makeUndirected: makeUndirectedGraph
     };
     newValues = convertExtentValues(newValues);
     actions.sendRequestViewUpdate(view, newValues, data);
