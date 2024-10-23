@@ -35,6 +35,7 @@ from .cadsies import get_cadsies_stuff
 from .feature_engineering import get_feature_engineering
 from .monte_cat import get_monte_cat
 from .feature_assignment import get_feature_assignment
+from .xafsanalysis import get_xafs_analysis
 
 from .cads_component_template import get_cads_component_template_stuff
 
@@ -64,6 +65,7 @@ processor_map = {
     'featureEngineering': get_feature_engineering,
     'monteCat': get_monte_cat,
     'featureAssignment': get_feature_assignment,
+    'XAFSAnalysis': get_xafs_analysis,
 
     'cads_component_template': get_cads_component_template_stuff,
 }
