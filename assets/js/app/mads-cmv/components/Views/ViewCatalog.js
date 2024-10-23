@@ -679,6 +679,9 @@ export const config = [
     category: 'Analysis',
     version: 1.0,
     devStage: "Stable Release",
+    devInfo: [{name: "Naotoshi Miyasaka", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Naotoshi-Miyasaka"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    academicInfo: [{title: "Automatic Identification of X-ray Absorption Fine Structure Spectra via Machine Learning", link: "https://pubs.acs.org/doi/full/10.1021/acs.jpcc.4c02795"}],
     component: XAFSAnalysisView,
     settings: {
       element: '',
