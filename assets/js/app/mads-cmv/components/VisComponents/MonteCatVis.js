@@ -74,12 +74,6 @@ export default function MonteCat({
     if (data['output'] && data['process']) {
       setdisabled(false);
     }
-
-    const paperLink = $(rootNode.current).parent().parent().find('#paperLink' + id);
-    paperLink.off('click');
-    paperLink.on('click', function() { 
-      window.open('https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952', '_blank')
-  });
   };
 
    // Clear away the VizComp
@@ -163,7 +157,7 @@ const DataItemActions = ({data, content, disabled, filename}) => {
       });
     // console.log(csv)
 
-    //Download 
+    //Download
     const link = document.createElement("a");
     link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
     link.setAttribute("target", "_blank");
@@ -209,7 +203,7 @@ const DataItemActions = ({data, content, disabled, filename}) => {
             </ModalActions>
           </Modal>
         </GridColumn>
-      </GridRow> 
+      </GridRow>
     </Grid>
   )
 }
