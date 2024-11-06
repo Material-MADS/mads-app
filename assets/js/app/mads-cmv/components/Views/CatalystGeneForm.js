@@ -177,6 +177,7 @@ const CatalystGeneForm = (props) => {
     dataset,
 
   } = props;
+  console.log(initialValues)
 
   const cTags = colorTags.map((c) => ({
     text: c.color,
@@ -217,6 +218,10 @@ const CatalystGeneForm = (props) => {
     !initialValues.preprocessingEnabled
   );
 
+  const [visualization, setVisualization] = useState(
+    initialValues.visualizationMethod
+  );
+
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
   );
@@ -227,6 +232,7 @@ const CatalystGeneForm = (props) => {
   const onCMChange = (event) => {
     setValue(event);
   };
+  console.log(visualization)
 
   // The form itself, as being displayed in the DOM
   return (
@@ -263,61 +269,86 @@ const CatalystGeneForm = (props) => {
           placeholder="Visualization method"
           options={getDropdownOptions(visualizationMethod)}
           validate={[ errorValidate ]}
+          onChange={(e, data) => {
+            console.log(data);
+            setVisualization(data);
+          }}
         />
       </Form.Field>
 
       <Form.Field>
-          <label>Apply Data Preprocessing:</label>
+        <label>Apply Data Preprocessing:</label>
+        <Field
+          name="preprocessingEnabled"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setPreprocDisabled(!data);
+          }}
+        />
+      </Form.Field>
+
+      {!preprocDisabled && <div>
+        <Form.Field>
+          <label>Preprocessing Method:</label>
           <Field
-            name="preprocessingEnabled"
-            component={SemCheckbox}
-            toggle
-            onChange={(e, data) => {
-              setPreprocDisabled(!data);
+            name="preprocMethod"
+            component={SemanticDropdown}
+            placeholder="scalingMethod"
+            options={getDropdownOptions(preprocMethods)}
+            disabled={preprocDisabled}
+            validate={[ errorValidate ]}
+            onChange={(e, data)=> {
+              setScalingMethod(data)
             }}
           />
         </Form.Field>
+      </div>}
 
-        {!preprocDisabled && <div>
-          <Form.Field>
-            <label>Preprocessing Method:</label>
-            <Field
-              name="preprocMethod"
-              component={SemanticDropdown}
-              placeholder="scalingMethod"
-              options={getDropdownOptions(preprocMethods)}
-              disabled={preprocDisabled}
-              validate={[ errorValidate ]}
-              onChange={(e, data)=> {
-                setScalingMethod(data)
-              }}
-            />
-          </Form.Field>
-        </div>}
-
-        {!preprocDisabled && scalingMethod === 'MinMaxScaler' && 
-        <Form.Group widths="equal">
-          <label>Scaling Parameters:</label>
-          <Field
-            fluid
-            name="options.scaling.max"
-            component={Input}
-            type="number"
-            placeholder="max"
-            label="Max"
-          />
-          <Field
-            fluid
-            name="options.scaling.min"
-            component={Input}
-            placeholder="min"
-            type="number"
-            label="Min"
-          />
-        </Form.Group>
+      {!preprocDisabled && scalingMethod === 'MinMaxScaler' && 
+      <Form.Group widths="equal">
+        <label>Scaling Parameters:</label>
+        <Field
+          fluid
+          name="options.scaling.max"
+          component={Input}
+          type="number"
+          placeholder="max"
+          label="Max"
+        />
+        <Field
+          fluid
+          name="options.scaling.min"
+          component={Input}
+          placeholder="min"
+          type="number"
+          label="Min"
+        />
+      </Form.Group>
       }
 
-
+      {visualization && visualization === 'Heatmap' && 
+      <div>
+      <Form.Field>
+        <label>Color Palette (if number of bins exceed number of colors available in the palette, default palette will be used)</label>
+        <Field
+          name="options.colorMap"
+          component={SemanticDropdown}
+          placeholder="Color Map"
+          options={colorMapOptions}
+          onChange={onCMChange}
+        />
+      </Form.Field>
+      <div>
+        {(cmMax[currentCMVal] == "256") ? allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
+           <span key={color.toString()+"_"+index} style={{display: 'inline-block', width: '2px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></span>
+        )) : allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
+           <div key={color.toString()+"_"+index} style={{display: 'inline-block', width: '20px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></div>
+        ))}
+        <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
+      </div>
+      </div>
+      }
 
      
       <hr />

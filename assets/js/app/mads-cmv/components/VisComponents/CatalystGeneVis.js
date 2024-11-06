@@ -254,22 +254,22 @@ function Clustering({
 }){
   const internalOptions = Object.assign({}, defaultOptions, options);
   const internalData = data.heatmapData;
+  const dfData = data.dfDistanceIntroduced;
   const columnsForGene = data.columnsForGene;
+  const rootCatalyst = data["rootCatalyst"];
+  const similarGeneCatalyst = data["similarGeneCatalyst"]
+  const { extent, margin } = internalOptions;
+  const { width, height } = extent;
+  const { l: left, r: right, t: top, b: bottom } = margin;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
   const rootNode = useRef(null);
   const [isXlabelArea, setIsXlabelArea] = useState(true);
-  const [lastIndices, setLastIndices] = useState(selectedIndices)
-  console.log("selectedIndices", selectedIndices)
+  const [lastIndices, setLastIndices] = useState([...selectedIndices])
   
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
-    const rootCatalyst = data["rootCatalyst"];
-    const similarGeneCatalyst = data["similarGeneCatalyst"]
-    const { extent, margin } = internalOptions;
-    const { width, height } = extent;
-    const { l: left, r: right, t: top, b: bottom } = margin;
-    const plotWidth = width - left - right;
-    const plotHeight = height - top - bottom;
     const yTickLabels =internalData['yTicks'];
     const xTickLabels =internalData['xTicks'];
     const maxY = Math.max(...internalData['yData']);
@@ -280,12 +280,17 @@ function Clustering({
     const yAxisRange = maxY - minY;
     const xRange = new Bokeh.Range1d({ start: minX-1, end: maxX +1});
     const yRange = new Bokeh.Range1d({ start: minY, end: maxY +1});
+
     const handleSelectedIndicesChange = () => {
-      const indices = source.selected.indices;
-      console.log("indices", indices)
-      if (onSelectedIndicesChange && !deepEqual(lastIndices, indices)) {
-        onSelectedIndicesChange(indices);
-        setLastIndices([...indices]);
+      const rectangulars = source.selected.indices;
+      const selectedCatalystIndices = rectangulars.map(indeice => Math.floor(indeice / xTickLabels.length))
+      const uniqueIndices = [...new Set(selectedCatalystIndices)];
+      const selectedCatalysts = uniqueIndices.map(indice => yTickLabels[indice])
+      const Indices = selectedCatalysts.map(cat => dfData.Catalyst.indexOf(cat))
+      // Indices.sort((a,b) => a-b)
+      if (onSelectedIndicesChange && !deepEqual(lastIndices, uniqueIndices)) {
+        onSelectedIndicesChange(Indices);
+        setLastIndices(uniqueIndices);
       }
     }
 
@@ -298,16 +303,30 @@ function Clustering({
     var mapper = new Bokeh.LinearColorMapper({palette: colors, low: colMapMinMax[0], high: colMapMinMax[1]});
     const source = new Bokeh.ColumnDataSource({
       data: {
-        xData: internalData['xData'].map(x => x  ),
-        yData: internalData['yData'].map(y => y  ),
+        xData: internalData['xData'],
+        yData: internalData['yData'],
         heatVal: internalData['heatVal'],
         x0: internalData['xData'].map(x => 0),
         y0: internalData['yData'].map(y => 0),
         catalyst: internalData['yData'].map(y => [...internalData["yTicks"]][y] )
       }
     });
+    const list_b = [];
+    const catalysts = selectedIndices.map(i => dfData.Catalyst[i]);
+    const firstIndices = catalysts.map(indice => yTickLabels.indexOf(indice));
+    console.log(selectedIndices)
+    console.log(catalysts)
+    console.log(firstIndices)
 
-    source.selected.indices = [...lastIndices];
+    for (let i = 0; i < yTickLabels.length; i++) {
+      if(firstIndices.includes(i)){
+        for (let j = 0; j < xTickLabels.length; j++) {
+          list_b.push(i * xTickLabels.length + j);
+        }
+      }
+    }
+
+    source.selected.indices = [...list_b];
     source.connect(source.selected.change, () => handleSelectedIndicesChange());
 
 
@@ -430,7 +449,7 @@ function Clustering({
    Bokeh.Plotting.show(plot, rootNode.current);
     // plot.js_event_callbacks = {'reset': [callback]};
 
-  }, [data, isXlabelArea])
+  }, [data, isXlabelArea, selectedIndices])
 
   const buttonWords = isXlabelArea? "Show columns Info" : "Show area Info" 
 
@@ -460,7 +479,6 @@ function ParallelGene({
   const xTickLabels = Object.keys(data.areaData);
   const columnsForGene = data.columnsForGene;
   const rootNode = useRef(null);
-  const [selectCatalyst, setSelectCatalyst] = useState(null);
   const [isXlabelArea, setIsXlabelArea] = useState(true);
 
   useEffect(() => {
@@ -642,6 +660,7 @@ function GeneTable({
   options,
   colorTags,
   selectedIndices,
+  filteredIndices,
   onSelectedIndicesChange,
   colorMap
 }){
@@ -649,8 +668,8 @@ function GeneTable({
   const internalData = data.dfDistanceIntroduced;
   const xTickLabels = Object.keys(data.areaData);
   const rootNode = useRef(null);
-  console.log(selectedIndices);
-
+  const [lastIndices, setLastIndices] = useState([...selectedIndices])
+  // console.log(filteredIndices)
 
   useEffect(() => {
     if (!rootNode.current) return;
@@ -658,9 +677,21 @@ function GeneTable({
     const { extent, margin } = internalOptions;
     const { width,height } = extent;
 
+    const handleSelectedIndicesChange = () => {
+      const indices = tableSource.selected.indices;
+      if (onSelectedIndicesChange && !deepEqual(lastIndices, indices)) {
+        onSelectedIndicesChange(indices);
+        setLastIndices([...indices]);
+      }
+    }
+
     const colNamesInProperOrder = Object.keys(internalData);
 
     const tableSource = new Bokeh.ColumnDataSource({ data: internalData });
+
+    tableSource.selected.indices = [...selectedIndices];
+    tableSource.connect(tableSource.selected.change, () => handleSelectedIndicesChange());
+
     const tString = JSON.stringify(colorTags);
 
     const template = `
@@ -698,9 +729,10 @@ function GeneTable({
       selection_color: 'red',
     });
 
+
     Bokeh.Plotting.show(dataTable, rootNode.current);
 
-  }, [])
+  }, [data, selectedIndices])
   return(
     <div id="containerHolder">
       <div ref={rootNode} />
@@ -772,13 +804,13 @@ export default function CatalystGene({
       internalOptions.title = "EMPTY CUSTOM COMPONENT";
       delete data.resetRequest;
     }
-  }, [data, selectedIndices]);
+  }, [data]);
 
   const internalData = data
   const internalOptions = Object.assign({}, defaultOptions, options);
-  const internalProps = Object.assign({}, colorTags, selectedIndices, onSelectedIndicesChange);
   const SelComp = componentSelector(internalData)
-  const params = { data, mappings, options, colorTags, selectedIndices, onSelectedIndicesChange,}
+  // console.log(selectedIndices)
+  const params = { data, mappings, options, colorTags, selectedIndices, filteredIndices, onSelectedIndicesChange,}
 
   return (
     <div id="containerHolder">

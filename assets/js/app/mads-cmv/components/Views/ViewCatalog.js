@@ -530,6 +530,7 @@ export const config = [
     component: CatalystGeneView,
     settings: {
       options: {
+        colorMap: 'Magma',
         scaling:{
           max: 1,
           min: 0,
