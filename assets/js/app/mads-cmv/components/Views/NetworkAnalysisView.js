@@ -70,11 +70,12 @@ export default class NetworkAnalysisView extends withCommandInterface(NetworkAna
     if(newValues.graphLayout == undefined) {newValues.graphLayout = 'Force-Directed Layouts'}
     if(newValues.clusteringMethod == undefined) {newValues.clusteringMethod = 'Greedy'}
     if(newValues.nodeGradient == undefined) {newValues.nodeGradient = 'RtB'}
-    if(newValues.linkGradient == undefined) {newValues.linkGradient = 'alG'}
+    if(newValues.linkGradient == undefined) {newValues.linkGradient = 'BtG'}
     let remainNodes = (newValues.remainLonelyNodes ? true : false)
     let deleteNetworks = (newValues.deleteIsolatedNetworks ? true : false)
     let clustering = (newValues.clusteringEnabled ? true : false)
     let makeUndirectedGraph = (newValues.makeUndirectedGraph ? true : false)
+    let makePetriNet = (newValues.makePetriNet ? true : false)
 
     console.log(newValues.options.gradient)
     let data = {
@@ -88,7 +89,8 @@ export default class NetworkAnalysisView extends withCommandInterface(NetworkAna
       graphLayout: newValues.graphLayout,
       nodeGradient: newValues.nodeGradient,
       linkGradient: newValues.linkGradient,
-      makeUndirected: makeUndirectedGraph
+      makeUndirected: makeUndirectedGraph,
+      isPetriNet: makePetriNet
     };
     newValues = convertExtentValues(newValues);
     actions.sendRequestViewUpdate(view, newValues, data);

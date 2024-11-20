@@ -141,7 +141,8 @@ const NetworkAnalysisForm = (props) => {
     { key: 'RtB', text: 'Red to Blue', value: 'RtB', colors: ['#ff0000', '#0000ff'] },
     { key: 'BtO', text: 'Black to Orange', value: 'BtO', colors: ['#000000', '#ffa500'] },
     { key: 'YtG', text: 'Yellow to Green', value: 'YtG', colors: ['#ffff00', '#00ff00'] },
-    { key: 'PtP', text: 'Pink to Purple', value: 'PtP', colors: ['#ff69b4','#800080'] },
+    { key: 'PtP', text: 'Purple to Pink', value: 'PtP', colors: ['#800080','#ff69b4'] },
+    { key: 'BtG', text: 'Black to Grey', value: 'BtG', colors: ['#000000', '#808080'] },
     { key: 'alG', text: 'All Gray', value: 'alG', colors: ['#808080', '#808080'] }
   ];
 
@@ -307,6 +308,15 @@ const NetworkAnalysisForm = (props) => {
           Check this box if you want to make it an undirected graph' size='small' /></label>
         <Field
           name="makeUndirectedGraph"
+          component={SemCheckbox}
+          toggle
+        />
+      <hr />
+      <label>Make it a Petri Net <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content='Check this box if you want to make it a Petri Net, 
+              When a node “A+B” is inserted in the “source” column, it creates a link that splits the node.' size='small' /></label>
+        <Field
+          name="makePetriNet"
           component={SemCheckbox}
           toggle
         />
