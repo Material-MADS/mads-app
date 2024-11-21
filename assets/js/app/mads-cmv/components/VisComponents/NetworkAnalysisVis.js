@@ -79,6 +79,7 @@ export default function NetworkAnalysis({
     BtO: ['orange', 'black'],
     YtG: ['green', 'yellow'],
     PtP: ['pink', 'purple'],
+    BtG: ['grey', "black"],
     alG: ['gray', 'gray']
     // others
   };
@@ -112,6 +113,31 @@ export default function NetworkAnalysis({
     // console.log(internalData);
 
     if(internalData.linkList){
+      console.log("internalData.linkList")
+      console.log(internalData.linkList)
+
+      if (internalData.isPetriNet) {
+        const additionalLinks = [];
+      
+        internalData.linkList.forEach(link => {
+          // 元の sn を "+" で分割
+          const sources = link.sn.split('+');
+          const target = link.tn;  // もとのターゲット
+      
+          // 分割した各ソースに対して新しいリンクを作成
+          sources.forEach(source => {
+            const newLink = {
+              sn: source,  // 新しいソース
+              tn: link.sn,  // もとの sn を tn に設定
+              lw: 1,  // ライトウェイトは 1 に設定
+            };
+            additionalLinks.push(newLink);  // 新しいリンクを追加
+          });
+        });
+      
+        // 既存のリンクに新しく作成したリンクを追加
+        internalData.linkList = [...internalData.linkList, ...additionalLinks];
+      }
 
       // Generate links
       let links = internalData.linkList.map(link => ({
@@ -170,7 +196,6 @@ export default function NetworkAnalysis({
         }
 
       };
-      
 
     
       // // Default Data For Test
@@ -203,7 +228,7 @@ export default function NetworkAnalysis({
         colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Reconfigure colors by cluster
       }
 
-      let weightColorRange = gradients['alG'];
+      let weightColorRange = gradients['BtG'];
       if (internalData.linkGradient in gradients) {
         weightColorRange = gradients[internalData.linkGradient];
       }
@@ -217,8 +242,6 @@ export default function NetworkAnalysis({
     
 
       svg.selectAll('*').remove(); // Clear existing SVG elements
-
-      const defs = svg.append('defs');
 
       // Set Cluster Center
       const clusterCenters = {};
@@ -242,9 +265,15 @@ export default function NetworkAnalysis({
       // Force Simulation Settings
       let simulation = d3.forceSimulation((internalData.graphLayout == "Spectral Layout")
           ? internalData.graphData.nodes : nodes)
-        .force('link', d3.forceLink(links).id(d => d.id).distance(1))
+        .force('link', d3.forceLink(links).id(d => d.id).distance(1)
+          // .strength(d => d.value * 0.07)
+        )
         .force('charge', d3.forceManyBody().strength(-40))
         .force('center', d3.forceCenter(width / 2, height / 2))
+
+      if (internalData.isPetriNet){
+        simulation.force('link', d3.forceLink(links).id(d => d.id).distance(1).strength(d => d.value * 0.07))
+      }
       if (internalData.clustering == true){
         simulation
         .force('x', d3.forceX().strength(0.1))
@@ -252,19 +281,27 @@ export default function NetworkAnalysis({
         .force('cluster', clusterForce(0.0025)); // Cluster Attractive Power
       }
 
+
+      
+      const defs = svg.append('defs');
+      const graphIndex = Date.now();; // 現在のカウンターを使用
+
       // Drawing Links
+      const scale = d3.scalePow().exponent(1.4).domain([0,100]).range([0.7,100]);
       let link = g.append('g')
+        .attr('class', `graph-${graphIndex}`) // 各グラフにユニークなクラスを設定
         // .attr('stroke', '#999')
         .selectAll('line')
         .data(links)
         .enter().append('line')
-        .attr('stroke-width', d => Math.sqrt(d.value))
+        .attr('stroke-width', d => scale(d.value))
+        // .attr('stroke-width', d => Math.sqrt(d.value))
         .attr('stroke', d => weightColorScale(d.value))
       if(internalData.makeUndirected == false){
         link.attr('stroke', (d, i) => {
           const color = weightColorScale(d.value);
           defs.append('marker')
-            .attr('id', `arrowhead-${i}`)
+            .attr('id', `arrowhead-${graphIndex}-${i}`)  // ユニークなID
             .attr('viewBox', '-0 -5 10 10')
             .attr('refX', 13)
             .attr('refY', 0)
@@ -278,7 +315,7 @@ export default function NetworkAnalysis({
             .style('stroke', 'none');
           return color;
         })
-        .attr('marker-end', (d, i) => `url(#arrowhead-${i})`);
+        .attr('marker-end', (d, i) => `url(#arrowhead-${graphIndex}-${i})`);  // ユニークなID
       }
   
       // Drawing Nodes
@@ -290,8 +327,14 @@ export default function NetworkAnalysis({
         .enter().append('circle')
         .attr('r', (internalData.centralityType == '') ? 8 :
             d => sizeScale(d.centrality)) // Sizes Nodes based on Centrality
-        .attr('fill', d => (internalData.clustering == true) ? colorScale(d.cluster)
-        : colorScale(d.centrality)) // Set colors based on Centrality or Clusters
+        .attr('r', d => (internalData.isPetriNet && d.id.includes('+')) ? sizeScale(d.centrality) * 0.6 : sizeScale(d.centrality))
+        .attr('fill', d => {
+          if (internalData.isPetriNet && d.id.includes('+')) {
+            return 'black'; // 塗りつぶしを黒に設定
+          }
+          return (internalData.clustering == true) ? colorScale(d.cluster)
+            : colorScale(d.centrality); // Set colors based on Centrality or Clusters
+        })
         .call(drag(simulation))
         .on('mouseover', handleMouseOver)
         .on('mousemove', handleMouseMove)
@@ -324,6 +367,7 @@ export default function NetworkAnalysis({
             .attr('cy', d => d.y);
         });
       }
+
       // Node drag settings
       function drag(simulation) {
         function dragstarted(event) {
@@ -560,6 +604,26 @@ export default function NetworkAnalysis({
       function resetOpacity() {
         node.attr('opacity', 1);
         link.attr('opacity', 1);
+
+        node.attr('fill', d => {
+          if (internalData.markNode == d.id) {return 'lime'}
+          else if (internalData.isPetriNet && d.id.includes('+')) {return 'black';}
+          else if (internalData.clustering == true) {return colorScale(d.cluster)}
+          return colorScale(d.centrality);
+        })
+        node.attr('stroke', d => {return '#fff' });
+
+        link.each(function(d, i) {
+          const color = weightColorScale(d.value);
+          
+          // 矢印マーカーの設定
+          d3.select(this)
+            .attr('stroke', color)
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+      
+          const markerId = `arrowhead-${graphIndex}-${i}`;
+          d3.select(`#${markerId} path`).attr('fill', color);
+        });
       }
 
       // Colorize the clicked node
@@ -567,18 +631,24 @@ export default function NetworkAnalysis({
         node.attr('fill', d => {
           if (selectedNode.id == d.id) {return 'yellow'}
           else if (internalData.markNode == d.id) {return 'lime'}
+          else if (internalData.isPetriNet && d.id.includes('+')) {return 'black';}
           else if (internalData.clustering == true) {return colorScale(d.cluster)}
           return colorScale(d.centrality);
         })
         node.attr('stroke', d => {return (selectedNode.id == d.id) ? '#000':'#fff' });
 
-        link.each(function(d) {
-          d3.select(this).attr('stroke', weightColorScale(d.value));
-          const markerId = `arrowhead-${d.index}`;
-          d3.select(`#${markerId} path`).attr('fill', weightColorScale(d.value));
+        link.each(function(d, i) {
+          const color = weightColorScale(d.value);
+          
+          // 矢印マーカーの設定
+          d3.select(this)
+            .attr('stroke', color)
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+      
+          const markerId = `arrowhead-${graphIndex}-${i}`;
+          d3.select(`#${markerId} path`).attr('fill', color);
         });
-        link.attr('marker-end', d => `url(#arrowhead-${d.index})`);
-        
+        // link.attr('marker-end', d => `url(#arrowhead-${graphIndex}-${d.index})`);
       }
 
       // Visualize the Shortest Path
@@ -594,17 +664,19 @@ export default function NetworkAnalysis({
 
         const shortestPath = dijkstra(graph, sourceNode.id, targetNode.id);
 
-        link.each(function(d) {
+        link.each(function(d, i) {
           const isOnPath = shortestPath.includes(d.source.id) && shortestPath.includes(d.target.id);
           const color = isOnPath ? 'red' : weightColorScale(d.value);
           
-          d3.select(this).attr('stroke', color);
-          
-          const markerId = `arrowhead-${d.index}`;
+          d3.select(this)
+            .attr('stroke', color)
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+      
+          const markerId = `arrowhead-${graphIndex}-${i}`;
           d3.select(`#${markerId} path`).attr('fill', color);
         });
         // リンクにマーカーを適用
-        link.attr('marker-end', d => `url(#arrowhead-${d.index})`);
+        // link.attr('marker-end', d => `url(#arrowhead-${graphIndex}-${d.index})`);
         
         // .attr('stroke-width', d => {
         //   return shortestPath.includes(d.source.id) && shortestPath.includes(d.target.id) ? '2' : Math.sqrt(d.value)
@@ -612,6 +684,7 @@ export default function NetworkAnalysis({
         node.attr('fill', d => {
           if (shortestPath.includes(d.id)) {return 'yellow'}
           else if (internalData.markNode == d.id) {return 'lime'}
+          else if (internalData.isPetriNet && d.id.includes('+')) {return 'black';}
           else if (internalData.clustering == true) {return colorScale(d.cluster)}
           return colorScale(d.centrality);
         })
@@ -827,6 +900,7 @@ export default function NetworkAnalysis({
 
     }
     // -------------------------------------
+
   };
   // // Use it when you need it.
   // const handleMarkingNode = (e) => {
@@ -895,18 +969,23 @@ export default function NetworkAnalysis({
   // Add the VizComp to the DOM
   return (
     <div>
+    <div style={{ top: 0, left: 0, width: '100%', zIndex: 10 , background: 'white', padding: '3px 0', }}>
       <Modal
-      trigger={<Button>Statistic</Button>}
-      header='Statistical Analysis'
-      content={<pre>{message}</pre>}
-      actions={[{ key: 'done', content: 'OK', positive: true }]}
-      aria-hidden='true'
+        trigger={<Button>Statistic</Button>}
+        header="Statistical Analysis"
+        content={<pre>{message}</pre>}
+        actions={[{ key: 'done', content: 'OK', positive: true }]}
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '8px', // 必要なら角丸を追加
+        }}
       />
-      <Button onClick={() => {handleExport()}} disabled={isDisabled} aria-hidden='true'>Export Centrality</Button>
-      <PopupNodeInfo />
-      {/* <input onChange={(e) => handleMarkingNode(e)}/> */}
-      <svg ref={rootNode} width={internalOptions.extent.width} height={internalOptions.extent.height}/>
+      <Button onClick={() => {handleExport();}} disabled={isDisabled} style={{ marginRight: '5px' }}>Export Centrality</Button>
     </div>
+    <PopupNodeInfo />
+    {/* <input onChange={(e) => handleMarkingNode(e)}/> */}
+    <svg ref={rootNode} width={internalOptions.extent.width} height={internalOptions.extent.height}/>
+  </div>
   );
 }
 //-------------------------------------------------------------------------------------------------
