@@ -1023,7 +1023,8 @@ export default function NetworkAnalysis({
         style={{
           cursor: "pointer",
           fontFamily: "Arial, sans-serif",
-          margin: "8px",
+          margin: "5px",
+          marginTop: "1px",
           padding: "5px",
           border: "1px solid #ddd",
           borderRadius: "5px",
