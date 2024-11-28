@@ -90,7 +90,9 @@ export default class NetworkAnalysisView extends withCommandInterface(NetworkAna
       nodeGradient: newValues.nodeGradient,
       linkGradient: newValues.linkGradient,
       makeUndirected: makeUndirectedGraph,
-      isPetriNet: makePetriNet
+      isPetriNet: makePetriNet,
+      clusteringForce: newValues.clusterForce,
+      nodeAttraction: newValues.nodeAttraction
     };
     newValues = convertExtentValues(newValues);
     actions.sendRequestViewUpdate(view, newValues, data);

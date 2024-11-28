@@ -59,10 +59,10 @@ export default function NetworkAnalysis({
 
   // Initiation of the VizComp
   const rootNode = useRef(null);
+  const rootNodes = useRef(null);
   let internalOptions = Object.assign({}, defaultOptions, options);
   const ngd = "graphDiv" + id;
   const internalData = {...data};
-
 
   // Variable to hold the zoom state
   const zoomTransform = useRef(d3.zoomIdentity);
@@ -73,6 +73,11 @@ export default function NetworkAnalysis({
   const [highlightedInfo, setHighlightedInfo] = useState('');
   const [highlightedInfoOpen, setHighlightedInfoOpen] = useState(false);
   const [markingNode, setMarkingNode] = useState('') 
+
+  const [isVisible, setIsVisible] = useState(false);
+  const toggleVisibility = () => {
+    setIsVisible((prev) => !prev);
+  };
 
   const gradients = {
     RtB: ['blue', 'red'],
@@ -103,15 +108,17 @@ export default function NetworkAnalysis({
 
   // Create the VizComp based on the incoming parameters
   const createChart = async () => {
-    // $(rootNode.current).empty();
+    // $(rootNodes.current).empty();
+
+
     setHighlightedInfoOpen((prev) => false);
     
-
     // --- D3 GRAPH JS -------------------
 
     // console.log("internalData");
     // console.log(internalData);
 
+    // Petri Net Setting
     if(internalData.linkList){
       console.log("internalData.linkList")
       console.log(internalData.linkList)
@@ -120,22 +127,19 @@ export default function NetworkAnalysis({
         const additionalLinks = [];
       
         internalData.linkList.forEach(link => {
-          // 元の sn を "+" で分割
           const sources = link.sn.split('+');
-          const target = link.tn;  // もとのターゲット
+          const target = link.tn;
       
-          // 分割した各ソースに対して新しいリンクを作成
           sources.forEach(source => {
             const newLink = {
-              sn: source,  // 新しいソース
-              tn: link.sn,  // もとの sn を tn に設定
-              lw: 1,  // ライトウェイトは 1 に設定
+              sn: source,  
+              tn: link.sn, 
+              lw: 1,  
             };
-            additionalLinks.push(newLink);  // 新しいリンクを追加
+            additionalLinks.push(newLink);  
           });
         });
-      
-        // 既存のリンクに新しく作成したリンクを追加
+
         internalData.linkList = [...internalData.linkList, ...additionalLinks];
       }
 
@@ -188,9 +192,8 @@ export default function NetworkAnalysis({
         //    }));
         // }
         if(internalData.deleteIsolatedNetworks == true){
-          // 最大の連結成分を見つける
+          // Find the largest connected network
           const largestComponent = findLargestComponent(nodes, links);
-          // 最大の連結成分に属するノードのみを残す
           nodes = nodes.filter(node => largestComponent.has(node.id));
           links = links.filter(link => largestComponent.has(link.source) && largestComponent.has(link.target));
         }
@@ -215,7 +218,7 @@ export default function NetworkAnalysis({
       .domain(d3.extent(nodes, d => d.centrality))
       .range([5, 20]); // Minimum size 5, Maximum size 20
 
-      // グラデーションの種類に応じた色の範囲を取得
+      // get color by Gradient
       let colorRange = gradients['RtB'];
       if (internalData.nodeGradient in gradients) {
           colorRange = gradients[internalData.nodeGradient];
@@ -256,7 +259,7 @@ export default function NetworkAnalysis({
       
       // Scaling function added
       const zoom = d3.zoom()
-        .scaleExtent([0.1, 10]) // 最小0.1倍、最大10倍まで拡大縮小可能に設定
+        .scaleExtent([0.1, 10])
         .on('zoom', handleZoom);
 
       svg.call(zoom);
@@ -270,26 +273,39 @@ export default function NetworkAnalysis({
         )
         .force('charge', d3.forceManyBody().strength(-40))
         .force('center', d3.forceCenter(width / 2, height / 2))
-
-      if (internalData.isPetriNet){
-        simulation.force('link', d3.forceLink(links).id(d => d.id).distance(1).strength(d => d.value * 0.07))
-      }
+      if (!internalData.nodeAttraction){internalData.nodeAttraction = 0.1}
+      // if (internalData.isPetriNet){
+      simulation.force('link', d3.forceLink(links).id(d => d.id).distance(1).strength(d => d.value * (internalData.nodeAttraction)))
+      // }
+      if (!internalData.clusteringForce){internalData.clusteringForce = 0.25}
       if (internalData.clustering == true){
+        const nodeCount = nodes.length; 
+        const clusterStrength = 0.008 * (nodeCount / 300); 
+        // simulation
+        //   .force('x', d3.forceX().strength(0.1 / Math.sqrt(nodeCount)))
+        //   .force('y', d3.forceY().strength(0.1 / Math.sqrt(nodeCount)))
+        //   .force('cluster', clusterForce(clusterStrength)); 
+        // simulation
+        // .force('x', d3.forceX().strength(0.1))
+        // .force('y', d3.forceY().strength(0.1))
+        // .force('cluster', clusterForce(0.008)); // Cluster Attractive Power
+        // old version setting
         simulation
         .force('x', d3.forceX().strength(0.1))
         .force('y', d3.forceY().strength(0.1))
-        .force('cluster', clusterForce(0.0025)); // Cluster Attractive Power
+        // .force('cluster', clusterForce(0.0025))
+        .force('cluster', clusterForce(internalData.clusteringForce/100))
       }
 
 
       
       const defs = svg.append('defs');
-      const graphIndex = Date.now();; // 現在のカウンターを使用
+      const graphIndex = Date.now();;
 
       // Drawing Links
       const scale = d3.scalePow().exponent(1.4).domain([0,100]).range([0.7,100]);
       let link = g.append('g')
-        .attr('class', `graph-${graphIndex}`) // 各グラフにユニークなクラスを設定
+        .attr('class', `graph-${graphIndex}`) 
         // .attr('stroke', '#999')
         .selectAll('line')
         .data(links)
@@ -301,7 +317,7 @@ export default function NetworkAnalysis({
         link.attr('stroke', (d, i) => {
           const color = weightColorScale(d.value);
           defs.append('marker')
-            .attr('id', `arrowhead-${graphIndex}-${i}`)  // ユニークなID
+            .attr('id', `arrowhead-${graphIndex}-${i}`) 
             .attr('viewBox', '-0 -5 10 10')
             .attr('refX', 13)
             .attr('refY', 0)
@@ -315,7 +331,7 @@ export default function NetworkAnalysis({
             .style('stroke', 'none');
           return color;
         })
-        .attr('marker-end', (d, i) => `url(#arrowhead-${graphIndex}-${i})`);  // ユニークなID
+        .attr('marker-end', (d, i) => `url(#arrowhead-${graphIndex}-${i})`); 
       }
   
       // Drawing Nodes
@@ -325,12 +341,17 @@ export default function NetworkAnalysis({
         .selectAll('circle')
         .data((internalData.graphLayout == "Spectral Layout") ? internalData.graphData.nodes : nodes)
         .enter().append('circle')
-        .attr('r', (internalData.centralityType == '') ? 8 :
+        .attr('r', d => (internalData.centralityType == '') ? 8 :
             d => sizeScale(d.centrality)) // Sizes Nodes based on Centrality
-        .attr('r', d => (internalData.isPetriNet && d.id.includes('+')) ? sizeScale(d.centrality) * 0.6 : sizeScale(d.centrality))
+        .attr('r', d => {
+          if (internalData.isPetriNet && d.id.includes('+')) {
+            return sizeScale(d.centrality) * 0.6 
+          }
+          else if (internalData.centralityType == ''){return 8}
+          return sizeScale(d.centrality)})
         .attr('fill', d => {
           if (internalData.isPetriNet && d.id.includes('+')) {
-            return 'black'; // 塗りつぶしを黒に設定
+            return 'black'; 
           }
           return (internalData.clustering == true) ? colorScale(d.cluster)
             : colorScale(d.centrality); // Set colors based on Centrality or Clusters
@@ -366,6 +387,17 @@ export default function NetworkAnalysis({
             .attr('cx', d => d.x)
             .attr('cy', d => d.y);
         });
+
+        const nodeCount = nodes.length;
+        const optimalStrength = -40 * Math.log(nodeCount) / Math.log(10) ; //sekiryoku 
+        const optimalLinkDistance = Math.sqrt(nodeCount) * 20 * 0.1 ;
+
+        // simulation
+        //   .force('link', d3.forceLink(links).id(d => d.id).distance(optimalLinkDistance))
+        //   .force('charge', d3.forceManyBody().strength(optimalStrength))
+        //   .force('center', d3.forceCenter(width / 2, height / 2))
+        //   .force('x', d3.forceX(width / 2).strength(0.1 / Math.sqrt(nodeCount)))
+        //   .force('y', d3.forceY(height / 2).strength(0.1 / Math.sqrt(nodeCount)));
       }
 
       // Node drag settings
@@ -466,12 +498,11 @@ export default function NetworkAnalysis({
       // }
       // -------------------------------------------------------------------
 
-      // ------------------Hierarchical Layout------------------------------
+      // ------------------Hierarchical Layout(Draft)-----------------------
       if (internalData.graphLayout === "Hierarchical Layout") {
         const tree = d3.tree().size([width, height - 200]);
         const stratify = d3.stratify().id(d => d.id).parentId(d => d.parentId);
 
-        // 複数のルートを処理するための疑似ルートノードを追加
         const rootNodes = nodes.filter(node => !node.parentId);
         const pseudoRoot = { id: 'pseudo-root', parentId: null };
         nodes.forEach(node => {
@@ -616,14 +647,16 @@ export default function NetworkAnalysis({
         link.each(function(d, i) {
           const color = weightColorScale(d.value);
           
-          // 矢印マーカーの設定
+          // marker setting
           d3.select(this)
             .attr('stroke', color)
-            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);
       
           const markerId = `arrowhead-${graphIndex}-${i}`;
           d3.select(`#${markerId} path`).attr('fill', color);
         });
+
+        setHighlightedInfoOpen((prev) => false);
       }
 
       // Colorize the clicked node
@@ -640,10 +673,10 @@ export default function NetworkAnalysis({
         link.each(function(d, i) {
           const color = weightColorScale(d.value);
           
-          // 矢印マーカーの設定
+          // markar setting
           d3.select(this)
             .attr('stroke', color)
-            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);
       
           const markerId = `arrowhead-${graphIndex}-${i}`;
           d3.select(`#${markerId} path`).attr('fill', color);
@@ -670,12 +703,11 @@ export default function NetworkAnalysis({
           
           d3.select(this)
             .attr('stroke', color)
-            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);  // マーカーを再設定
+            .attr('marker-end', `url(#arrowhead-${graphIndex}-${i})`);
       
           const markerId = `arrowhead-${graphIndex}-${i}`;
           d3.select(`#${markerId} path`).attr('fill', color);
         });
-        // リンクにマーカーを適用
         // link.attr('marker-end', d => `url(#arrowhead-${graphIndex}-${d.index})`);
         
         // .attr('stroke-width', d => {
@@ -966,25 +998,51 @@ export default function NetworkAnalysis({
     createChart();
   }, [data, options]);
 
+  console.log(internalOptions.extent.width)
   // Add the VizComp to the DOM
   return (
     <div>
-    <div style={{ top: 0, left: 0, width: '100%', zIndex: 10 , background: 'white', padding: '3px 0', }}>
-      <Modal
-        trigger={<Button>Statistic</Button>}
-        header="Statistical Analysis"
-        content={<pre>{message}</pre>}
-        actions={[{ key: 'done', content: 'OK', positive: true }]}
+      <div style={{ top: 0, left: 0, width: '100%', zIndex: 10 , background: 'white', padding: '3px 0', }}>
+        <Modal
+          trigger={<Button>Statistic</Button>}
+          header="Statistical Analysis"
+          content={<pre>{message}</pre>}
+          actions={[{ key: 'done', content: 'OK', positive: true }]}
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+          }}
+        />
+        <Button onClick={() => {handleExport();}} disabled={isDisabled} style={{ marginRight: '5px' }}>Export Centrality</Button>
+      </div>
+      <PopupNodeInfo />
+      {/* <input onChange={(e) => handleMarkingNode(e)}/> */}
+      <svg ref={rootNode} width={internalOptions.extent.width} height={internalOptions.extent.height}/>
+      
+      <div
         style={{
-          backgroundColor: 'white',
-          borderRadius: '8px', // 必要なら角丸を追加
+          cursor: "pointer",
+          fontFamily: "Arial, sans-serif",
+          margin: "8px",
+          padding: "5px",
+          border: "1px solid #ddd",
+          borderRadius: "5px",
+          maxWidth: internalOptions.extent.width -16
         }}
-      />
-      <Button onClick={() => {handleExport();}} disabled={isDisabled} style={{ marginRight: '5px' }}>Export Centrality</Button>
-    </div>
-    <PopupNodeInfo />
-    {/* <input onChange={(e) => handleMarkingNode(e)}/> */}
-    <svg ref={rootNode} width={internalOptions.extent.width} height={internalOptions.extent.height}/>
+        width={internalOptions.extent.width}
+        onClick={toggleVisibility}
+      >
+        <div style={{ fontSize: "16px", fontWeight: "bold", color: "#333", }}> Click to show Full Instructions</div>
+        {isVisible && (
+          <div style={{fontSize: "14px", color: "#666", marginTop: "5px", }} width={internalOptions.extent.width}>
+            Click on a node to highlight it.
+            <br />
+            Clicking on a node while holding down the Control key marks the node in yellow, 
+            and clicking on another node while holding down the Control key again displays the shortest path between the two selected nodes. 
+            This shortest path is calculated by Dijkstra's algorithm.
+          </div>
+        )}
+      </div>
   </div>
   );
 }
