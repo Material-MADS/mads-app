@@ -267,7 +267,7 @@ const NetworkAnalysisForm = (props) => {
             type="number"
             step={0.01} 
             min={0.01}
-            max={0.2}
+            max={0.25}
           />
         </Form.Field>
         <div style={{ marginRight: "2rem" }}></div>
