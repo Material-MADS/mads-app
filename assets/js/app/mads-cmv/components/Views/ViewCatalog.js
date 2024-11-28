@@ -688,11 +688,11 @@ export const config = [
       centrality: '',
       markNode: '',
       clusteringEnabled: false,
-      clusterForse: 0.0025,
       options: {
         links: {},
         graphLayout: {},
         nodes: {},
+        clusterForse: 0.0025,
         extent: { width: 700, height: 700 },
       }
     },

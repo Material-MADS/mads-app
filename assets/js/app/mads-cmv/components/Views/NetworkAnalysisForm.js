@@ -146,6 +146,9 @@ const NetworkAnalysisForm = (props) => {
     { key: 'alG', text: 'All Gray', value: 'alG', colors: ['#808080', '#808080'] }
   ];
 
+  if(!initialValues.clusterForce){ initialValues.clusterForce = 0.25 };
+  if(!initialValues.nodeAttraction){ initialValues.nodeAttraction = 0.1 };
+
   const [colorDisabled, setColorDisabled] = useState(
     !initialValues.colorAssignmentEnabled
   );
@@ -253,6 +256,43 @@ const NetworkAnalysisForm = (props) => {
         />
       </Form.Field>
 
+      <hr />
+      <Form.Group widths="equal">
+        <Form.Field widths={1}>
+          <label>Attraction between nodes </label>
+          <Field
+            fluid
+            name="nodeAttraction"
+            component={inputTrad}
+            type="number"
+            step={0.01} 
+            min={0.01}
+            max={0.25}
+          />
+        </Form.Field>
+        <div style={{ marginRight: "2rem" }}></div>
+        <Form.Field>
+          <label>Make it a Petri Net <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+              content='Check this box if you want to make it a Petri Net, 
+                  When a node “A+B” is inserted in the “source” column, it creates a link that splits the node.' size='small' /></label>
+          <Field
+            name="makePetriNet"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+        <Form.Field>
+          <label>Make it an undirected graph <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+              content='By default, a directed graph is generated. 
+              Check this box if you want to make it an undirected graph' size='small' /></label>
+          <Field
+            name="makeUndirectedGraph"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+      </Form.Group>
+
       {!colorDisabled && <div>
         <Form.Field>
           <label>Node Color Palette</label>
@@ -303,27 +343,6 @@ const NetworkAnalysisForm = (props) => {
 
       <hr />
       <Form.Field>
-      <label>Make it an undirected graph <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-          content='By default, a directed graph is generated. 
-          Check this box if you want to make it an undirected graph' size='small' /></label>
-        <Field
-          name="makeUndirectedGraph"
-          component={SemCheckbox}
-          toggle
-        />
-      <hr />
-      <label>Make it a Petri Net <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-          content='Check this box if you want to make it a Petri Net, 
-              When a node “A+B” is inserted in the “source” column, it creates a link that splits the node.' size='small' /></label>
-        <Field
-          name="makePetriNet"
-          component={SemCheckbox}
-          toggle
-        />
-      </Form.Field>
-
-      <hr />
-      <Form.Field>
       <label>Marking Node <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
           content='You can mark the nodes you have entered. 
           Enter the name of the desired node with an exact match. 
@@ -353,31 +372,31 @@ const NetworkAnalysisForm = (props) => {
       </Form.Field>
 
       {!clusteringDisabled && <div>
-        <Form.Field>
-          <label>Clustering Method</label>
-          <Field
-          fluid
-          name="clusteringMethod"
-          component={SemanticDropdown}
-          placeholder="greedy"
-          options={getDropdownOptions(clusterMethods)}
-          onChange={(e, data) => setClusterType(data)}
-        />
-        </Form.Field>
-
-        {/* <Form.Field>
-          <label>Clustering Forse</label>
-          <Field
-          fluid
-          name="clusterForse"
-          component={Input}
-          placeholder="clusterForse"
-          type="number"
-            step={0.0001}
-            min={0.0050}
-            max={0.0005}
-        />
-        </Form.Field> */}
+        <Form.Group width="equal">
+          <Form.Field width={12}>
+            <label>Clustering Method</label>
+            <Field
+            fluid
+            name="clusteringMethod"
+            component={SemanticDropdown}
+            placeholder="greedy"
+            options={getDropdownOptions(clusterMethods)}
+            onChange={(e, data) => setClusterType(data)}
+          />
+          </Form.Field>
+          <Form.Field>
+            <label>Clustering Force </label>
+            <Field
+              fluid
+              name="clusterForce"
+              component={inputTrad}
+              type="number"
+              step={0.05}
+              min={0.05}
+              max={1}
+            />
+          </Form.Field>
+        </Form.Group>
       </div>}
 
       <hr />
@@ -409,32 +428,32 @@ const NetworkAnalysisForm = (props) => {
       </div>}
 
       <hr />
-      <Form.Field>
-      <label>Delete isolated networks? <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-          content='Check this box if you want to delete networks not connected to the largest network' size='small' /></label>
-        <Field
-          name="deleteIsolatedNetworks"
-          component={SemCheckbox}
-          toggle
-          // onChange={(e, data) => {
-          //   setDeleteDisabled(!data);
-          // }}
-        />
-      </Form.Field>
-
-      <hr />
-      <Form.Field>
-      <label>Remain lonely Nodes? <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-          content='Check this box if you want to remain a single node with no links' size='small' /></label>
-        <Field
-          name="remainLonelyNodes"
-          component={SemCheckbox}
-          toggle
-          // onChange={(e, data) => {
-          //   setRemainDisabled(!data);
-          // }}
-        />
-      </Form.Field>
+      <Form.Group widths="equal">
+        <Form.Field>
+        <label>Delete isolated networks? <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+            content='Check this box if you want to delete networks not connected to the largest network' size='small' /></label>
+          <Field
+            name="deleteIsolatedNetworks"
+            component={SemCheckbox}
+            toggle
+            // onChange={(e, data) => {
+            //   setDeleteDisabled(!data);
+            // }}
+          />
+        </Form.Field>
+        <Form.Field>
+        <label>Remain lonely Nodes? <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+            content='Check this box if you want to remain a single node with no links' size='small' /></label>
+          <Field
+            name="remainLonelyNodes"
+            component={SemCheckbox}
+            toggle
+            // onChange={(e, data) => {
+            //   setRemainDisabled(!data);
+            // }}
+          />
+        </Form.Field>
+      </Form.Group>
 
       <hr />
       <Form.Group widths="equal">
