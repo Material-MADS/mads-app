@@ -44,6 +44,7 @@ import ClusteringView from './ClusteringView';
 import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
+import NetworkAnalysisView from './NetworkAnalysisView.js';
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -665,6 +666,35 @@ export const config = [
         bkgCol: "#ffffff",
         txtCol: "#000000",
       },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // NetworkAnalysis - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  //------------------------------------------
+  {
+    type: 'networkAnalysis',
+    name: 'NetworkAnalysis',
+    category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to display a network diagram from node data that reflects centrality and clustering.",
+    devInfo: [{name: "Akihiro Honda", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Honda-Akihiro"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    academicInfo: [{title: "", link: ""}],
+    component: NetworkAnalysisView,
+    settings: {
+      centrality: '',
+      markNode: '',
+      clusteringEnabled: false,
+      options: {
+        links: {},
+        graphLayout: {},
+        nodes: {},
+        clusterForse: 0.0025,
+        extent: { width: 700, height: 700 },
+      }
     },
     enabled: true,
   },
