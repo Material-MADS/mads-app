@@ -59,6 +59,9 @@ const errorValidate = (value, values, props, fieldName) => {
     const valueInclude = values.featureColumns.map(v => dataColumns.includes(v));
     if(valueInclude.includes(false)){
       values.featureColumns = [];
+      values.compomentColumns =[];
+      values.componentFirstColumn = undefined;
+      values.componentLastColumn = undefined;
       values.rootCatalyst = undefined;
       values.visualizationMethod = undefined;
     }
@@ -78,9 +81,32 @@ const errorValidate = (value, values, props, fieldName) => {
   if (values && (fieldName == "rootCatalyst") || (fieldName == "featureColumns") || (fieldName == "visualizationMethod")){
     if(!value || _.isEmpty(value)){
       error = 'Required';
+  } else { errors[fieldName] = false; }
   }
-    else { errors[fieldName] = false; }
+
+  // console.log(values)
+
+  if (values){
+    if(!values.isDataOneHOt && (fieldName == "compomentColumns")){
+      values.componentFirstColumn = undefined;
+      values.componentLastColumn = undefined;
+      console.log(value)
+      if(!value || _.isEmpty(value)){
+        error = 'Required';
+      }else{
+        errors[fieldName] = false;
+      }
+    }else if(values.isDataOneHOt && (fieldName == "componentFirstColumn") || (fieldName == "componentLastColumn")){
+      values.compomentColumns = [];
+      console.log(value)
+      if(!value || _.isEmpty(value)){
+        error = 'Required';
+      }else{
+        errors[fieldName] = false;
+      }
+    }
   }
+
 
 
   errors[fieldName] = (error != undefined);
@@ -177,7 +203,7 @@ const CatalystGeneForm = (props) => {
     dataset,
 
   } = props;
-  console.log(initialValues)
+  // console.log(props)
 
   const cTags = colorTags.map((c) => ({
     text: c.color,
@@ -195,7 +221,7 @@ const CatalystGeneForm = (props) => {
 
   const visualizationMethod = [
     'Hierarchical Clustering', 
-    'Parallel-coordinate Catalyst gene introduction',
+    'Area Plot',
     'Heatmap', 
     'Table', 
   ];
@@ -228,11 +254,15 @@ const CatalystGeneForm = (props) => {
   
   const [scalingMethod, setScalingMethod] = useState();
 
+  const [isDataOneHOt, setIsDataOneHot] = useState(
+    !initialValues.dataOneHot
+  );
+
 
   const onCMChange = (event) => {
     setValue(event);
   };
-  console.log(visualization)
+  console.log(isDataOneHOt)
 
   // The form itself, as being displayed in the DOM
   return (
@@ -270,11 +300,58 @@ const CatalystGeneForm = (props) => {
           options={getDropdownOptions(visualizationMethod)}
           validate={[ errorValidate ]}
           onChange={(e, data) => {
-            console.log(data);
+            // console.log(data);
             setVisualization(data);
           }}
         />
       </Form.Field>
+
+      <Form.Field>
+        <label>is Onehot encoding:</label>
+        <Field
+          name="dataOneHot"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setIsDataOneHot(!data);
+          }}
+        />
+      </Form.Field>
+
+      {isDataOneHOt && <div>
+        <Form.Field>
+          <label>component columns</label>
+          <Field
+            name="compomentColumns"
+            component={MultiSelectDropdown}
+            placeholder="Componet column"
+            options={columns}
+            validate={[ errorValidate ]}
+          />
+        </Form.Field>
+      </div>}
+
+      {!isDataOneHOt && <div>
+        <Form.Group widths="equal">
+          <label>Component columns:</label>
+            <Field
+              fluid
+              name="componentFirstColumn"
+              component={SemanticDropdown}
+              options={columns}
+              placeholder="Firts componet column"
+              validate={[ errorValidate ]}
+            />
+            <Field
+              fluid
+              name="componentLastColumn"
+              component={SemanticDropdown}
+              options={columns}
+              placeholder="Last componet column"
+              validate={[ errorValidate ]}
+            />
+        </Form.Group>
+      </div>}
 
       <Form.Field>
         <label>Apply Data Preprocessing:</label>

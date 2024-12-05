@@ -135,6 +135,37 @@ const getMinPoint = (linePoints) => {
   return minPoint;
 };
 
+const markerMaker = (dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels) => {
+  const similarIndex = dfData.distance.map((dist, ind) => (dist <= similarDisance ? ind : null)).filter(ind => (ind !== null) & (ind !== 0));
+  const similarGeneCatalyst = similarIndex.map(ind => dfData.Catalyst[ind])
+  if(!Object(similarGeneCatalyst).includes(rootCatalyst)){
+    similarGeneCatalyst.push(rootCatalyst);
+  }
+  const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY)
+  const yTickDiff = yTickPoint[1]-yTickPoint[0]
+  const similarGeneCatalystIndxs = similarGeneCatalyst.map((label,index) => yTickLabels.indexOf(label))
+  
+  const similarGeneCatalystYPoints = similarGeneCatalystIndxs.map((index) => yTickPoint[index])
+  const circleX = Array.from({ length: similarGeneCatalystYPoints.length }, () => -maxX*0.025);
+  const ellipseheight = Array.from({ length: similarGeneCatalystYPoints.length }, () => yTickDiff*0.98);
+  const ellipsewidth = Array.from({ length: similarGeneCatalystYPoints.length }, () => maxX*0.05);
+
+  const rootCatalystIndex =  yTickLabels.indexOf(rootCatalyst)
+  const yRootCatalyst = yTickPoint[rootCatalystIndex]
+  const circleColor = similarGeneCatalystYPoints.map((yPoint) => yPoint === yRootCatalyst ? 'green': 'yellow');
+
+
+  const similarGeneSource = new Bokeh.ColumnDataSource({
+    data: {
+      xData: circleX,
+      yData: similarGeneCatalystYPoints,
+      height:ellipseheight,
+      width:ellipsewidth,
+      color:circleColor,
+    }
+  });
+  return similarGeneSource;
+}
 
 function Clustering({
   data,
@@ -146,40 +177,40 @@ function Clustering({
   const internalOptions = Object.assign({}, defaultOptions, options);
   const internalData = data;
   const rootNode = useRef(null);
+  const [similarDisance, setSimilarDistance] = useState(0);
+  const dfData = internalData.dfDistanceIntroduced;
+  const rootCatalyst = internalData["rootCatalyst"];
+  const { extent, margin } = internalOptions;
+  const { width, height } = extent;
+  const { l: left, r: right, t: top, b: bottom } = margin;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const yTickLabels = internalData['clusteringTicks']
+  const linePoints = internalData['clusteringData'];
+  const minY = Math.min(Math.min(...linePoints.map(p => p[1])),Math.min(...linePoints.map(p => p[3])))
+  const maxY = Math.max(Math.max(...linePoints.map(p => p[1])),Math.max(...linePoints.map(p => p[3])))
+  const minX = Math.min(Math.min(...linePoints.map(p => p[0])),Math.min(...linePoints.map(p => p[2])))
+  const maxX = Math.max(Math.max(...linePoints.map(p => p[0])),Math.max(...linePoints.map(p => p[2])))
+
+  const scaleX = plotWidth / maxX;
+  const scaleY = plotHeight / maxY;
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
-    const rootCatalyst = data["rootCatalyst"];
-    const similarGeneCatalyst = data["similarGeneCatalyst"]
-    const { extent, margin } = internalOptions;
-    const { width, height } = extent;
-    const { l: left, r: right, t: top, b: bottom } = margin;
-    const plotWidth = width - left - right;
-    const plotHeight = height - top - bottom;
-    const yTickLabels = internalData['clusteringTicks']
-    const linePoints = internalData['clusteringData'];
-    const maxXPoint = getMaxPoint(linePoints.map(p => [p[0], p[2]]));
-    const maxYPoint = getMaxPoint(linePoints.map(p => [p[1], p[3]]));
-  
-    const scaleX = plotWidth / maxXPoint;
-    const scaleY = plotHeight / maxYPoint;
-
 
     const source = new Bokeh.ColumnDataSource({
       data: {
-        x0: linePoints.map(p => (p[0] * scaleX * 0.95 + plotWidth*0.05)),
-        y0: linePoints.map(p => (p[1] * scaleY * 0.95 + plotHeight*0.025)),
-        x1: linePoints.map(p => (p[2] * scaleX * 0.95 + plotWidth*0.05)),
-        y1: linePoints.map(p => (p[3] * scaleY * 0.95 + plotHeight*0.025)),
+        x0: linePoints.map(p => (p[0] )),
+        y0: linePoints.map(p => (p[1] )),
+        x1: linePoints.map(p => (p[2] )),
+        y1: linePoints.map(p => (p[3] )),
       }
     });
 
-    const minY = Math.min(Math.min(...source.data.y0),Math.min(...source.data.y1))
-    const maxY = Math.max(Math.max(...source.data.y0),Math.max(...source.data.y1))
     const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY)
-    const yTickDiff = yTickPoint[1] - yTickPoint[0]
-    const xRange = new Bokeh.Range1d({ start: 0, end: plotWidth });
-    const yRange = new Bokeh.Range1d({ start: 0, end: plotHeight });
+    const xTickPoints = Array.from({ length: maxX }, (_, index) => index);
+    const xRange = new Bokeh.Range1d({ start: -maxX * 0.05, end: maxX * 1.1 });
+    const yRange = new Bokeh.Range1d({ start: -maxY * 0.05, end: maxY * 1.1 });
 
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
@@ -191,25 +222,7 @@ function Clustering({
 
     const hierarchy = plot.segment({ field: 'x0' }, { field: 'y0' }, { field: 'x1' }, { field: 'y1' }, { source });
 
-    const similarGeneCatalystIndxs = similarGeneCatalyst.map((label,index) => yTickLabels.indexOf(label))
-    const similarGeneCatalystYPoints = similarGeneCatalystIndxs.map((index) => yTickPoint[index])
-    const circleX = Array.from({ length: similarGeneCatalystYPoints.length }, () => plotWidth*0.02);
-    const rootCatalystIndex =  yTickLabels.indexOf(rootCatalyst)
-    const yRootCatalyst = yTickPoint[rootCatalystIndex]
-    const circleColor = similarGeneCatalystYPoints.map((yPoint) => yPoint === yRootCatalyst ? 'green': 'yellow');
-    const ellipseheight = Array.from({ length: similarGeneCatalystYPoints.length }, () => yTickDiff*0.98);
-    const ellipsewidth = Array.from({ length: similarGeneCatalystYPoints.length }, () => 15);
-
-
-    const similarGeneSource = new Bokeh.ColumnDataSource({
-      data: {
-        xData: circleX,
-        yData: similarGeneCatalystYPoints,
-        height:ellipseheight,
-        width:ellipsewidth,
-        color:circleColor,
-      }
-    });
+    const similarGeneSource = markerMaker(dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels)
 
     const circles = plot.ellipse({
       x: { field: "xData" },
@@ -236,16 +249,26 @@ function Clustering({
 
     Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [data]);
-
+  }, [data, similarDisance]);
+  const maxDistance = Math.max(...dfData.distance);
   return(
     <div>
+        <input 
+        type="number" 
+        id="a" 
+        name="a" 
+        min="0" 
+        max={maxDistance} 
+        onInput={(event) =>{
+          setSimilarDistance(event.target.value);
+        }
+      }/>
       <div ref={rootNode} />
     </div>
   );
 }
 
- function HeatMapGene({
+function HeatMapGene({
   data,
   options,
   selectedIndices,
@@ -257,29 +280,32 @@ function Clustering({
   const dfData = data.dfDistanceIntroduced;
   const columnsForGene = data.columnsForGene;
   const rootCatalyst = data["rootCatalyst"];
-  const similarGeneCatalyst = data["similarGeneCatalyst"]
   const { extent, margin } = internalOptions;
   const { width, height } = extent;
   const { l: left, r: right, t: top, b: bottom } = margin;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
+  const maxY = Math.max(...internalData['yData']);
+  const minY = Math.min(...internalData['yData']);
+  const maxX = Math.max(...internalData['xData']);
+  const minX = Math.min(...internalData['xData']);
   const rootNode = useRef(null);
+  const yTickLabels =internalData['yTicks'];
+  const xTickLabels =internalData['xTicks'];
+  const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY);
+  const xTickPoints = Array.from({ length: internalData["yTicks"].length }, (_, index) => index);
+  const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index + 1/2);
+  console.log(yTickLabels.length - 1)
   const [isXlabelArea, setIsXlabelArea] = useState(true);
+  const [similarDisance, setSimilarDistance] = useState(0);
   const [lastIndices, setLastIndices] = useState([...selectedIndices])
+  const xRange = new Bokeh.Range1d({ start: -maxX * 0.05, end: maxX + 1.5});
+  const yRange = new Bokeh.Range1d({ start: -maxY * 0.1, end: maxY * 1.1 });
+
   
   useEffect(() => {
     if (!rootNode.current) return;
     rootNode.current.innerHTML = '';
-    const yTickLabels =internalData['yTicks'];
-    const xTickLabels =internalData['xTicks'];
-    const maxY = Math.max(...internalData['yData']);
-    const minY = Math.min(...internalData['yData']);
-    const maxX = Math.max(...internalData['xData']);
-    const minX = Math.min(...internalData['xData']);
-    const xAxisRange = maxX - minX;
-    const yAxisRange = maxY - minY;
-    const xRange = new Bokeh.Range1d({ start: minX-1, end: maxX +1});
-    const yRange = new Bokeh.Range1d({ start: minY, end: maxY +1});
 
     const handleSelectedIndicesChange = () => {
       const rectangulars = source.selected.indices;
@@ -303,8 +329,8 @@ function Clustering({
     var mapper = new Bokeh.LinearColorMapper({palette: colors, low: colMapMinMax[0], high: colMapMinMax[1]});
     const source = new Bokeh.ColumnDataSource({
       data: {
-        xData: internalData['xData'],
-        yData: internalData['yData'],
+        xData: internalData['xData'].map(x => x + 1/2),
+        yData: internalData['yData'].map(y => y + 1/2),
         heatVal: internalData['heatVal'],
         x0: internalData['xData'].map(x => 0),
         y0: internalData['yData'].map(y => 0),
@@ -314,9 +340,6 @@ function Clustering({
     const list_b = [];
     const catalysts = selectedIndices.map(i => dfData.Catalyst[i]);
     const firstIndices = catalysts.map(indice => yTickLabels.indexOf(indice));
-    console.log(selectedIndices)
-    console.log(catalysts)
-    console.log(firstIndices)
 
     for (let i = 0; i < yTickLabels.length; i++) {
       if(firstIndices.includes(i)){
@@ -329,28 +352,7 @@ function Clustering({
     source.selected.indices = [...list_b];
     source.connect(source.selected.change, () => handleSelectedIndicesChange());
 
-
-    const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY)
-    const yTickDiff = yTickPoint[1]-yTickPoint[0]
-    const similarGeneCatalystIndxs = similarGeneCatalyst.map((label,index) => yTickLabels.indexOf(label))
-    const similarGeneCatalystYPoints = similarGeneCatalystIndxs.map((index) => yTickPoint[index])
-    const circleX = Array.from({ length: similarGeneCatalystYPoints.length }, () => -0.5);
-    const ellipseheight = Array.from({ length: similarGeneCatalystYPoints.length }, () => yTickDiff*0.98);
-    const ellipsewidth = Array.from({ length: similarGeneCatalystYPoints.length }, () => 0.2);
-
-    const rootCatalystIndex =  yTickLabels.indexOf(rootCatalyst)
-    const yRootCatalyst = yTickPoint[rootCatalystIndex]
-    const circleColor = similarGeneCatalystYPoints.map((yPoint) => yPoint === yRootCatalyst ? 'green': 'yellow');
-
-    const similarGeneSource = new Bokeh.ColumnDataSource({
-      data: {
-        xData: circleX,
-        yData: similarGeneCatalystYPoints,
-        height:ellipseheight,
-        width:ellipsewidth,
-        color:circleColor,
-      }
-    });
+    const similarGeneSource =markerMaker(dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels)
 
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
@@ -399,9 +401,6 @@ function Clustering({
       border_line_color: null
     });
 
-    const xTickPoints = Array.from({ length: internalData["yTicks"].length }, (_, index) => index - 1 / 2);
-    const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index );
-
     if ((xTickLabels.length > 0) && isXlabelArea) {
       const xaxis = plot.xaxis[0];
       xaxis.ticker = new Bokeh.FixedTicker({ ticks: xLabelPoints });
@@ -447,11 +446,11 @@ function Clustering({
     }
 
    Bokeh.Plotting.show(plot, rootNode.current);
-    // plot.js_event_callbacks = {'reset': [callback]};
 
-  }, [data, isXlabelArea, selectedIndices])
+  }, [data, isXlabelArea, selectedIndices, similarDisance])
 
   const buttonWords = isXlabelArea? "Show columns Info" : "Show area Info" 
+  const maxDistance = Math.max(...dfData.distance);
 
   return(
     <div id="containerHolder">
@@ -462,21 +461,32 @@ function Clustering({
         }
       >{buttonWords}
       </button>
+      <input 
+        type="number" 
+        id="tentacles" 
+        name="tentacles" 
+        min="0" 
+        max={maxDistance} 
+        onInput={(event) =>{
+          setSimilarDistance(event.target.value);
+        }
+      }/>
       <div ref={rootNode} />
     </div>
   );
 }
 
-function ParallelGene({
+function AreaPlot({
   data,
   options,
   selectedIndices,
   onSelectedIndicesChange,
   colorMap
 }){
+  console.log(data)
   const internalOptions = Object.assign({}, defaultOptions, options);
-  const internalData = data.parallelData;
-  const xTickLabels = Object.keys(data.areaData);
+  const parallelData = data.parallelData;
+  const xTickLabels = Object.keys(data.dfDistanceIntroduced).filter(key => key.includes("area"));
   const columnsForGene = data.columnsForGene;
   const rootNode = useRef(null);
   const [isXlabelArea, setIsXlabelArea] = useState(true);
@@ -488,9 +498,9 @@ function ParallelGene({
     const similarGeneCatalyst = data["similarGeneCatalyst"]
     const { extent, margin } = internalOptions;
     const { width,height } = extent;
-    const xAxisRange = internalData[rootCatalyst].length;
-    const yMin = getMinPoint(Object.values(internalData));
-    const yMax = getMaxPoint(Object.values(internalData));
+    const xAxisRange = parallelData[rootCatalyst].length;
+    const yMin = getMinPoint(Object.values(parallelData));
+    const yMax = getMaxPoint(Object.values(parallelData));
     const yRangeMin = yMin < 0 ? yMin * 1.1 : -xAxisRange / 100;
     const yAxisRange = yMax - yMin;
     const { l: left, r: right, t: top, b: bottom } = margin;
@@ -553,11 +563,11 @@ function ParallelGene({
       {source : holizonSource}
     );
 
-    const xTickPoints = Array.from({ length: internalData[rootCatalyst].length }, (_, index) => index + 1 / 2);
+    const xTickPoints = Array.from({ length: parallelData[rootCatalyst].length }, (_, index) => index + 1 / 2);
     const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index );
     
-    Object.keys(internalData).forEach(catalyst => {
-      const yData = internalData[catalyst].map(y => y );
+    Object.keys(parallelData).forEach(catalyst => {
+      const yData = parallelData[catalyst].map(y => y );
       const color = catalyst === rootCatalyst ? "orange": "blue";
       const width = catalyst === rootCatalyst ? 10: 1;
 
@@ -637,7 +647,7 @@ function ParallelGene({
 
     Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [internalData, isXlabelArea])
+  }, [parallelData, isXlabelArea])
 
   const buttonWords = isXlabelArea? "Show columns Info" : "Show area Info" 
 
@@ -777,8 +787,8 @@ function componentSelector(data){
       SelComp = Clustering;
     } else if (visualization === 'Heatmap'){
       SelComp = HeatMapGene;
-    } else if (visualization === 'Parallel-coordinate Catalyst gene introduction'){
-      SelComp = ParallelGene;
+    } else if (visualization === 'Area Plot'){
+      SelComp = AreaPlot;
     } else{
       SelComp = GeneTable;
     }

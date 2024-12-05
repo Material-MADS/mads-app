@@ -39,14 +39,19 @@ logger = logging.getLogger(__name__)
 
 #-------------------------------------------------------------------------------------------------
 def get_catalyst_gene(data):
-    logger.info(data["view"])
+    # logger.info(data["view"])
     feature_columns = data['view']['settings']['featureColumns']
     fields = data["data"]['main']["schema"]["fields"]
     columns = [fields[a]["name"] for a in range(len(fields))]
     dataset = data["data"]["main"]['data']
     root_catalyst = data['view']['settings']['rootCatalyst']
     visualization = data['view']['settings']["visualizationMethod"]
-    distance_border = 2
+    # logger.info('dataOneHot' in data['view']['settings'].keys())
+    if 'dataOneHot' in data['view']['settings'].keys():
+        data_onehot = data["view"]['settings']["dataOneHot"]
+    else:
+        data_onehot = False
+    logger.info(columns)
 
     result = {}
     result['featureColumns'] = feature_columns
@@ -54,7 +59,7 @@ def get_catalyst_gene(data):
     result['rootCatalyst'] = root_catalyst
     
     df_original = pd.DataFrame(dataset, columns =columns)
-
+    #logger.info(df_original)
     df = df_original.loc[:,feature_columns]
 
     #  check whether data has more than 3 valid columns  #
@@ -68,7 +73,7 @@ def get_catalyst_gene(data):
         result["error"] = ["more than 3 valid columns are required"]
 
     else:
-        logger.info(data['view']['settings'].keys())
+        #logger.info(data['view']['settings'].keys())
         #  Scaling the data if user specified the mehod  #
         if "preprocessingEnabled" in data['view']['settings'].keys():
             if data['view']['settings']["preprocessingEnabled"] == True:
@@ -133,7 +138,7 @@ def get_catalyst_gene(data):
 
         list_df_genes = []
 
-        gene_criteion = np.linspace(0, max_in_df, 20)
+        gene_criteion = np.linspace(0, max_in_df, 15)
 
         genes = string.ascii_uppercase
 
@@ -166,7 +171,7 @@ def get_catalyst_gene(data):
 
         df_gene_introduced = pd.concat([df_gene_area, df_gene], axis = 1)
 
-        result['dfGeneIntroduced'] = df_gene_introduced
+        #result['dfGeneIntroduced'] = df_gene_introduced
 
 ############################################################################################################################################################
 ################  returning the heatmap data    ############################################################################################################
@@ -180,7 +185,7 @@ def get_catalyst_gene(data):
         heat_map_columns = [a for a in df_for_heatmap.columns if "area" in a]
         array_heatmap = df_for_heatmap.loc[:, heat_map_columns].values
 
-        logger.info(df_gene_introduced["Catalyst"].tolist() == df_for_heatmap["Catalyst"].tolist())
+        #logger.info(df_gene_introduced["Catalyst"].tolist() == df_for_heatmap["Catalyst"].tolist())
 
         yData = []
         xData = []
@@ -194,7 +199,7 @@ def get_catalyst_gene(data):
                 yData.append(i)
                 heatVal.append(array_heatmap[i, j])  
         
-        logger.info(catalysts == dendrogram_result['ivl']) 
+        #logger.info(catalysts == dendrogram_result['ivl']) 
         # logger.info(dendrogram_result['ivl'])
         result['heatmapData'] = {}
         result['heatmapData']['xData'] = xData
@@ -207,7 +212,7 @@ def get_catalyst_gene(data):
 ##########  edit_distance and sort data by distance from the root_catalyst_gene  ############################################################################
 
         root_index = df_gene_introduced[df_gene_introduced["Catalyst"] == root_catalyst].index[0]
-        logger.info(f'root_index is {root_index}')
+        #logger.info(f'root_index is {root_index}')
 
         df_root_raw = df_gene_introduced[df_gene_introduced["Catalyst"] == root_catalyst].copy()
 
@@ -243,13 +248,13 @@ def get_catalyst_gene(data):
         
         df_distance_introduced.reset_index(drop = True, inplace = True)
 
-        logger.info(df_distance_introduced.columns)
+        #logger.info(df_distance_introduced.columns)
 
         result['dfDistanceIntroduced'] = df_distance_introduced
 
-        df_similar_gene_catalyst = df_distance_introduced[df_distance_introduced["distance"] <= distance_border]["Catalyst"].values.tolist()
+        #df_similar_gene_catalyst = df_distance_introduced[df_distance_introduced["distance"] <= distance_border]["Catalyst"].values.tolist()
 
-        result['similarGeneCatalyst'] = df_similar_gene_catalyst
+        #result['similarGeneCatalyst'] = df_similar_gene_catalyst
 
         area_columns = [a for a in df_distance_introduced.columns if "area" in a]
 
@@ -260,6 +265,8 @@ def get_catalyst_gene(data):
             dict_area_cat[catalyst] = df_cat[area_columns].values.tolist()
 
         result["parallelData"] = dict_area_cat
+
+
         
     return result
 #-------------------------------------------------------------------------------------------------
