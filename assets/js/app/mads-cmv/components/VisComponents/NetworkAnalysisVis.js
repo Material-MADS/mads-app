@@ -1041,6 +1041,11 @@ export default function NetworkAnalysis({
             Clicking on a node while holding down the Control key marks the node in yellow, 
             and clicking on another node while holding down the Control key again displays the shortest path between the two selected nodes. 
             This shortest path is calculated by Dijkstra's algorithm.
+            {/* <div>
+            <a href="/home/student/公開/naManual.pdf" target="_blank" rel="noopener noreferrer">
+              PDFを表示
+            </a>
+            </div>     */}
           </div>
         )}
       </div>

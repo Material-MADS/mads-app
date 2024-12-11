@@ -256,43 +256,6 @@ const NetworkAnalysisForm = (props) => {
         />
       </Form.Field>
 
-      <hr />
-      <Form.Group widths="equal">
-        <Form.Field widths={1}>
-          <label>Attraction between nodes </label>
-          <Field
-            fluid
-            name="nodeAttraction"
-            component={inputTrad}
-            type="number"
-            step={0.01} 
-            min={0.01}
-            max={0.25}
-          />
-        </Form.Field>
-        <div style={{ marginRight: "2rem" }}></div>
-        <Form.Field>
-          <label>Make it a Petri Net <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-              content='Check this box if you want to make it a Petri Net, 
-                  When a node “A+B” is inserted in the “source” column, it creates a link that splits the node.' size='small' /></label>
-          <Field
-            name="makePetriNet"
-            component={SemCheckbox}
-            toggle
-          />
-        </Form.Field>
-        <Form.Field>
-          <label>Make it an undirected graph <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
-              content='By default, a directed graph is generated. 
-              Check this box if you want to make it an undirected graph' size='small' /></label>
-          <Field
-            name="makeUndirectedGraph"
-            component={SemCheckbox}
-            toggle
-          />
-        </Form.Field>
-      </Form.Group>
-
       {!colorDisabled && <div>
         <Form.Field>
           <label>Node Color Palette</label>
@@ -340,6 +303,43 @@ const NetworkAnalysisForm = (props) => {
           ))}
         </div>
       </div>}
+
+      <hr />
+      <Form.Group widths="equal">
+        <Form.Field widths={1}>
+          <label>Attraction between nodes </label>
+          <Field
+            fluid
+            name="nodeAttraction"
+            component={inputTrad}
+            type="number"
+            step={0.01} 
+            min={0.01}
+            max={0.25}
+          />
+        </Form.Field>
+        <div style={{ marginRight: "2rem" }}></div>
+        <Form.Field>
+          <label>Make it a Petri Net <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+              content='Check this box if you want to make it a Petri Net, 
+                  When a node “A+B” is inserted in the “source” column, it creates a link that splits the node.' size='small' /></label>
+          <Field
+            name="makePetriNet"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+        <Form.Field>
+          <label>Make it an undirected graph <Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+              content='By default, a directed graph is generated. 
+              Check this box if you want to make it an undirected graph' size='small' /></label>
+          <Field
+            name="makeUndirectedGraph"
+            component={SemCheckbox}
+            toggle
+          />
+        </Form.Field>
+      </Form.Group>
 
       <hr />
       <Form.Field>
