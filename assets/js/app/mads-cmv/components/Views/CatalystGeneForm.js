@@ -84,21 +84,14 @@ const errorValidate = (value, values, props, fieldName) => {
   } else { errors[fieldName] = false; }
   }
 
-  // console.log(values)
-
   if (values){
-    if(!values.isDataOneHOt && (fieldName == "compomentColumns")){
-      values.componentFirstColumn = undefined;
-      values.componentLastColumn = undefined;
-      console.log(value)
+    if(!values.dataOneHot && (fieldName == "compomentColumns")){
       if(!value || _.isEmpty(value)){
         error = 'Required';
       }else{
         errors[fieldName] = false;
       }
-    }else if(values.isDataOneHOt && (fieldName == "componentFirstColumn") || (fieldName == "componentLastColumn")){
-      values.compomentColumns = [];
-      console.log(value)
+    }else if(values.dataOneHot && ((fieldName == "componentFirstColumn") || (fieldName == "componentLastColumn"))){
       if(!value || _.isEmpty(value)){
         error = 'Required';
       }else{
@@ -203,7 +196,6 @@ const CatalystGeneForm = (props) => {
     dataset,
 
   } = props;
-  // console.log(props)
 
   const cTags = colorTags.map((c) => ({
     text: c.color,
@@ -262,7 +254,6 @@ const CatalystGeneForm = (props) => {
   const onCMChange = (event) => {
     setValue(event);
   };
-  console.log(isDataOneHOt)
 
   // The form itself, as being displayed in the DOM
   return (
@@ -300,7 +291,6 @@ const CatalystGeneForm = (props) => {
           options={getDropdownOptions(visualizationMethod)}
           validate={[ errorValidate ]}
           onChange={(e, data) => {
-            // console.log(data);
             setVisualization(data);
           }}
         />

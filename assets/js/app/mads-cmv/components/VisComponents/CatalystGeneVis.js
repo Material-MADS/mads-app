@@ -18,6 +18,7 @@
 // Main Dependent libraries (React and related)
 //---------------------------------------------
 import React, { useState, useEffect, useRef, } from "react";
+import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { DataFrame } from 'pandas-js';
 import * as Bokeh from "@bokeh/bokehjs";
@@ -110,33 +111,13 @@ const availableComponents = {
 // The main Visual Component, that is of custom type, meaning that it can be set and
 // configured into any of the exisiting stand alone visual components and more.
 //----------------------------------------------------------------------------------
+
 //----------------------------------------------------------------------------------------------
-const getMaxPoint = (linePoints) => {
-  let maxPoint = -Infinity;
-  linePoints.forEach(line => {
-    line.forEach(point => {
-      if (point > maxPoint) {
-        maxPoint = point;
-      }
-    });
-  });
-  return maxPoint;
-};
+// A function that marks catalysts with a yellow marker whose edit distance is less than the user-specified value.
+//---------------------------------------------------------------------------------------
 
-const getMinPoint = (linePoints) => {
-  let minPoint = Infinity;
-  linePoints.forEach(line => {
-    line.forEach(point => {
-      if (point < minPoint) {
-        minPoint = point;
-      }
-    });
-  });
-  return minPoint;
-};
-
-const markerMaker = (dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels) => {
-  const similarIndex = dfData.distance.map((dist, ind) => (dist <= similarDisance ? ind : null)).filter(ind => (ind !== null) & (ind !== 0));
+const markerMaker = (dfData, rootCatalyst, similarDistance, minY, maxY, minX, maxX, yTickLabels) => {
+  const similarIndex = dfData.distance.map((dist, ind) => (dist <= similarDistance ? ind : null)).filter(ind => (ind !== null) & (ind !== 0));
   const similarGeneCatalyst = similarIndex.map(ind => dfData.Catalyst[ind])
   if(!Object(similarGeneCatalyst).includes(rootCatalyst)){
     similarGeneCatalyst.push(rootCatalyst);
@@ -167,6 +148,73 @@ const markerMaker = (dfData, rootCatalyst, similarDisance, minY, maxY, minX, max
   return similarGeneSource;
 }
 
+//----------------------------------------------------------------------------------------------
+// A function that displays information when hovering over the input frame that specifies the editdistance value.
+//---------------------------------------------------------------------------------------
+
+const DelayedTooltip = ({ similarDistance, maxDistance, setSimilarDistance }) => {
+  
+  const [showTooltip, setShowTooltip] = useState(false);
+  const timerRef = useRef(null); 
+
+  // Detect the hover and after 20 ms information will comes up
+  const handleMouseEnter = () => {
+    timerRef.current = setTimeout(() => {
+      setShowTooltip(true);
+    }, 20); 
+  };
+
+  // Detect the mouse off and reset timerRef
+  const handleMouseLeave = () => {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+    setShowTooltip(false);
+  };
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-block" }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <input
+        value={similarDistance}
+        type="number" 
+        id="tentacles" 
+        name="tentacles" 
+        min="0" 
+        max={maxDistance} 
+        onInput={(event) =>{
+          setSimilarDistance(event.target.value);
+        }
+      }/>
+      {showTooltip && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "120%",
+            left: "0%",
+            transform: "translateX(0%)",
+            backgroundColor: "white",
+            color: "black",
+            padding: "15px",
+            borderRadius: "15px",
+            whiteSpace: "nowrap",
+            zIndex: 1,
+            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          Change the value of edit_distance
+        </div>
+      )}
+    </div>
+  );
+};
+
+//----------------------------------------------------------------------------------------------
+// A function to visualize the result of Hierarchical Clustering
+//---------------------------------------------------------------------------------------
+
 function Clustering({
   data,
   options,
@@ -174,30 +222,37 @@ function Clustering({
   onSelectedIndicesChange,
   colorMap
 }){
+  // Get data and options. Set visualizetion size and graph ticks.
   const internalOptions = Object.assign({}, defaultOptions, options);
   const internalData = data;
   const rootNode = useRef(null);
-  const [similarDisance, setSimilarDistance] = useState(0);
+  const [similarDistance, setSimilarDistance] = useState(0);
   const dfData = internalData.dfDistanceIntroduced;
   const rootCatalyst = internalData["rootCatalyst"];
-  const { extent, margin } = internalOptions;
-  const { width, height } = extent;
-  const { l: left, r: right, t: top, b: bottom } = margin;
-  const plotWidth = width - left - right;
-  const plotHeight = height - top - bottom;
-  const yTickLabels = internalData['clusteringTicks']
   const linePoints = internalData['clusteringData'];
   const minY = Math.min(Math.min(...linePoints.map(p => p[1])),Math.min(...linePoints.map(p => p[3])))
   const maxY = Math.max(Math.max(...linePoints.map(p => p[1])),Math.max(...linePoints.map(p => p[3])))
   const minX = Math.min(Math.min(...linePoints.map(p => p[0])),Math.min(...linePoints.map(p => p[2])))
   const maxX = Math.max(Math.max(...linePoints.map(p => p[0])),Math.max(...linePoints.map(p => p[2])))
+  const maxDistance = Math.max(...dfData.distance);
+  const { extent, margin } = internalOptions;
+  const { width, height } = extent;
+  const { l: left, r: right, t: top, b: bottom } = margin;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const yTickLabels = internalData['clusteringTicks'];
+  const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY);
+  const xRange = new Bokeh.Range1d({ start: -maxX * 0.05, end: maxX * 1.1 });
+  const yRange = new Bokeh.Range1d({ start: -maxY * 0.05, end: maxY * 1.1 });
 
-  const scaleX = plotWidth / maxX;
-  const scaleY = plotHeight / maxY;
   useEffect(() => {
+    //  If there is not a rootNode.current stop the process
     if (!rootNode.current) return;
+
+    //  Initiate the rootNode
     rootNode.current.innerHTML = '';
 
+    // Create ColumnDataSource with clustering data
     const source = new Bokeh.ColumnDataSource({
       data: {
         x0: linePoints.map(p => (p[0] )),
@@ -207,11 +262,7 @@ function Clustering({
       }
     });
 
-    const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY)
-    const xTickPoints = Array.from({ length: maxX }, (_, index) => index);
-    const xRange = new Bokeh.Range1d({ start: -maxX * 0.05, end: maxX * 1.1 });
-    const yRange = new Bokeh.Range1d({ start: -maxY * 0.05, end: maxY * 1.1 });
-
+    // Create the canvas to show clustering figure
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
       width: plotWidth,
@@ -220,10 +271,13 @@ function Clustering({
       y_range: yRange,
     });
 
+    // Create clustering with segment 
     const hierarchy = plot.segment({ field: 'x0' }, { field: 'y0' }, { field: 'x1' }, { field: 'y1' }, { source });
 
-    const similarGeneSource = markerMaker(dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels)
+    // Select catalyst to mark on yTick label
+    const similarGeneSource = markerMaker(dfData, rootCatalyst, similarDistance, minY, maxY, minX, maxX, yTickLabels)
 
+    // Mark catalysts with edit distance less than the specified value
     const circles = plot.ellipse({
       x: { field: "xData" },
       y: { field: "yData" },
@@ -234,6 +288,7 @@ function Clustering({
       source: similarGeneSource,
     });
 
+    // Display catalyst name on yTick label
     if (yTickLabels.length > 0) {
       const yaxis = plot.yaxis[0];
       yaxis.ticker = new Bokeh.FixedTicker({ ticks: yTickPoint });
@@ -247,27 +302,26 @@ function Clustering({
       });    
     }
 
+    // Show clustering
     Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [data, similarDisance]);
-  const maxDistance = Math.max(...dfData.distance);
+  }, [data, similarDistance]);
+
   return(
     <div>
-        <input 
-        type="number" 
-        id="a" 
-        name="a" 
-        min="0" 
-        max={maxDistance} 
-        onInput={(event) =>{
-          setSimilarDistance(event.target.value);
-        }
-      }/>
+      <DelayedTooltip 
+        similarDistance={similarDistance} 
+        setSimilarDistance={setSimilarDistance} 
+        maxDistance={maxDistance} 
+      />
       <div ref={rootNode} />
     </div>
   );
 }
 
+//----------------------------------------------------------------------------------------------
+//  A function to visualize the result of HeatMap
+//---------------------------------------------------------------------------------------
 function HeatMapGene({
   data,
   options,
@@ -280,11 +334,7 @@ function HeatMapGene({
   const dfData = data.dfDistanceIntroduced;
   const columnsForGene = data.columnsForGene;
   const rootCatalyst = data["rootCatalyst"];
-  const { extent, margin } = internalOptions;
-  const { width, height } = extent;
-  const { l: left, r: right, t: top, b: bottom } = margin;
-  const plotWidth = width - left - right;
-  const plotHeight = height - top - bottom;
+
   const maxY = Math.max(...internalData['yData']);
   const minY = Math.min(...internalData['yData']);
   const maxX = Math.max(...internalData['xData']);
@@ -295,25 +345,37 @@ function HeatMapGene({
   const yTickPoint = yTickLabels.map((label, index) => ((maxY - minY) / (yTickLabels.length - 1)) * index + minY);
   const xTickPoints = Array.from({ length: internalData["yTicks"].length }, (_, index) => index);
   const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index + 1/2);
-  console.log(yTickLabels.length - 1)
-  const [isXlabelArea, setIsXlabelArea] = useState(true);
-  const [similarDisance, setSimilarDistance] = useState(0);
-  const [lastIndices, setLastIndices] = useState([...selectedIndices])
+
+  const { extent, margin } = internalOptions;
+  const { width, height } = extent;
+  const { l: left, r: right, t: top, b: bottom } = margin;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
   const xRange = new Bokeh.Range1d({ start: -maxX * 0.05, end: maxX + 1.5});
   const yRange = new Bokeh.Range1d({ start: -maxY * 0.1, end: maxY * 1.1 });
 
+  const [isXlabelArea, setIsXlabelArea] = useState(true);
+  const [similarDistance, setSimilarDistance] = useState(0);
+  const [lastIndices, setLastIndices] = useState([...selectedIndices])
+
+  const buttonWords = isXlabelArea? "Show columns Info" : "Show area Info" 
+  const maxDistance = Math.max(...dfData.distance);
+
   
   useEffect(() => {
+    //  If there is not a rootNode.current stop the process
     if (!rootNode.current) return;
+
+    //  Initiate the rootNode
     rootNode.current.innerHTML = '';
 
+    // Share the selected catalysts with the Table as SelectedIndices
     const handleSelectedIndicesChange = () => {
       const rectangulars = source.selected.indices;
       const selectedCatalystIndices = rectangulars.map(indeice => Math.floor(indeice / xTickLabels.length))
       const uniqueIndices = [...new Set(selectedCatalystIndices)];
       const selectedCatalysts = uniqueIndices.map(indice => yTickLabels[indice])
       const Indices = selectedCatalysts.map(cat => dfData.Catalyst.indexOf(cat))
-      // Indices.sort((a,b) => a-b)
       if (onSelectedIndicesChange && !deepEqual(lastIndices, uniqueIndices)) {
         onSelectedIndicesChange(Indices);
         setLastIndices(uniqueIndices);
@@ -327,6 +389,8 @@ function HeatMapGene({
 
     const colMapMinMax = internalOptions.colorMapperMinMax ? internalOptions.colorMapperMinMax : [Math.min(...(internalData["heatVal"])), Math.max(...(internalData["heatVal"]))];
     var mapper = new Bokeh.LinearColorMapper({palette: colors, low: colMapMinMax[0], high: colMapMinMax[1]});
+
+    // Create the columnDataSource with position and value of recutangular
     const source = new Bokeh.ColumnDataSource({
       data: {
         xData: internalData['xData'].map(x => x + 1/2),
@@ -337,22 +401,26 @@ function HeatMapGene({
         catalyst: internalData['yData'].map(y => [...internalData["yTicks"]][y] )
       }
     });
-    const list_b = [];
+
+    // Select all rectangles to highlight based on SelectedIndices
+    const selected = [];
     const catalysts = selectedIndices.map(i => dfData.Catalyst[i]);
     const firstIndices = catalysts.map(indice => yTickLabels.indexOf(indice));
 
     for (let i = 0; i < yTickLabels.length; i++) {
       if(firstIndices.includes(i)){
         for (let j = 0; j < xTickLabels.length; j++) {
-          list_b.push(i * xTickLabels.length + j);
+          selected.push(i * xTickLabels.length + j);
         }
       }
     }
 
-    source.selected.indices = [...list_b];
+    source.selected.indices = [...selected];
+
+    // When the recutangular were selected, execute the handleSelectedIndicesChange to midify selectedIndices
     source.connect(source.selected.change, () => handleSelectedIndicesChange());
 
-    const similarGeneSource =markerMaker(dfData, rootCatalyst, similarDisance, minY, maxY, minX, maxX, yTickLabels)
+    const similarGeneSource =markerMaker(dfData, rootCatalyst, similarDistance, minY, maxY, minX, maxX, yTickLabels)
 
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
@@ -388,10 +456,12 @@ function HeatMapGene({
     });
     
 
+    // When user Hover the mouse on rectangular, catalyst name and heatVale will be shown
     let activeToolTipTitles = internalOptions.toolTipTitles || defaultOptions.toolTipTitles;
     const tooltip = [[activeToolTipTitles[0], '@'+"catalyst"],[activeToolTipTitles[1], '@'+"heatVal"],]
     plot.add_tools(new Bokeh.HoverTool({ tooltips: tooltip, renderers: [renderer] }));
 
+    // Creat the color bar
     const color_bar = new Bokeh.ColorBar({
       color_mapper: mapper,
       major_label_text_font_size: internalOptions.fontSize || defaultOptions.fontSize,
@@ -400,7 +470,8 @@ function HeatMapGene({
       label_standoff: 6,
       border_line_color: null
     });
-
+    
+    // Show the area name on xTickLabel
     if ((xTickLabels.length > 0) && isXlabelArea) {
       const xaxis = plot.xaxis[0];
       xaxis.ticker = new Bokeh.FixedTicker({ ticks: xLabelPoints });
@@ -414,6 +485,7 @@ function HeatMapGene({
       });    
     }
 
+    // Show the columns name on xTickLabel
     if ((columnsForGene.length > 0) && !isXlabelArea) {
       const xaxis = plot.xaxis[0];
       xaxis.ticker = new Bokeh.FixedTicker({ ticks: xTickPoints });
@@ -428,10 +500,8 @@ function HeatMapGene({
     }
 
     plot.add_layout(color_bar, 'right');
-    const labelColors = yTickLabels.map(label => label === rootCatalyst ? 'red' : 'black');
-    const x0 = yTickPoint.map(y => 0)
-    source.data['labelColors'] = labelColors;
 
+    // Show catalyst name on yTickLabel
     if (yTickLabels.length > 0) {
       const yaxis = plot.yaxis[0];
       yaxis.ticker = new Bokeh.FixedTicker({ ticks: yTickPoint });
@@ -447,10 +517,7 @@ function HeatMapGene({
 
    Bokeh.Plotting.show(plot, rootNode.current);
 
-  }, [data, isXlabelArea, selectedIndices, similarDisance])
-
-  const buttonWords = isXlabelArea? "Show columns Info" : "Show area Info" 
-  const maxDistance = Math.max(...dfData.distance);
+  }, [data, isXlabelArea, selectedIndices, similarDistance])
 
   return(
     <div id="containerHolder">
@@ -461,21 +528,19 @@ function HeatMapGene({
         }
       >{buttonWords}
       </button>
-      <input 
-        type="number" 
-        id="tentacles" 
-        name="tentacles" 
-        min="0" 
-        max={maxDistance} 
-        onInput={(event) =>{
-          setSimilarDistance(event.target.value);
-        }
-      }/>
+      <DelayedTooltip 
+        similarDistance={similarDistance} 
+        setSimilarDistance={setSimilarDistance} 
+        maxDistance={maxDistance} 
+      />
       <div ref={rootNode} />
     </div>
   );
 }
 
+//----------------------------------------------------------------------------------------------
+//  A function to visualize the Area plot
+//---------------------------------------------------------------------------------------
 function AreaPlot({
   data,
   options,
@@ -483,33 +548,39 @@ function AreaPlot({
   onSelectedIndicesChange,
   colorMap
 }){
-  console.log(data)
   const internalOptions = Object.assign({}, defaultOptions, options);
   const parallelData = data.parallelData;
   const xTickLabels = Object.keys(data.dfDistanceIntroduced).filter(key => key.includes("area"));
   const columnsForGene = data.columnsForGene;
+  const rootCatalyst = data["rootCatalyst"];
+  const xAxisRange = parallelData[rootCatalyst].length;
+  const yMin = Math.min(...Object.values(parallelData).map(line => Math.min(...line)));
+  const yMax = Math.max(...Object.values(parallelData).map(line => Math.max(...line)));
+  const yRangeMin = yMin < 0 ? yMin * 1.1 : -xAxisRange / 100;
+  const yAxisRange = yMax - yMin;
+  const xTickPoints = Array.from({ length: parallelData[rootCatalyst].length }, (_, index) => index + 1 / 2);
+  const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index );
+
+  const { extent, margin } = internalOptions;
+  const { width,height } = extent;
+  console.log(data)
+  const { l: left, r: right, t: top, b: bottom } = margin;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const xRange = new Bokeh.Range1d({ start: 0, end: xAxisRange  });
+  const yRange = new Bokeh.Range1d({ start: yRangeMin, end: yMax * 1.1 });
+
   const rootNode = useRef(null);
   const [isXlabelArea, setIsXlabelArea] = useState(true);
 
   useEffect(() => {
+    //  If there is not a rootNode.current stop the process
     if (!rootNode.current) return;
+
+    //  Initiate the rootNode
     rootNode.current.innerHTML = '';
-    const rootCatalyst = data["rootCatalyst"];
-    const similarGeneCatalyst = data["similarGeneCatalyst"]
-    const { extent, margin } = internalOptions;
-    const { width,height } = extent;
-    const xAxisRange = parallelData[rootCatalyst].length;
-    const yMin = getMinPoint(Object.values(parallelData));
-    const yMax = getMaxPoint(Object.values(parallelData));
-    const yRangeMin = yMin < 0 ? yMin * 1.1 : -xAxisRange / 100;
-    const yAxisRange = yMax - yMin;
-    const { l: left, r: right, t: top, b: bottom } = margin;
-    const plotWidth = width - left - right;
-    const plotHeight = height - top - bottom;
-    const xRange = new Bokeh.Range1d({ start: 0, end: xAxisRange  });
-    const yRange = new Bokeh.Range1d({ start: yRangeMin, end: yMax * 1.1 });
 
-
+    // Crate the canvas to draw graph
     const plot = new Bokeh.Plotting.figure({
       tools: internalOptions.tools,
       width: plotWidth,
@@ -517,9 +588,29 @@ function AreaPlot({
       x_range: xRange,
       y_range: yRange,
     });
-   
 
-    const holizonLInes = Array.from({length:20},(_, index) => (index * yAxisRange / 20 + yMin))
+
+
+    // Creat white back ground
+    const backGroundSource = new Bokeh.ColumnDataSource({
+      data: {
+        xData: [xAxisRange / 2],
+        yData: [(yMax + yRangeMin)/ 2],
+      }
+    });
+
+    // Make the vack ground color white
+    const renderer = plot.rect({
+      x: { field: "xData" },
+      y: { field: "yData" },
+      width: xAxisRange,
+      height: yAxisRange,
+      source: backGroundSource,
+      fill_color: "white"
+    });
+    
+    // Create 15 holizon lines 
+    const holizonLInes = Array.from({length:15},(_, index) => (index * yAxisRange / 15 + yMin))
 
     const holizonSource = new Bokeh.ColumnDataSource({
       data:{
@@ -530,42 +621,40 @@ function AreaPlot({
       }
     });
 
-    const backGroundSource = new Bokeh.ColumnDataSource({
-      data: {
-        xData: [xAxisRange / 2],
-        yData: [(yMax + yRangeMin)/ 2],
-      }
-    });
-
-    const labelSource = new Bokeh.ColumnDataSource({
-      data:{
-        xData: holizonLInes.map(p =>1 / 4),
-        yData: holizonLInes.map(p => p),
-        labels: Array.from(Array(20), (_, i) => String.fromCharCode(i + 65))
-      }
-    });
-
-    const renderer = plot.rect({
-      x: { field: "xData" },
-      y: { field: "yData" },
-      width: xAxisRange,
-      height: yAxisRange,
-      source: backGroundSource,
-      fill_color: "white"
-    });
-
-
+    // Show 15 holizon lines
     const holizonDraw = plot.segment(
       {field:"x0"},
       {field:"y0"},
       {field:"x1"},
       {field:"y1"},
       {source : holizonSource}
-    );
+    );   
 
-    const xTickPoints = Array.from({ length: parallelData[rootCatalyst].length }, (_, index) => index + 1 / 2);
-    const xLabelPoints = Array.from({ length: columnsForGene.length }, (_, index) => index );
-    
+    // Create 15 alphabet characters and determin the position to put
+    const labelSource = new Bokeh.ColumnDataSource({
+      data:{
+        xData: holizonLInes.map(p =>1 / 4),
+        yData: holizonLInes.map(p => p),
+        labels: Array.from(Array(15), (_, i) => String.fromCharCode(i + 65))
+      }
+    });
+
+    // Put 15 characters
+    const labelDraw = new Bokeh.LabelSet({
+      x: {field: "xData"},
+      y: {field: "yData"},
+      text: {field: "labels"},
+      x_units: 'data',
+      y_units: 'data',
+      source: labelSource,
+      render_mode: 'canvas',
+      text_font_size: '10pt',
+      text_color: 'black',
+      text_align: 'center',
+      text_baseline: 'bottom'
+    });
+
+    // Creat columnDataSource and draw line for all lines 
     Object.keys(parallelData).forEach(catalyst => {
       const yData = parallelData[catalyst].map(y => y );
       const color = catalyst === rootCatalyst ? "orange": "blue";
@@ -592,19 +681,7 @@ function AreaPlot({
       });
     });
 
-    const labelDraw = new Bokeh.LabelSet({
-      x: {field: "xData"},
-      y: {field: "yData"},
-      text: {field: "labels"},
-      x_units: 'data',
-      y_units: 'data',
-      source: labelSource,
-      render_mode: 'canvas',
-      text_font_size: '10pt',
-      text_color: 'black',
-      text_align: 'center',
-      text_baseline: 'bottom'
-    });
+
 
 
     if ((xTickLabels.length > 0) && isXlabelArea) {
@@ -635,16 +712,6 @@ function AreaPlot({
 
     plot.add_layout(labelDraw);
 
-    // const circles = plot.ellipse({
-    //   x: { field: "xData" },
-    //   y: { field: "yData" },
-    //   width: 10,
-    //   height: 10,
-    //   fill_color:"red",
-    //   line_color:{ field: "color" },
-    //   source: parallelSource,
-    // });
-
     Bokeh.Plotting.show(plot, rootNode.current);
 
   }, [parallelData, isXlabelArea])
@@ -665,6 +732,9 @@ function AreaPlot({
   );
 }
 
+//----------------------------------------------------------------------------------------------
+//  A function that returns suggestions for common patterns and a DataFrame containing the Catalyst gene and edit_distance.
+//---------------------------------------------------------------------------------------
 function GeneTable({
   data,
   options,
@@ -675,32 +745,24 @@ function GeneTable({
   colorMap
 }){
   const internalOptions = Object.assign({}, defaultOptions, options);
-  const internalData = data.dfDistanceIntroduced;
+  const internalData = data;
+  const dfData = internalData.dfDistanceIntroduced;
   const xTickLabels = Object.keys(data.areaData);
+
+  const { extent, margin } = internalOptions;
+  const { width,height } = extent;
+  
   const rootNode = useRef(null);
   const [lastIndices, setLastIndices] = useState([...selectedIndices])
-  // console.log(filteredIndices)
+  const [isPatternData, setIsPatternData] = useState(false)
+  const [similarDistance, setSimilarDistance] = useState(0);
 
   useEffect(() => {
+    //  If there is not a rootNode.current stop the process
     if (!rootNode.current) return;
+
+    //  Initiate the rootNode
     rootNode.current.innerHTML = '';
-    const { extent, margin } = internalOptions;
-    const { width,height } = extent;
-
-    const handleSelectedIndicesChange = () => {
-      const indices = tableSource.selected.indices;
-      if (onSelectedIndicesChange && !deepEqual(lastIndices, indices)) {
-        onSelectedIndicesChange(indices);
-        setLastIndices([...indices]);
-      }
-    }
-
-    const colNamesInProperOrder = Object.keys(internalData);
-
-    const tableSource = new Bokeh.ColumnDataSource({ data: internalData });
-
-    tableSource.selected.indices = [...selectedIndices];
-    tableSource.connect(tableSource.selected.change, () => handleSelectedIndicesChange());
 
     const tString = JSON.stringify(colorTags);
 
@@ -722,34 +784,95 @@ function GeneTable({
 
     const formatter = new Bokeh.Tables.HTMLTemplateFormatter({ template });
 
-    let displayColumns = colNamesInProperOrder.map((v) => {
-      const c = new Bokeh.Tables.TableColumn({
-        field: v,
-        title: v,
-        formatter,
+    if(!isPatternData){
+      // return dataframe
+      const handleSelectedIndicesChange = () => {
+        const indices = tableSource.selected.indices;
+        if (onSelectedIndicesChange && !deepEqual(lastIndices, indices)) {
+          onSelectedIndicesChange(indices);
+          setLastIndices([...indices]);
+        }
+      }
+
+      const colNamesInProperOrder = Object.keys(dfData);
+
+      const tableSource = new Bokeh.ColumnDataSource({ data: dfData });
+
+      tableSource.selected.indices = [...selectedIndices];
+      tableSource.connect(tableSource.selected.change, () => handleSelectedIndicesChange());
+
+      let displayColumns = colNamesInProperOrder.map((v) => {
+        const c = new Bokeh.Tables.TableColumn({
+          field: v,
+          title: v,
+          formatter,
+        });
+        return c;
       });
-      return c;
-    });
 
-    const dataTable = new Bokeh.Tables.DataTable({
-      source: tableSource,
-      columns: displayColumns,
-      width: width || defaultOptions.extent.width,//INITIAL_WIDTH,
-      height: height || defaultOptions.extent.height,
-      selection_color: 'red',
-    });
+      const dataTable = new Bokeh.Tables.DataTable({
+        source: tableSource,
+        columns: displayColumns,
+        width: width || defaultOptions.extent.width,//INITIAL_WIDTH,
+        height: height || defaultOptions.extent.height,
+        selection_color: 'red',
+      });
 
+      Bokeh.Plotting.show(dataTable, rootNode.current);
 
-    Bokeh.Plotting.show(dataTable, rootNode.current);
+    }else{
+      // common pattern
+      const patternData = internalData.patternCounts[similarDistance];
+      const tableSource = new Bokeh.ColumnDataSource({ data: patternData });
 
-  }, [data, selectedIndices])
+      let displayColumns = Object.keys(patternData).map((v) => {
+        const c = new Bokeh.Tables.TableColumn({
+          field: v,
+          title: v,
+          formatter,
+        });
+        return c;
+      });
+
+      const dataTable = new Bokeh.Tables.DataTable({
+        source: tableSource,
+        columns: displayColumns,
+        width: width || defaultOptions.extent.width,
+        height: height || defaultOptions.extent.height,
+        selection_color: 'red',
+      });
+
+      Bokeh.Plotting.show(dataTable, rootNode.current);
+
+    }
+
+  }, [data, selectedIndices, isPatternData, similarDistance])
+
+  const buttonWords = isPatternData? "Show dataFrame info" : "Show pattern info" 
+  const maxDistance = Math.max(...dfData.distance);
+
   return(
     <div id="containerHolder">
+      <button
+        onClick={() => {
+          setIsPatternData(!isPatternData);
+          }
+        }
+      >{buttonWords}
+      </button>
+      {isPatternData && <DelayedTooltip 
+        similarDistance={similarDistance} 
+        setSimilarDistance={setSimilarDistance} 
+        maxDistance={maxDistance} 
+      />}
       <div ref={rootNode} />
     </div>
   );
 }
 
+//----------------------------------------------------------------------------------------------
+//  A function to draw empty graph before configure and after data changed.
+//---------------------------------------------------------------------------------------
 function emptyCatalystGeneVC({data, options}) {
   const rootNode = useRef(null);
   useEffect(() => {
@@ -778,22 +901,28 @@ function emptyCatalystGeneVC({data, options}) {
   );
 }
 
-function componentSelector(data){
+//----------------------------------------------------------------------------------------------
+//  A function to choose the visComp based on setting
+//---------------------------------------------------------------------------------------
+function componentSelector(data, dataChanged){
   const columnNumber = (data && data.scaledData) ? Object.keys(data.scaledData).length : 0;
   const visualization = data && data["visualizationMethod"];
-  let SelComp = emptyCatalystGeneVC;
-  if (columnNumber > 0 && visualization){
-    if (visualization === "Hierarchical Clustering"){
-      SelComp = Clustering;
-    } else if (visualization === 'Heatmap'){
-      SelComp = HeatMapGene;
-    } else if (visualization === 'Area Plot'){
-      SelComp = AreaPlot;
-    } else{
-      SelComp = GeneTable;
+  if(dataChanged){
+    return emptyCatalystGeneVC
+  }else{
+    if (columnNumber > 0 && visualization){
+      if (visualization === "Hierarchical Clustering"){
+        return Clustering;
+      } else if (visualization === 'Heatmap'){
+        return HeatMapGene;
+      } else if (visualization === 'Area Plot'){
+        return AreaPlot;
+      } else{
+        return GeneTable;
+      }
     }
   }
-  return SelComp
+  return emptyCatalystGeneVC
 }
 export default function CatalystGene({
   actions, 
@@ -808,19 +937,30 @@ export default function CatalystGene({
   mappings,
   originalOptions,
   
-  }){
+}){
+  const internalData = data
+  const internalOptions = Object.assign({}, defaultOptions, options);
+  const [currentDataSource, setCurrentDataSource] = useState({id: '', name: ''});
+  const availableDataSources = useSelector((state) => state.dataSources);
+
+  // detect the change of dataset
+  const dataChanged = availableDataSources.selectedDataSource != currentDataSource.id ? true : false;
+
+  const SelComp = componentSelector(internalData, dataChanged)
+
+  const params = { data, mappings, options, colorTags, selectedIndices, filteredIndices, onSelectedIndicesChange,}
+
   useEffect(() => {
     if(data && data.resetRequest){
       internalOptions.title = "EMPTY CUSTOM COMPONENT";
       delete data.resetRequest;
     }
+    try {
+      if (dataChanged) {
+        setCurrentDataSource({id: availableDataSources.selectedDataSource, name: (availableDataSources.items.find(item => availableDataSources.selectedDataSource == item.id).name)})
+      }
+    } catch (error) { /*Just ignore and move on*/ }
   }, [data]);
-
-  const internalData = data
-  const internalOptions = Object.assign({}, defaultOptions, options);
-  const SelComp = componentSelector(internalData)
-  // console.log(selectedIndices)
-  const params = { data, mappings, options, colorTags, selectedIndices, filteredIndices, onSelectedIndicesChange,}
 
   return (
     <div id="containerHolder">

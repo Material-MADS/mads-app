@@ -25,6 +25,7 @@ import pandas as pd
 import json
 import string
 from nltk import edit_distance
+import itertools
 
 from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.preprocessing import StandardScaler
@@ -38,20 +39,53 @@ logger = logging.getLogger(__name__)
 
 
 #-------------------------------------------------------------------------------------------------
+def combination_wrapping(combination_list):
+    all_combination = []
+
+    for i in range(len(combination_list)):
+                    
+        for j in range(len(combination_list[0])):
+                        
+            if combination_list[i][j][0] == "":
+                None
+                # all_combination.append(combination_list[i][j][1])
+                            
+            elif combination_list[i][j][1] == "":
+                None
+                            
+                # all_combination.append(combination_list[i][j][0])
+                            
+            else:
+                            
+                all_combination.append(combination_list[i][j][0]+'/'+ combination_list[i][j][1])
+
+
+    u, c = np.unique(np.array(all_combination), return_counts = True)
+
+    df_count = pd.DataFrame({"combination":u, "Counts": c})
+
+    df_count = df_count[df_count["combination"] != ""]
+
+    df_count.sort_values(by = ["Counts"], ascending = False, inplace = True)
+
+    df_count.reset_index(drop = True, inplace = True)
+
+    return df_count
+
 def get_catalyst_gene(data):
-    # logger.info(data["view"])
+
+# ##########  data loading ###############################################################
+#     # logger.info(data["view"])
     feature_columns = data['view']['settings']['featureColumns']
     fields = data["data"]['main']["schema"]["fields"]
     columns = [fields[a]["name"] for a in range(len(fields))]
     dataset = data["data"]["main"]['data']
     root_catalyst = data['view']['settings']['rootCatalyst']
     visualization = data['view']['settings']["visualizationMethod"]
-    # logger.info('dataOneHot' in data['view']['settings'].keys())
     if 'dataOneHot' in data['view']['settings'].keys():
         data_onehot = data["view"]['settings']["dataOneHot"]
     else:
         data_onehot = False
-    logger.info(columns)
 
     result = {}
     result['featureColumns'] = feature_columns
@@ -59,7 +93,7 @@ def get_catalyst_gene(data):
     result['rootCatalyst'] = root_catalyst
     
     df_original = pd.DataFrame(dataset, columns =columns)
-    #logger.info(df_original)
+    
     df = df_original.loc[:,feature_columns]
 
     #  check whether data has more than 3 valid columns  #
@@ -70,10 +104,11 @@ def get_catalyst_gene(data):
     df_numerized = pd.concat(df_concat, axis = 1)
     df_numerized.dropna(axis = 1, inplace = True)
     if len(df_numerized.columns.values.tolist()) < 3:
-        result["error"] = ["more than 3 valid columns are required"]
+        result['status'] = "error"
+        result['detail'] = "More than 3 valid columns are required"
+        return result
 
     else:
-        #logger.info(data['view']['settings'].keys())
         #  Scaling the data if user specified the mehod  #
         if "preprocessingEnabled" in data['view']['settings'].keys():
             if data['view']['settings']["preprocessingEnabled"] == True:
@@ -185,8 +220,6 @@ def get_catalyst_gene(data):
         heat_map_columns = [a for a in df_for_heatmap.columns if "area" in a]
         array_heatmap = df_for_heatmap.loc[:, heat_map_columns].values
 
-        #logger.info(df_gene_introduced["Catalyst"].tolist() == df_for_heatmap["Catalyst"].tolist())
-
         yData = []
         xData = []
         heatVal = []
@@ -198,9 +231,7 @@ def get_catalyst_gene(data):
                 xData.append(j)
                 yData.append(i)
                 heatVal.append(array_heatmap[i, j])  
-        
-        #logger.info(catalysts == dendrogram_result['ivl']) 
-        # logger.info(dendrogram_result['ivl'])
+
         result['heatmapData'] = {}
         result['heatmapData']['xData'] = xData
         result['heatmapData']['yData'] = yData
@@ -212,7 +243,6 @@ def get_catalyst_gene(data):
 ##########  edit_distance and sort data by distance from the root_catalyst_gene  ############################################################################
 
         root_index = df_gene_introduced[df_gene_introduced["Catalyst"] == root_catalyst].index[0]
-        #logger.info(f'root_index is {root_index}')
 
         df_root_raw = df_gene_introduced[df_gene_introduced["Catalyst"] == root_catalyst].copy()
 
@@ -231,9 +261,6 @@ def get_catalyst_gene(data):
             compare_gene = df_gene_introduced[df_gene_introduced["Catalyst"] == compare_catalyst]["catalyst_gene"].values
             
             array_distance[index] = edit_distance(root_gene[0], compare_gene[0], substitution_cost=1, transpositions=False)
-            # logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            # logger.info("Calculated edit distance for catalyst: %s", compare_catalyst)
-
 
         df_distance = pd.DataFrame(array_distance, columns = ["distance"])
 
@@ -248,8 +275,6 @@ def get_catalyst_gene(data):
         
         df_distance_introduced.reset_index(drop = True, inplace = True)
 
-        #logger.info(df_distance_introduced.columns)
-
         result['dfDistanceIntroduced'] = df_distance_introduced
 
         #df_similar_gene_catalyst = df_distance_introduced[df_distance_introduced["distance"] <= distance_border]["Catalyst"].values.tolist()
@@ -261,12 +286,85 @@ def get_catalyst_gene(data):
         dict_area_cat =  {}
 
         for i, catalyst in enumerate(df_distance_introduced["Catalyst"]):
+
             df_cat = df_distance_introduced.iloc[i, :]
+
             dict_area_cat[catalyst] = df_cat[area_columns].values.tolist()
 
         result["parallelData"] = dict_area_cat
 
+###########  common pattern finding    ############################################
+        dict_pattern_df = {}
 
+        if data_onehot:
+
+            first_component = data["view"]['settings']["componentFirstColumn"]
+            last_component = data["view"]['settings']["componentLastColumn"]
+
+            first_index = min(columns.index(first_component), columns.index(last_component))
+            last_index = max(columns.index(first_component), columns.index(last_component))     
+
+            for distance in range(np.max(df_distance_introduced["distance"])+1):
+
+                df_similar_gene = df_distance_introduced[df_distance_introduced['distance'] <= distance]
+                df_compo = df_similar_gene.iloc[:, first_index:last_index]
+                # df_compo.fillna(value = "0", inplace = True)
+
+                array_atoms = np.zeros_like(df_compo.values).astype('object')
+
+                combination_list =[]
+
+                for raw in df_compo.index:
+                
+                    for i, material in enumerate(df_compo.columns):
+                    
+                        if (df_compo.iloc[raw, i] == "0") | (df_compo.iloc[raw, i] == 0):
+                            
+                            array_atoms[raw, i] = ""
+                        else:
+                            
+                            array_atoms[raw, i] = material
+                
+                    combination_list.append(list(itertools.combinations(array_atoms[raw], 2)))
+           
+                dict_pattern_df[distance] = combination_wrapping(combination_list)
+
+            result['patternCounts'] = dict_pattern_df
+
+        else:
+            componentColumns = data["view"]['settings']["compomentColumns"]
+
+            for distance in range(np.max(df_distance_introduced["distance"])+1):
+            
+                df_similar_gene = df_distance_introduced[df_distance_introduced['distance'] <= distance]
+
+                df_compo = df_similar_gene.loc[:, componentColumns]
+                df_compo.fillna(value = '0', inplace = True)
+                # logger.info(df_compo)
+
+                array_atoms = np.zeros_like(df_compo.values).astype('object')
+
+                combination_list =[]
+
+                for raw in df_compo.index:
+                
+                    for i, material in enumerate(df_compo.columns):
+                    
+                        if df_compo.iloc[raw, i] == "0":
+
+                            array_atoms[raw, i] = ""
+
+                        else:
+                            
+                            array_atoms[raw, i] = df_compo.iloc[raw, i]
+
+                    combination_list.append(list(itertools.combinations(array_atoms[raw], 2)))
+
+                all_combination = []
+
+                dict_pattern_df[distance] = combination_wrapping(combination_list)
+
+            result['patternCounts'] = dict_pattern_df
         
     return result
 #-------------------------------------------------------------------------------------------------
