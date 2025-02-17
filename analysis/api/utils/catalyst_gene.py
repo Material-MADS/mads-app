@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 def combination_wrapping(combination_list):
     all_combination = []
 
+
     for i in range(len(combination_list)):
                     
         for j in range(len(combination_list[0])):
@@ -56,9 +57,8 @@ def combination_wrapping(combination_list):
                 # all_combination.append(combination_list[i][j][0])
                             
             else:
-                            
-                all_combination.append(combination_list[i][j][0]+'/'+ combination_list[i][j][1])
 
+                all_combination.append(combination_list[i][j][0]+'/'+ combination_list[i][j][1])
 
     u, c = np.unique(np.array(all_combination), return_counts = True)
 
@@ -70,12 +70,14 @@ def combination_wrapping(combination_list):
 
     df_count.reset_index(drop = True, inplace = True)
 
+
+
     return df_count
 
 def get_catalyst_gene(data):
 
 # ##########  data loading ###############################################################
-#     # logger.info(data["view"])
+    logger.info(data['view']['settings'])
     feature_columns = data['view']['settings']['featureColumns']
     fields = data["data"]['main']["schema"]["fields"]
     columns = [fields[a]["name"] for a in range(len(fields))]
@@ -86,6 +88,11 @@ def get_catalyst_gene(data):
         data_onehot = data["view"]['settings']["dataOneHot"]
     else:
         data_onehot = False
+
+    if 'clusteringMethod' in data['view']['settings'].keys():
+        clustering_method = data["view"]['settings']["clusteringMethod"]
+    else:
+        clustering_method = "ward"
 
     result = {}
     result['featureColumns'] = feature_columns
@@ -135,7 +142,7 @@ def get_catalyst_gene(data):
 #########   clustering   #########################################################################################################################
         array_data = scaled_df.values
 
-        linkage_matrix = linkage(array_data, method='ward')
+        linkage_matrix = linkage(array_data, method = clustering_method)
 
         dendrogram_result = dendrogram(linkage_matrix, labels = df_original["Catalyst"].values.tolist(), no_plot=True)
 
@@ -307,7 +314,7 @@ def get_catalyst_gene(data):
             for distance in range(np.max(df_distance_introduced["distance"])+1):
 
                 df_similar_gene = df_distance_introduced[df_distance_introduced['distance'] <= distance]
-                df_compo = df_similar_gene.iloc[:, first_index:last_index]
+                df_compo = df_similar_gene.iloc[:, first_index:last_index+1]
                 # df_compo.fillna(value = "0", inplace = True)
 
                 array_atoms = np.zeros_like(df_compo.values).astype('object')
@@ -323,7 +330,7 @@ def get_catalyst_gene(data):
                             array_atoms[raw, i] = ""
                         else:
                             
-                            array_atoms[raw, i] = material
+                            array_atoms[raw, i] = str(material)
                 
                     combination_list.append(list(itertools.combinations(array_atoms[raw], 2)))
            
@@ -340,7 +347,6 @@ def get_catalyst_gene(data):
 
                 df_compo = df_similar_gene.loc[:, componentColumns]
                 df_compo.fillna(value = '0', inplace = True)
-                # logger.info(df_compo)
 
                 array_atoms = np.zeros_like(df_compo.values).astype('object')
 
@@ -350,17 +356,14 @@ def get_catalyst_gene(data):
                 
                     for i, material in enumerate(df_compo.columns):
                     
-                        if df_compo.iloc[raw, i] == "0":
+                        if (df_compo.iloc[raw, i] == "0") | (df_compo.iloc[raw, i] == 0) :
 
                             array_atoms[raw, i] = ""
 
                         else:
-                            
-                            array_atoms[raw, i] = df_compo.iloc[raw, i]
+                            array_atoms[raw, i] = str(df_compo.iloc[raw, i])
 
                     combination_list.append(list(itertools.combinations(array_atoms[raw], 2)))
-
-                all_combination = []
 
                 dict_pattern_df[distance] = combination_wrapping(combination_list)
 

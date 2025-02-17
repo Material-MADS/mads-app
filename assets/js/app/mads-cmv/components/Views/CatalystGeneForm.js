@@ -53,6 +53,9 @@ const setSubmitButtonDisable = (disableState) => {
 
 const errors = {};
 const errorValidate = (value, values, props, fieldName) => {
+  console.log(value);
+  console.log(values);
+
   const loadData = props.dataset
   const dataColumns = loadData.main.schema.fields.map(a => a.name);
   if (values.featureColumns){
@@ -64,6 +67,9 @@ const errorValidate = (value, values, props, fieldName) => {
       values.componentLastColumn = undefined;
       values.rootCatalyst = undefined;
       values.visualizationMethod = undefined;
+      values.clusteringMethod = undefined;
+      
+
     }
   }
 
@@ -93,14 +99,31 @@ const errorValidate = (value, values, props, fieldName) => {
       }
     }else if(values.dataOneHot && ((fieldName == "componentFirstColumn") || (fieldName == "componentLastColumn"))){
       if(!value || _.isEmpty(value)){
-        error = 'Required';
+        error = 'Required';ew1q2  
       }else{
         errors[fieldName] = false;
       }
     }
   }
 
-
+  if(values){
+    if((values.visualizationMethod == 'Hierarchical Clustering' | values.visualizationMethod == 'Heatmap') && fieldName == "clusteringMethod"){
+      if(!value || _.isEmpty(value)){
+        error = 'Required';
+      }else{
+        errors[fieldName] = false;
+      }
+    }
+  }
+  if(values){
+    if(values.preprocessingEnabled && fieldName == "preprocMethod"){
+      if(!value || _.isEmpty(value)){
+        error = 'Required';
+      }else{
+        errors[fieldName] = false;
+      }
+    }
+  }
 
   errors[fieldName] = (error != undefined);
 
@@ -218,6 +241,16 @@ const CatalystGeneForm = (props) => {
     'Table', 
   ];
 
+  const clusteringMethodList = [
+    "single",
+    "complete",
+    "average",
+    "weighted",
+    "centroid",
+    "median",
+    "ward"
+  ];
+
 
   //input managers
   const [fieldsAreShowing, toggleVisibleFields] = useState(
@@ -238,7 +271,11 @@ const CatalystGeneForm = (props) => {
 
   const [visualization, setVisualization] = useState(
     initialValues.visualizationMethod
-  );
+  );  
+
+  const [clusteringMethod, setClusteringMethod] = useState(
+    initialValues.clusteringMethod
+  );  
 
   const [currentCMVal, setValue] = useState(
     initialValues.options.colorMap
@@ -250,10 +287,40 @@ const CatalystGeneForm = (props) => {
     !initialValues.dataOneHot
   );
 
+  console.log(dataset)
+
+  if(dataset.main.schema){
+    const columnsName = dataset.main.schema.fields.map(s => s.name)
+    // console.log(columnsName)
+    const dataHaveCatalyst = columnsName.includes("Catalyst");
+  }else{
+    setSubmitButtonDisable(true);
+    return (
+      <div>
+        {"Please select data source"}
+      </div>
+    )
+  }
+
+  const columnsName = dataset.main.schema.fields.map(s => s.name)
+  // console.log(columnsName)
+  const dataHaveCatalyst = columnsName.includes("Catalyst");
+
 
   const onCMChange = (event) => {
     setValue(event);
   };
+
+  // if the dataset doesn't have catalyst column, return warning
+  if (!dataHaveCatalyst){
+    setSubmitButtonDisable(true);
+    return (
+      <div>
+        {"Dataset need to have Catalyst column"}
+      </div>
+    )
+  }
+
 
   // The form itself, as being displayed in the DOM
   return (
@@ -283,6 +350,104 @@ const CatalystGeneForm = (props) => {
       </Form.Field>
 
       <Form.Field>
+        <label>is Onehot encoding:</label>
+        <Field
+          name="dataOneHot"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setIsDataOneHot(!data);
+          }}
+        />
+      </Form.Field>
+
+      {isDataOneHOt && <div>
+        <Form.Field>
+          <label>Element columns</label>
+          <Field
+            name="compomentColumns"
+            component={MultiSelectDropdown}
+            placeholder="Componet column"
+            options={columns}
+            validate={[ errorValidate ]}
+          />
+        </Form.Field>
+      </div>}
+
+      {!isDataOneHOt && <div>
+        <Form.Group widths="equal">
+          <label>Element columns:</label>
+            <Field
+              fluid
+              name="componentFirstColumn"
+              component={SemanticDropdown}
+              options={columns}
+              placeholder="Firts componet column"
+              validate={[ errorValidate ]}
+            />
+            <Field
+              fluid
+              name="componentLastColumn"
+              component={SemanticDropdown}
+              options={columns}
+              placeholder="Last componet column"
+              validate={[ errorValidate ]}
+            />
+        </Form.Group>
+      </div>}
+
+      <Form.Field>
+        <label>Apply Data Preprocessing:</label>
+        <Field
+          name="preprocessingEnabled"
+          component={SemCheckbox}
+          toggle
+          onChange={(e, data) => {
+            setPreprocDisabled(!data);
+          }}
+        />
+      </Form.Field>
+
+      {!preprocDisabled && <div>
+        <Form.Field>
+          <label>Preprocessing Method:</label>
+          <Field
+            name="preprocMethod"
+            component={SemanticDropdown}
+            placeholder="scalingMethod"
+            options={getDropdownOptions(preprocMethods)}
+            disabled={preprocDisabled}
+            validate={[ errorValidate ]}
+            onChange={(e, data)=> {
+              setScalingMethod(data)
+            }}
+          />
+        </Form.Field>
+      </div>}
+
+      {!preprocDisabled && scalingMethod === 'MinMaxScaler' && 
+      <Form.Group widths="equal">
+        <label>Scaling Parameters:</label>
+        <Field
+          fluid
+          name="options.scaling.max"
+          component={Input}
+          type="number"
+          placeholder="max"
+          label="Max"
+        />
+        <Field
+          fluid
+          name="options.scaling.min"
+          component={Input}
+          placeholder="min"
+          type="number"
+          label="Min"
+        />
+      </Form.Group>
+      }
+
+      <Form.Field>
         <label>Visualization </label>
         <Field
           name="visualizationMethod"
@@ -296,7 +461,46 @@ const CatalystGeneForm = (props) => {
         />
       </Form.Field>
 
+      {visualization && visualization === 'Heatmap' && 
+      <div>
       <Form.Field>
+        <label>Color Palette (if number of bins exceed number of colors available in the palette, default palette will be used)</label>
+        <Field
+          name="options.colorMap"
+          component={SemanticDropdown}
+          placeholder="Color Map"
+          options={colorMapOptions}
+          onChange={onCMChange}
+        />
+      </Form.Field>
+      <div>
+        {(cmMax[currentCMVal] == "256") ? allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
+           <span key={color.toString()+"_"+index} style={{display: 'inline-block', width: '2px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></span>
+        )) : allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
+           <div key={color.toString()+"_"+index} style={{display: 'inline-block', width: '20px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></div>
+        ))}
+        <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
+      </div>
+      </div>
+      }
+
+      {visualization && (visualization === 'Hierarchical Clustering') | (visualization === 'Heatmap') && 
+      <Form.Field>
+        <label>Clustering method</label>
+        <Field
+          name="clusteringMethod"
+          component={SemanticDropdown}
+          placeholder="Clustering methid"
+          options={getDropdownOptions(clusteringMethodList)}
+          validate={[ errorValidate ]}
+          onChange={(e, data) => {
+            setClusteringMethod(data);
+          }}
+        />
+      </Form.Field>      
+      }
+
+      {/* <Form.Field>
         <label>is Onehot encoding:</label>
         <Field
           name="dataOneHot"
@@ -392,9 +596,9 @@ const CatalystGeneForm = (props) => {
           label="Min"
         />
       </Form.Group>
-      }
+      } */}
 
-      {visualization && visualization === 'Heatmap' && 
+      {/* {visualization && visualization === 'Heatmap' && 
       <div>
       <Form.Field>
         <label>Color Palette (if number of bins exceed number of colors available in the palette, default palette will be used)</label>
@@ -415,7 +619,7 @@ const CatalystGeneForm = (props) => {
         <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
       </div>
       </div>
-      }
+      } */}
 
      
       <hr />
