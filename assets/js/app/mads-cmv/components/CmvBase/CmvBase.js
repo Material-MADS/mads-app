@@ -167,6 +167,7 @@ export default function CmvBase({
           superInfo={componentDef.supervisors || []}
           academicInfo={componentDef.academicInfo || []}
           description={componentDef.description || ""}
+          manual={componentDef.manual || ""}
         />
       );
 
