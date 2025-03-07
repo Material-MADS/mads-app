@@ -58,7 +58,7 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   if(isThisOld){ params.title = "Out of date. Old Settings! Replace with New!" }
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,tap,reset,save';
-  const tips = "<div><p>Index: $index <br /> True: $data_y <br /> Predicted: $data_x </p>"
+  const tips = "<div><p>Index: $index <br /> True: $data_x <br /> Predicted: $data_y </p>"
   const fig = Bokeh.Plotting.figure({
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
@@ -265,12 +265,14 @@ export default class OptimizerVis extends Component {
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
       y = df.get(xName).to_json({ orient: 'records' });
       x = df.get(yName).to_json({ orient: 'records' });
+      x = df.get(xName).to_json({ orient: 'records' });
+      y = df.get(yName).to_json({ orient: 'records' });
 
       this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
 
       this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.MLmethod + ") [" + this.props.method + "]";
-      this.mainFigure.xaxis[0].axis_label = yName;
-      this.mainFigure.yaxis[0].axis_label = xName + '--True';
+      this.mainFigure.xaxis[0].axis_label = xName + '--True';
+      this.mainFigure.yaxis[0].axis_label = yName;
 
       // selection
       if (selectedIndices.length > 0) {
@@ -402,13 +404,13 @@ export default class OptimizerVis extends Component {
         <div style={{marginLeft: '10px', marginRight: '10px'}}>
           <Card>
            <Card.Content>
-              <h3>CV scores:</h3>
+              <h4>CV scores:</h4>
               <ul>
                 <li>Mean R2: {this.state.scores.R2}</li>
                 <li>Mean MAE: {this.state.scores.MAE}</li>
                 <li>Mean RMSE: {this.state.scores.RMSE}</li>
               </ul>
-              <h3>Optimized parameters:</h3>
+              <h4>Optimized parameters:</h4>
               <ul>
                 {Object.keys(this.state.params).map((key, id) => (
                     <li key={id}>{key}: {this.state.params[key]}</li>

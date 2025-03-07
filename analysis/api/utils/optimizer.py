@@ -86,8 +86,11 @@ def get_descriptors_and_transformer(data, df, df_target):
 
     if 'solventColumn' in data['view']['settings'] and data['view']['settings']['solventColumn']:
         df_sc = df[data['view']['settings']['solventColumn']]
-        if any(x not in available_solvents for x in df_sc):
-            raise ValueError("Unknown solvent. Please refer to solvents supported in DOPtools.")
+        bad_solvents = [x for x in df_sc if x not in available_solvents]
+        if bad_solvents:
+            display_solvents = (", ".join(bad_solvents) if len(bad_solvents) < 11
+        else ", ".join(bad_solvents[:10])+f", ...and {len(bad_solvents) - 10} more")
+            raise ValueError(f"Unknown solvent(s): {display_solvents}. Please refer to solvents supported in DOPtools.")
         input_dict['solvents'] = df_sc
 
     result = calculate_descriptor_table(input_dict, descriptors_name, parameters_dict)
@@ -148,9 +151,9 @@ def get_model(data):
 
     st, stats = launch_study(for_opt, pd.DataFrame(df_target), "", ml_method, trials, cv_splits,
                              cv_repeats, 5, 60, (0, 1), False)
-    print("STUDY RESULTS", st)
     rebuild_trial = st.sort_values(by='score', ascending=False).iloc[0]
-    print("BEST:", rebuild_trial['trial'])
+    print("Required/done/best", trials, len(st), rebuild_trial['trial'])
+    print("BEST:", rebuild_trial)
 
     scores_df = stats[rebuild_trial['trial']]['score'].iloc[0]
     scores = {"R2": format(scores_df.R2, '.3f'),
@@ -175,12 +178,14 @@ def get_model(data):
         data_rebuild = data.copy()
         data_rebuild['view']['params'] = params
         _, model = get_model_rebuild(data_rebuild)
-        if len(data['view']['settings']['featureColumns']) > 1:
-            mols = pd.DataFrame({x: smiles2mols(df_test[x].to_list()) for x in data['view']['settings']['featureColumns']})
-        else:
-            mols = smiles2mols(df_test[data['view']['settings']['featureColumns'][0]].to_list())
+        dict_pred = {x: smiles2mols(df_test[x].to_list()) for x in data['view']['settings']['featureColumns']}
+        if 'numericalFeatureColumns' in data['view']['settings'] and data['view']['settings']['numericalFeatureColumns']:
+            dict_pred.update({x: df_test[x].to_list() for x in data['view']['settings']['numericalFeatureColumns']})
+        if 'solventColumn' in data['view']['settings'] and data['view']['settings']['solventColumn']:
+            dict_pred.update({data['view']['settings']['solventColumn']: df_test[data['view']['settings']['solventColumn']].to_list()})
+        df_pred = pd.DataFrame(dict_pred)
 
-        res = model.predict(mols)
+        res = model.predict(df_pred)
         y_test = df_test[target_column].values
         result['d2'] = {target_column: y_test, p_name: res, }
         result['params']["method"] = rebuild_trial['method']  # Has to give it again since removed by rebuilder

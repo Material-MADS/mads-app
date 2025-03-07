@@ -91,15 +91,11 @@ const OptimizerForm = (props) => {
     props: { style: '' },
   }));
 
-  const methods = ['Circus', 'Circus2', 'Morgan_fingerprints', 'Morgan_features',
+  const methods = ['Circus', 'Morgan_fingerprints', 'Morgan_features',
                    'RDKit_Fingerprints', 'RDKit_Linear_Fingerprints', 'Layered', 'Avalon',
                    'Torsion', 'Atom_Pairs', 'Linear_fragments', 'Mordred_2D'];
   const methodsArgs = {
     Circus: [
-      { name: 'Lower', defVal: 0 },
-      { name: 'Upper', defVal: 4 }
-    ],
-    Circus2: [
       { name: 'Lower', defVal: 0 },
       { name: 'Upper', defVal: 4 }
     ],

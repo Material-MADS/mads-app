@@ -187,7 +187,7 @@ class PretrainedModel(OwnedResourceModel):
             if coloratom and nb_mol_fields == 1:  # ColorAtom don't work for several SMILES columns yet
                 clr = ColorAtom()
                 clr.set_pipeline(model)
-                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor))]
+                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES'], ipython=False) for n in range(len(mols_predictor))]
 
             for col in mol_fields:
                 to_pred[col] = [str(x) for x in to_pred[col]]

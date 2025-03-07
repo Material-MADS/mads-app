@@ -114,15 +114,12 @@ export default class DescriptorsView extends withCommandInterface( DescriptorsVi
     const { id, view, actions } = this.props;
     const data = {data: [], data_desc: []};
 
-    console.log("DATASET", dataset)
     if (dataset[id]) {
       if (dataset[id].data_desc == undefined) {
-        console.log("undef, return {}")
         return  {};
       }
       if (dataset[id].data_desc) {
         data.data_desc = dataset[id].data_desc
-        console.log("not undef, returns good")
       }
     }
     return data;
