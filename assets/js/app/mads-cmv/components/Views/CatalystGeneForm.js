@@ -99,7 +99,7 @@ const errorValidate = (value, values, props, fieldName) => {
       }
     }else if(values.dataOneHot && ((fieldName == "componentFirstColumn") || (fieldName == "componentLastColumn"))){
       if(!value || _.isEmpty(value)){
-        error = 'Required';ew1q2  
+        error = 'Required';
       }else{
         errors[fieldName] = false;
       }
@@ -350,7 +350,7 @@ const CatalystGeneForm = (props) => {
       </Form.Field>
 
       <Form.Field>
-        <label>is Onehot encoding:</label>
+        <label>Onehot encoding element info:</label>
         <Field
           name="dataOneHot"
           component={SemCheckbox}
@@ -397,7 +397,7 @@ const CatalystGeneForm = (props) => {
       </div>}
 
       <Form.Field>
-        <label>Apply Data Preprocessing:</label>
+        <label>Apply Scaling:</label>
         <Field
           name="preprocessingEnabled"
           component={SemCheckbox}
@@ -410,7 +410,7 @@ const CatalystGeneForm = (props) => {
 
       {!preprocDisabled && <div>
         <Form.Field>
-          <label>Preprocessing Method:</label>
+          <label>Scaling Method:</label>
           <Field
             name="preprocMethod"
             component={SemanticDropdown}
@@ -500,128 +500,6 @@ const CatalystGeneForm = (props) => {
       </Form.Field>      
       }
 
-      {/* <Form.Field>
-        <label>is Onehot encoding:</label>
-        <Field
-          name="dataOneHot"
-          component={SemCheckbox}
-          toggle
-          onChange={(e, data) => {
-            setIsDataOneHot(!data);
-          }}
-        />
-      </Form.Field>
-
-      {isDataOneHOt && <div>
-        <Form.Field>
-          <label>component columns</label>
-          <Field
-            name="compomentColumns"
-            component={MultiSelectDropdown}
-            placeholder="Componet column"
-            options={columns}
-            validate={[ errorValidate ]}
-          />
-        </Form.Field>
-      </div>}
-
-      {!isDataOneHOt && <div>
-        <Form.Group widths="equal">
-          <label>Component columns:</label>
-            <Field
-              fluid
-              name="componentFirstColumn"
-              component={SemanticDropdown}
-              options={columns}
-              placeholder="Firts componet column"
-              validate={[ errorValidate ]}
-            />
-            <Field
-              fluid
-              name="componentLastColumn"
-              component={SemanticDropdown}
-              options={columns}
-              placeholder="Last componet column"
-              validate={[ errorValidate ]}
-            />
-        </Form.Group>
-      </div>}
-
-      <Form.Field>
-        <label>Apply Data Preprocessing:</label>
-        <Field
-          name="preprocessingEnabled"
-          component={SemCheckbox}
-          toggle
-          onChange={(e, data) => {
-            setPreprocDisabled(!data);
-          }}
-        />
-      </Form.Field>
-
-      {!preprocDisabled && <div>
-        <Form.Field>
-          <label>Preprocessing Method:</label>
-          <Field
-            name="preprocMethod"
-            component={SemanticDropdown}
-            placeholder="scalingMethod"
-            options={getDropdownOptions(preprocMethods)}
-            disabled={preprocDisabled}
-            validate={[ errorValidate ]}
-            onChange={(e, data)=> {
-              setScalingMethod(data)
-            }}
-          />
-        </Form.Field>
-      </div>}
-
-      {!preprocDisabled && scalingMethod === 'MinMaxScaler' && 
-      <Form.Group widths="equal">
-        <label>Scaling Parameters:</label>
-        <Field
-          fluid
-          name="options.scaling.max"
-          component={Input}
-          type="number"
-          placeholder="max"
-          label="Max"
-        />
-        <Field
-          fluid
-          name="options.scaling.min"
-          component={Input}
-          placeholder="min"
-          type="number"
-          label="Min"
-        />
-      </Form.Group>
-      } */}
-
-      {/* {visualization && visualization === 'Heatmap' && 
-      <div>
-      <Form.Field>
-        <label>Color Palette (if number of bins exceed number of colors available in the palette, default palette will be used)</label>
-        <Field
-          name="options.colorMap"
-          component={SemanticDropdown}
-          placeholder="Color Map"
-          options={colorMapOptions}
-          onChange={onCMChange}
-        />
-      </Form.Field>
-      <div>
-        {(cmMax[currentCMVal] == "256") ? allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
-           <span key={color.toString()+"_"+index} style={{display: 'inline-block', width: '2px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></span>
-        )) : allPal[currentCMVal+cmMax[currentCMVal]].map((color, index) => (
-           <div key={color.toString()+"_"+index} style={{display: 'inline-block', width: '20px', height: '20px', backgroundColor: ("#"+color.toString(16).slice(0, -2).padStart(6, '0'))}}></div>
-        ))}
-        <div style={{padingLeft: 10}}>(Max Colors: {cmMax[currentCMVal].replace(/[^0-9a-z]/gi, '')})</div>
-      </div>
-      </div>
-      } */}
-
-     
       <hr />
       <Form.Group widths="equal">
         <label>Extent:</label>

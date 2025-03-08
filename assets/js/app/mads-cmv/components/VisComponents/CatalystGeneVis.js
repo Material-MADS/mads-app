@@ -264,7 +264,7 @@ function Clustering({
 
     // Create the canvas to show clustering figure
     const plot = new Bokeh.Plotting.figure({
-      tools: internalOptions.tools,
+      tools: 'pan,crosshair,wheel_zoom,box_zoom,reset,save',
       width: plotWidth,
       height: plotHeight,
       x_range: xRange,
@@ -582,7 +582,7 @@ function AreaPlot({
 
     // Crate the canvas to draw graph
     const plot = new Bokeh.Plotting.figure({
-      tools: internalOptions.tools,
+      tools: 'pan,crosshair,wheel_zoom,box_zoom,reset,save',
       width: plotWidth,
       height: plotHeight,
       x_range: xRange,
