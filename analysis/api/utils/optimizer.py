@@ -179,11 +179,14 @@ def get_model(data):
         data_rebuild['view']['params'] = params
         _, model = get_model_rebuild(data_rebuild)
         dict_pred = {x: smiles2mols(df_test[x].to_list()) for x in data['view']['settings']['featureColumns']}
-        if 'numericalFeatureColumns' in data['view']['settings'] and data['view']['settings']['numericalFeatureColumns']:
-            dict_pred.update({x: df_test[x].to_list() for x in data['view']['settings']['numericalFeatureColumns']})
-        if 'solventColumn' in data['view']['settings'] and data['view']['settings']['solventColumn']:
-            dict_pred.update({data['view']['settings']['solventColumn']: df_test[data['view']['settings']['solventColumn']].to_list()})
-        df_pred = pd.DataFrame(dict_pred)
+        if len(dict_pred.keys()) == 1 and not data['view']['settings']['numericalFeatureColumns'] and not data['view']['settings']['solventColumn']:
+            _, df_pred = next(iter(dict_pred.items()))
+        else:
+            if data['view']['settings']['numericalFeatureColumns']:
+                dict_pred.update({x: df_test[x].to_list() for x in data['view']['settings']['numericalFeatureColumns']})
+            if data['view']['settings']['solventColumn']:
+                dict_pred.update({data['view']['settings']['solventColumn']: df_test[data['view']['settings']['solventColumn']].to_list()})
+            df_pred = pd.DataFrame(dict_pred)
 
         res = model.predict(df_pred)
         y_test = df_test[target_column].values
