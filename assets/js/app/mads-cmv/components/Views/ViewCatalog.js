@@ -532,6 +532,9 @@ export const config = [
     category: 'Data Processing',
     version: 0.1,
     devStage: "Draft",
+    description: "This component allows the user to analyse the Catalyst similaities with conbination of catalyst gene and Hierarchical Clustering",
+    devInfo: [{name: "Kenshin shibata", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Kenshin-Shibata"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
     component: CatalystGeneView,
     settings: {
       options: {
