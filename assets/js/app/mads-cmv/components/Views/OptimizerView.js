@@ -138,12 +138,13 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
     if (dataset[id]) {
       const targetName = view.settings.targetColumn;
       const pName = `${targetName}--Predicted`;
-      let xx, yy, xx2, yy2;
+      let xx, yy, yyu, xx2, yy2;
 
       // Make sure backwards compability is implemented so old regression components will still work
       if(dataset[id]['d1']){
         xx = dataset[id]['d1'][targetName];
         yy = dataset[id]['d1'][pName];
+        yyu = dataset[id]['d1'][pName+'_uncertain'];
         xx2 = dataset[id]['d2'][targetName];
         yy2 = dataset[id]['d2'][pName];
       }
@@ -162,6 +163,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
         const item = {};
         item[targetName] = x;
         item[pName] = yy[i];
+        item[pName+'_uncertain'] = yyu[i];
         data.d1.data.push(item);
       });
 

@@ -42,10 +42,12 @@ const Category10_10 = Category10.Category10_10;
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
   title: 'Optimizer',
-  color: `#${Category10_10[0].toString(16)}`, //blue
+  color_trainData: `#${Category10_10[0].toString(16)}`, //blue
+  color_testData: 'red',
   selectionColor: 'orange',
   nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: 400, height: 400 },
+  show_uncertainties: true,
 };
 //-------------------------------------------------------------------------------------------------
 
@@ -58,16 +60,13 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   if(isThisOld){ params.title = "Out of date. Old Settings! Replace with New!" }
 
   const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,tap,reset,save';
-  const tips = "<div><p>Index: $index <br /> True: $data_x <br /> Predicted: $data_y </p>"
   const fig = Bokeh.Plotting.figure({
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
     y_range: params.y_range || (dataIsEmpty ? [-1, 1] : undefined),
     width: params.extent.width || 400,
     height: params.extent.height || 400,
-    tooltips: tips,
   });
-  fig.add_tools(new Bokeh.HoverTool({tooltips: tips}))
 
   fig.title.text = params.title; //title object must be set separately or it will become a string (bokeh bug)
   if(isThisOld){
@@ -106,6 +105,7 @@ export default class OptimizerVis extends Component {
   constructor(props) {
     super(props);
     this.cds = null;
+    this.cds_whiskers = null;
     this.cds2 = null;
 
     this.rootNode = React.createRef();
@@ -189,12 +189,25 @@ export default class OptimizerVis extends Component {
   }
 
   handleSelectedIndicesChange() {
-    const { onSelectedIndicesChange } = this.props;
+    const { onSelectedIndicesChange, options } = this.props;
     const { indices } = this.cds.selected;
     let all_indices = indices;
     if (this.cds2) {
       const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
       all_indices = [...new Set([...indices, ...indices2])];
+    }
+
+    let newData_whiskers = {};
+    if (options.show_uncertainties) {
+      if (all_indices.length > 0) {
+        for (const key in this.cds.data) {
+          newData_whiskers[key] = indices.map(i => this.cds.data[key][i]);
+        }
+      } else {
+        newData_whiskers = Object.assign({}, this.cds.data);
+      }
+      this.cds_whiskers.data = newData_whiskers;
+      this.cds_whiskers.change.emit();
     }
 
     if (this.selecting) {
@@ -232,7 +245,7 @@ export default class OptimizerVis extends Component {
     this.views = null;
   }
 
-  // Create the VizComp based on the incomming parameters
+  // Create the VizComp based on the incoming parameters
   async createChart() {
     const {
       data,
@@ -249,8 +262,6 @@ export default class OptimizerVis extends Component {
     const { x: xName, y: yName } = mappings;
     const df = new DataFrame(internalData.d1.data);
     const df2 = new DataFrame(internalData.d2.data);
-    let x = [];
-    let y = [];
     const cols = df.columns;
 
     // Custom Download CSV button
@@ -260,15 +271,17 @@ export default class OptimizerVis extends Component {
     viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
     tableDataString = df.to_csv('tmp.csv')+df2.to_csv('tmp.csv');
 
+    // Figure starts here
     this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined && !this.state.dataShouldBeFine));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
-      y = df.get(xName).to_json({ orient: 'records' });
-      x = df.get(yName).to_json({ orient: 'records' });
-      x = df.get(xName).to_json({ orient: 'records' });
-      y = df.get(yName).to_json({ orient: 'records' });
+      const x = df.get(xName).to_json({ orient: 'records' });
+      const y = df.get(yName).to_json({ orient: 'records' });
+      const y_i = df.get(yName+'_uncertain').to_json({ orient: 'records' });
+      const y_lower = y.map((value, index) => value - y_i[index])
+      const y_upper = y.map((value, index) => value + y_i[index])
 
-      this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
+      this.cds = new Bokeh.ColumnDataSource({ data: { x, y, y_i, y_lower, y_upper } });
 
       this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.MLmethod + ") [" + this.props.method + "]";
       this.mainFigure.xaxis[0].axis_label = xName + '--True';
@@ -281,7 +294,7 @@ export default class OptimizerVis extends Component {
       }
 
       // color
-      const colors = new Array(x.length).fill(defaultOptions.color);
+      const colors = new Array(x.length).fill(defaultOptions.color_trainData);
       colorTags.forEach((colorTag) => {
         colorTag.itemIndices.forEach((i) => {
           colors[i] = colorTag.color;
@@ -313,33 +326,80 @@ export default class OptimizerVis extends Component {
         }
       );
 
-      // Plot Separate Test data if such exists
+      if (options.show_uncertainties) {
+        this.cds_whiskers = new Bokeh.ColumnDataSource({ data: Object.assign({}, this.cds.data) });
+        if (selectedIndices.length > 0) {
+          const newData_whiskers = Object.fromEntries(
+            Object.entries(this.cds.data).map(([key, values]) => [key, selectedIndices.map(i => values[i])])
+          );
+          this.cds_whiskers.data = newData_whiskers;
+          this.cds_whiskers.change.emit();
+        }
+      }
+      else {
+        this.cds_whiskers = new Bokeh.ColumnDataSource()
+      }
+
+      let customHead = new Bokeh.TeeHead({
+        size: 5,
+        line_width: 0.5,
+        line_color: "black"
+      });
+
+      let whiskers = new Bokeh.Whisker({
+          base: { field: 'x' },
+          upper: { field: 'y_upper' },
+          lower: { field: 'y_lower' },
+          source: this.cds_whiskers,
+          line_color: "black",
+          line_width: 0.5,
+          upper_head: customHead,
+          lower_head: customHead,
+      });
+      this.mainFigure.add_layout(whiskers);
+
+      const tips_train = "<div style='padding:2.5px 0px'><p>Index: $index <br /> True: @x{0.000} <br /> Predicted: @y{0.000}±@y_i{0.000}</p></div>";
+      this.mainFigure.add_tools(new Bokeh.HoverTool({tooltips: tips_train, renderers: [circles], description: "Training Tooltips"},))
+
+      // Plot Test data if such exists
       if(internalData.d2.data.length != 0){
-        let y2 = df2.get(xName).to_json({ orient: 'records' });
-        let x2 = df2.get(yName).to_json({ orient: 'records' });
-        const colors2 = new Array(x2.length).fill("red");
-        this.cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2 } });
+        let x2 = df2.get(xName).to_json({ orient: 'records' });
+        let y2 = df2.get(yName).to_json({ orient: 'records' });
+        const true_index = y2.map((_, index) => index + internalData.d2.first_test);
+        this.cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2, true_index } });
+        const colors_test = new Array(x2.length).fill(defaultOptions.color_testData);
+        colorTags.forEach((colorTag) => {
+          colorTag.itemIndices.forEach((i) => {
+            colors[i] = colorTag.color;
+          });
+        });
         let circles2 = this.mainFigure.triangle(
           { field: 'x2' },
           { field: 'y2' },
           {
             source: this.cds2,
             fill_alpha: 0.6,
-            fill_color: colors2,
+            fill_color: colors_test,
+            selection_color: selectionColor,
+            nonselection_color: nonselectionColor,
             line_alpha: 0.7,
-            line_color: colors2,
+            line_color: colors_test,
             legend: 'Test',
           }
         );
         this.mainFigure.legend.location = 'bottom_right'
 
+        if (selectedIndices.length > 0) {
+          this.cds2.selected.indices = selectedIndices.filter(v=> (v > internalData.d2.first_test)).map(v=> v - internalData.d2.first_test);
+        }
+
         // setup callback
         this.cds2.connect(this.cds2.selected.change, () => {
           this.handleSelectedIndicesChange();
         });
-        if (selectedIndices.length > 0) {
-          this.cds2.selected.indices = selectedIndices.filter(v=> (v > internalData.d2.first_test)).map(v=> v - internalData.d2.first_test);
-        }
+
+        const tips_test = "<div style='padding:2.5px 0px'><p>Index: @true_index <br /> True: @x2{0.000} <br /> Predicted: @y2{0.000}</p></div>";
+        this.mainFigure.add_tools(new Bokeh.HoverTool({tooltips: tips_test, renderers: [circles2], description: "Test Tooltips"},))
       }
 
       // filter
@@ -442,6 +502,7 @@ OptimizerVis.propTypes = {
     title: PropTypes.string,
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
+    show_uncertainties: PropTypes.bool,
     extent: PropTypes.shape({
       width: PropTypes.number.isRequired,
       height: PropTypes.number.isRequired,
@@ -464,11 +525,13 @@ OptimizerVis.defaultProps = {
   },
   mappings: {},
   options: {
-    title: 'Optimizer',
+    title: defaultOptions.title,
     color: defaultOptions.color,
+    color_testData: defaultOptions.color_testData,
     selectionColor: defaultOptions.selectionColor,
     nonselectionColor: defaultOptions.nonselectionColor,
-    extent: { width: 400, height: 400 },
+    show_uncertainties: defaultOptions.show_uncertainties,
+    extent: { width: defaultOptions.width, height: defaultOptions.height },
   },
   colorTags: [],
   selectedIndices: [],

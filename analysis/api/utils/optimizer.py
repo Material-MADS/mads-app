@@ -167,7 +167,8 @@ def get_model(data):
 
     # Training set (CV predictions)
     result['d1'] = {target_column: y_train,
-                    p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1), }
+                    p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),
+                    p_name+"_uncertain": np.std(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),}
 
     # Test set if specified
     if df_test is None:

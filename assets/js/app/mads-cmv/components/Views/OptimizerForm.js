@@ -136,12 +136,6 @@ const OptimizerForm = (props) => {
   };
 
   const MLmethods = ['SVR', 'RFR']; // ['SVR', 'RFR', 'XGBR'];
-  const cvMethodsArgs = {
-    TrainTestSplit: { name: 'test_size', defVal: 0.2 },
-    KFold: { name: 'n_splits', defVal: 5 },
-  };
-
-//  const isModelBuild = !elem
 
   // input managers
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -405,6 +399,15 @@ const OptimizerForm = (props) => {
             component={Input}
             placeholder="Height"
           />
+        </Form.Group>
+        <Form.Group widths="equal">
+          <Form.Field>
+            <Field
+              name="options.show_uncertainties"
+              component={Checkbox}
+              label="Show standard deviation for cross validation repeats"
+            />
+          </Form.Field>
         </Form.Group>
 
         <hr />
