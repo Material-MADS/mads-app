@@ -20,16 +20,16 @@
 #-------------------------------------------------------------------------------------------------
 import logging
 import numpy as np
-from doptools.optimizer import launch_study, methods, calculate_descriptor_table
+from doptools.optimizer import launch_study, calculate_descriptor_table, get_raw_model
 from doptools.chem.solvents import available_solvents
+from doptools.cli.plotter import prepare_classification_plot
 from chython import smiles
 import pandas as pd
 from scipy.sparse import csr_matrix
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.svm import SVR
-from sklearn.ensemble import RandomForestRegressor
+import re
 
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
@@ -129,55 +129,83 @@ def smiles2mols(smiles_list):
 
 
 def get_model(data):
+    ml_method = data['view']['settings']['MLmethod']
+    if ml_method not in ["SVR", "RFR", "SVC", "RFC"]:  # "XGBR"]:
+        raise ValueError("ML method not supported")
+
     target_column = data['view']['settings']['targetColumn']
     p_name = target_column + '--Predicted'
+    p_target = None
+
+    if ml_method.endswith('C'):
+        LE = LabelEncoder()
+        data['data'][target_column] = LE.fit_transform([str(x) for x in data['data'][target_column]])
+        try:
+            p_target = LE.transform([str(data['view']['settings']['positiveLabel'])])[0]
+        except ValueError:
+            raise ValueError("The provided property label is not within the target column values.")
+        # if len(LE.classes_) > 5:
+        #     raise ValueError("The provided property has more than 10 unique values for classification")
 
     df_train, df_test = split_dataset(data)
     df_target = df_train[target_column]
     y_train = df_target.values
 
     raw_desc, _ = get_descriptors_and_transformer(data, df_train, df_target)
-    # desc = pd.DataFrame(raw_desc).to_dict('records')
     for_opt = {'desc1': csr_matrix(raw_desc.values)}
 
-    ml_method = data['view']['settings']['MLmethod']
-    if ml_method not in ["SVR", "RFR"]:  # "XGBR"]:
-        raise ValueError("ML method not supported")
     cv_splits = int(data['view']['settings']['CVsplits'])
     if cv_splits > int(len(df_train)):
         raise ValueError("The number of #CV splits is higher than the number of available data")
     cv_repeats = int(data['view']['settings']['CVrepeats'])
     trials = int(data['view']['settings']['trials'])
 
-    st, stats = launch_study(for_opt, pd.DataFrame(df_target), "", ml_method, trials, cv_splits,
-                             cv_repeats, 5, 60, (0, 1), False)
+    try:
+        st, stats = launch_study(for_opt, pd.DataFrame(df_target), "", ml_method, trials, cv_splits,
+                                 cv_repeats, 5, 60, (0, 1), False)
+    except StopIteration:
+        raise ValueError("No solution found. Try increasing iterations number or change parameters.")
     rebuild_trial = st.sort_values(by='score', ascending=False).iloc[0]
     print("Required/done/best", trials, len(st), rebuild_trial['trial'])
     print("BEST:", rebuild_trial)
 
     scores_df = stats[rebuild_trial['trial']]['score'].iloc[0]
-    scores = {"R2": format(scores_df.R2, '.3f'),
-              "RMSE": format(scores_df.RMSE, '.3f'),
-              "MAE": format(scores_df.MAE, '.3f'), }
+    cv = {}
+    if ml_method.endswith("R"):
+        scores_labels = ['R2', 'RMSE', 'MAE']
+    else:
+        cv['roc_repeats'], cv['roc_mean'] = prepare_classification_plot(stats[rebuild_trial['trial']]['predictions'], p_target)
+        scores_labels = ['ROC_AUC', 'ACC', 'BAC', 'F1', 'MCC']
+
+    scores = {x: format(scores_df[x], '.3f') for x in scores_labels}
 
     params = rebuild_trial[rebuild_trial.index[list(rebuild_trial.index).index('method') + 1:]].to_dict()
     params["method"] = rebuild_trial['method']
     params["scaling"] = rebuild_trial['scaling']
-    result = {'data': data, 'scores': scores, 'params': params}
+    result = {'data': data, 'scores': scores, 'cv': cv, 'params': params, 'processed': True}
 
     # Training set (CV predictions)
-    result['d1'] = {target_column: y_train,
-                    p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),
-                    p_name+"_uncertain": np.std(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),}
+    if ml_method.endswith("R"):
+        result['d1'] = {target_column: y_train,
+                        p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),
+                        p_name+"_uncertain": np.std(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),}
+    else:
+        preds = stats[rebuild_trial['trial']]['predictions'].copy()
+        preds.columns = [re.sub(r"(class_)([^.]+)", lambda m: f"{m.group(1)}{LE.inverse_transform([int(m.group(2)) if str(m.group(2)).isdigit() else str(m.group(2)) ])[0]}", x) for x in preds.columns]
+        for col in preds.columns:
+            if re.match(fr"{target_column}(\.predicted.class.+|\.observed)", col):
+                preds[col] = LE.inverse_transform(preds[col])
+
+        result['d1'] = list(preds.to_dict(orient='index').values())
 
     # Test set if specified
     if df_test is None:
-        result['d2'] = {target_column: [], p_name: [], }
+        result['d2'] = {target_column: [], p_name: [], } if ml_method.endswith("R") else []
         result['first_test'] = len(y_train)
 
     else:
         data_rebuild = data.copy()
-        data_rebuild['view']['params'] = params
+        data_rebuild['view']['params'] = params.copy()
         _, model = get_model_rebuild(data_rebuild)
         dict_pred = {x: smiles2mols(df_test[x].to_list()) for x in data['view']['settings']['featureColumns']}
         if len(dict_pred.keys()) == 1 and not data['view']['settings']['numericalFeatureColumns'] and not data['view']['settings']['solventColumn']:
@@ -190,11 +218,14 @@ def get_model(data):
             df_pred = pd.DataFrame(dict_pred)
 
         res = model.predict(df_pred)
-        y_test = df_test[target_column].values
-        result['d2'] = {target_column: y_test, p_name: res, }
-        result['params']["method"] = rebuild_trial['method']  # Has to give it again since removed by rebuilder
-        result['params']["scaling"] = rebuild_trial['scaling']
         result['first_test'] = int(data['view']['settings']['external_validation_from'])
+        if ml_method.endswith("R"):
+            result['d2'] = {target_column: df_test[target_column].values, p_name: res, }
+        else:
+            df_test.rename(columns={target_column: target_column+".observed"}, inplace=True)
+            df_test[target_column + ".observed"] = LE.inverse_transform(df_test[target_column + ".observed"])
+            df_test[target_column + ".predicted"] = LE.inverse_transform(res)
+            result['d2'] = list(df_test.to_dict(orient='index').values())
 
     return result, None
 
@@ -215,8 +246,7 @@ def get_model_rebuild(data):
         pipeline_steps.append(('scaler', MinMaxScaler()))
     pipeline_steps.append(('variance', VarianceThreshold()))
 
-    params = data['view']['params']
-    pipeline_steps.append(('model', eval(methods[method])))
+    pipeline_steps.append(('model', get_raw_model(method, data['view']['params'])))
 
     pipeline = Pipeline(pipeline_steps)
 

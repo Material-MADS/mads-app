@@ -50,6 +50,7 @@ import NodeGraphView from './NodeGraphView';
 import RegressionView from './RegressionView';
 import DescriptorsView from './DescriptorsView';
 import OptimizerView from './OptimizerView';
+import OptimizerClassificationView from './OptimizerClassificationView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
@@ -745,6 +746,39 @@ export const config = [
         arg2: 3
       },
       MLmethod: 'SVR',
+      CVsplits: '5',
+      CVrepeats: '3',
+      trials: '100',
+      featureColumns: [],
+      numericalFeatureColumns: [],
+      solventColumn: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // Classification Optimizer - A customizable descriptors calculator + classification optimizer for molecules
+  //------------------------------------------
+  {
+    type: 'optimizerClassification',
+    name: 'Optimizer (Classification)',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    component: OptimizerClassificationView,
+    customBtns: [
+      {name: 'saveCSVData-training', icon: 'download', text: 'Download training cross-validation as CSV'},
+      {name: 'saveCSVData-test', icon: 'download', text: 'Download test predictions as CSV'},
+    ],
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 3
+      },
+      MLmethod: 'SVC',
       CVsplits: '5',
       CVrepeats: '3',
       trials: '100',
