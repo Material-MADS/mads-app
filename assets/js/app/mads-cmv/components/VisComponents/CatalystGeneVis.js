@@ -394,7 +394,7 @@ function HeatMapGene({
     const source = new Bokeh.ColumnDataSource({
       data: {
         xData: internalData['xData'].map(x => x + 1/2),
-        yData: internalData['yData'].map(y => y + 1/2),
+        yData: internalData['yData'].map(y => y),
         heatVal: internalData['heatVal'],
         x0: internalData['xData'].map(x => 0),
         y0: internalData['yData'].map(y => 0),
