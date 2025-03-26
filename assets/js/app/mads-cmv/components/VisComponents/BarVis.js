@@ -183,6 +183,7 @@ export default class BokehBarChart extends Component {
       selectedIndices,
       onSelectedIndicesChange,
     } = this.props;
+    console.log(data);
 
     let selectedIndicesInternal = [];
     let internalOptions = {...defaultOptions, ...options};

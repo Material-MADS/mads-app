@@ -35,6 +35,7 @@ import ImageViewView from './ImageView';
 import FeatureEngineeringView from './FeatureEngineeringView';
 import MonteCatView from './MonteCatView';
 import featureAssignmentView from './FeatureAssignmentView';
+import CatalystGeneView from './CatalystGeneView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -521,6 +522,37 @@ export const config = [
   },
   //------------------------------------------
 
+  
+  // Catalyst Gene View - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
+  //------------------------------------------
+  {
+    type: 'catalystGene',
+    name: 'CatalystGene',
+    category: 'Data Processing',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component automatically designs catalytic genes based on the specified column data. The calculated values during the introduction of catalytic genes exhibit distinct patterns for each catalyst, which can be visualized using a heatmap and a line graph. Additionally, the component enables an analysis that combines catalytic gene-based analysis with hierarchical clustering. This allows users to examine catalyst similarity from multiple perspectives. In table format visualization, users can check each catalyst's genes and extract common elemental patterns within similar catalysts, providing insights for designing new catalysts.",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/main/Component-Manuals/Catalyst_Gene_Manual.pdf",
+    devInfo: [{name: "Kenshin Shibata", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Kenshin-Shibata"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    component: CatalystGeneView,
+    settings: {
+      options: {
+        colorMap: 'Magma',
+        scaling:{
+          max: 1,
+          min: 0,
+        },
+        extent: {
+          width: 600,
+          height: 600,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================
