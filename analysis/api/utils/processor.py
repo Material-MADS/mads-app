@@ -36,6 +36,7 @@ from .network_analysis import get_network_analysis
 from .feature_engineering import get_feature_engineering
 from .monte_cat import get_monte_cat
 from .feature_assignment import get_feature_assignment
+from .catalyst_gene import get_catalyst_gene
 
 from .cads_component_template import get_cads_component_template_stuff
 
@@ -66,6 +67,7 @@ processor_map = {
     'featureEngineering': get_feature_engineering,
     'monteCat': get_monte_cat,
     'featureAssignment': get_feature_assignment,
+    'catalystGene': get_catalyst_gene,
     'cads_component_template': get_cads_component_template_stuff,
 }
 
