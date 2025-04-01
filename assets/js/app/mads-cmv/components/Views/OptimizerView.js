@@ -163,7 +163,7 @@ export default class OptimizerView extends withCommandInterface( OptimizerVis, O
         const item = {};
         item[targetName] = x;
         item[pName] = yy[i];
-        item[pName+'_uncertain'] = yyu[i];
+        item[pName + '_uncertain'] = yyu ? yyu[i] : 0;
         data.d1.data.push(item);
       });
 
