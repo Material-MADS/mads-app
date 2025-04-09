@@ -55,12 +55,12 @@ class BokehTable extends Component {
     this.cds = null;
     this.rootNode = React.createRef();
     this.clearChart = this.clearChart.bind(this);
-    this.createChart = this.createChart.bind(this);
+    this.createMolTable = this.createMolTable.bind(this);
     this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind( this );
   }
 
   componentDidMount() {
-    this.createChart();
+    this.createMolTable();
   }
 
   shouldComponentUpdate(nextProps) {
@@ -75,13 +75,13 @@ class BokehTable extends Component {
 
     if (diff.filteredIndices) {
       if (diff.selectedIndices) {
-        this.cds.selected.indices = [...diff.selectedIndices];
+        this.cds.selected.indices = diff.selectedIndices;
       }
       return true;
     }
 
     if (diff.selectedIndices) {
-      this.cds.selected.indices = [...diff.selectedIndices];
+      this.cds.selected.indices = diff.selectedIndices;
       return false;
     }
 
@@ -101,37 +101,37 @@ class BokehTable extends Component {
 
     if (!deepEqual(prevProps.filteredIndices, filteredIndices)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
 
     if (!deepEqual(prevProps.colorTags, colorTags)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
 
     if (!deepEqual(prevProps.columns, columns)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
 
     if (!deepEqual(prevProps.smiles_columns, smiles_columns)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
 
     if (!deepEqual(prevProps.data, data)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
 
     if (!deepEqual(prevProps.options, options)) {
       this.clearChart();
-      this.createChart();
+      this.createMolTable();
       return;
     }
   }
@@ -146,7 +146,7 @@ class BokehTable extends Component {
 
     if (onSelectedIndicesChange && !deepEqual(this.lastIndices, indices)) {
       onSelectedIndicesChange(indices);
-      this.lastIndices = [...indices];
+      this.lastIndices = indices;
     }
   }
 
@@ -165,7 +165,7 @@ class BokehTable extends Component {
   }
 
   // Create the VizComp based on the incomming parameters
-  async createChart() {
+  async createMolTable() {
     const {
       data,
       columns,
@@ -218,7 +218,7 @@ class BokehTable extends Component {
 
     // selection
     if (selectedIndices.length > 0) {
-      this.cds.selected.indices = [...selectedIndices];
+      this.cds.selected.indices = selectedIndices;
     }
 
     // setup callback

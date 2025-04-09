@@ -44,5 +44,6 @@ def get_mol_svg(data):
                     else:
                         raise Exception()
                 except:
-                    line[col] = "No parsable"
+                    line[col] = "Not parsable"
+
     return {'data': data}
