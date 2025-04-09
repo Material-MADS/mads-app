@@ -99,19 +99,19 @@ function downloadCSV(csvStr, fileName) {
 //-------------------------------------------------------------------------------------------------
 
 
-class DescriptorsVis extends Component {
+export default class DescriptorsVis extends Component {
   // Initiation of the VizComp
   constructor(props) {
     super(props);
     this.cds = null;
     this.rootNode = React.createRef();
     this.clearChart = this.clearChart.bind(this);
-    this.createChart = this.createChart.bind(this);
+    this.createDescTable = this.createDescTable.bind(this);
     this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind( this );
   }
 
   componentDidMount() {
-    this.createChart();
+    this.createDescTable();
   }
 
   shouldComponentUpdate(nextProps) {
@@ -151,31 +151,31 @@ class DescriptorsVis extends Component {
 
     if (!deepEqual(prevProps.filteredIndices, filteredIndices)) {
       this.clearChart();
-      this.createChart();
+      this.createDescTable();
       return;
     }
 
     if (!deepEqual(prevProps.colorTags, colorTags)) {
       this.clearChart();
-      this.createChart();
+      this.createDescTable();
       return;
     }
 
     if (!deepEqual(prevProps.columns, columns)) {
       this.clearChart();
-      this.createChart();
+      this.createDescTable();
       return;
     }
 
     if (!deepEqual(prevProps.data, data)) {
       this.clearChart();
-      this.createChart();
+      this.createDescTable();
       return;
     }
 
     if (!deepEqual(prevProps.options, options)) {
       this.clearChart();
-      this.createChart();
+      this.createDescTable();
       return;
     }
   }
@@ -209,7 +209,7 @@ class DescriptorsVis extends Component {
   }
 
   // Create the VizComp based on the incoming parameters
-  async createChart() {
+  async createDescTable() {
     const {
       data,
       id,
@@ -360,26 +360,4 @@ DescriptorsVis.defaultProps = {
     extent: { width: 400, height: 400 },
   },
 };
-//-------------------------------------------------------------------------------------------------
-
-export default DescriptorsVis;
-
-//-------------------------------------------------------------------------------------------------
-// This Visualization Component's default initial start Property Values
-//-------------------------------------------------------------------------------------------------
-//DescriptorsVis.defaultProps = {
-//  data: {data: []},
-//  mappings: {},
-//  options: {
-//    title: 'Descriptors',
-//    color: defaultOptions.color,
-//    selectionColor: defaultOptions.selectionColor,
-//    nonselectionColor: defaultOptions.nonselectionColor,
-//    extent: { width: 400, height: 400 },
-//  },
-//  colorTags: [],
-//  selectedIndices: [],
-//  filteredIndices: [],
-//  onSelectedIndicesChange: undefined,
-//};
 //-------------------------------------------------------------------------------------------------
