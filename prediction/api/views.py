@@ -171,7 +171,15 @@ class PretrainedModelAPIViewSet(
             pm.description = description[:-2]
         model = get_model(arg_get_model)
         if type(model) is Pipeline:
-            metadata['input_spec'] = list(model[0].associator.keys()) if type(model[0]) is ComplexFragmentor else ["SMILES"]
+            if not isinstance(model[0], ComplexFragmentor):
+                metadata['input_spec'] = ["SMILES"]
+            else:
+                metadata['input_spec'] = []
+                for x in model[0].associator:
+                    if x[0] == "numerical":
+                        metadata['input_spec'] += x[1].get_feature_names()
+                    else:
+                        metadata['input_spec'].append(x[0])
         # logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)

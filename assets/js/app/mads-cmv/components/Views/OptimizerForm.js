@@ -362,13 +362,14 @@ const OptimizerForm = (props) => {
         <hr />
         <h4>Prediction</h4>
         <p>You can set a part of the data as external prediction set. In this case, this data will not be used to build the model,
-           but rather be predicted with the optimized, then rebuild, model.</p>
+           but rather be predicted with the optimized, then rebuilt, model.</p>
         <Form.Group widths="equal">
           <Form.Field>
             <Field
               name="external_validation"
               component={Checkbox}
               label="Use data for external validation"
+              toggle
             />
           </Form.Field>
 
@@ -406,6 +407,7 @@ const OptimizerForm = (props) => {
               name="options.show_uncertainties"
               component={Checkbox}
               label="Show standard deviation for cross validation repeats"
+              toggle
             />
           </Form.Field>
         </Form.Group>
