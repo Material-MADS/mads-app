@@ -193,7 +193,7 @@ class PretrainedModel(OwnedResourceModel):
                 if clr.complex:
                     max_scale = max(
                         max(abs(v) for v in atom_contrib.values())
-                        for contrib in (clr.calculate_atom_contributions(to_pred.iloc[n]) for n in range(len(mols_predictor)))
+                        for contrib in (clr.calculate_atom_contributions(pd.Series(to_pred.iloc[n].to_dict())) for n in range(len(mols_predictor)))
                         for atom_contrib in contrib.values()
                     )
                     to_pred['ColorAtom'] = [clr.output_html(pd.Series(to_pred.iloc[n].to_dict()), ipython=False, external_limits=[-max_scale,max_scale])
