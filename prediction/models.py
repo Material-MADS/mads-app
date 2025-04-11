@@ -184,10 +184,32 @@ class PretrainedModel(OwnedResourceModel):
             predictions = model.predict(mols_predictor)
             to_pred['Predicted'] = predictions
 
-            if coloratom and nb_mol_fields == 1:  # ColorAtom don't work for several SMILES columns yet
+            if coloratom:
+                import matplotlib
+                matplotlib.use('Agg')
                 clr = ColorAtom()
                 clr.set_pipeline(model)
-                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES'], ipython=False) for n in range(len(mols_predictor))]
+
+                if clr.complex:
+                    max_scale = max(
+                        max(abs(v) for v in atom_contrib.values())
+                        for contrib in (clr.calculate_atom_contributions(to_pred.iloc[n]) for n in range(len(mols_predictor)))
+                        for atom_contrib in contrib.values()
+                    )
+                    to_pred['ColorAtom'] = [clr.output_html(pd.Series(to_pred.iloc[n].to_dict()), ipython=False, external_limits=[-max_scale,max_scale])
+                                            for n in range(len(mols_predictor))]
+                else:
+                    max_scale = max(
+                        max(abs(v) for v in atom_contrib.values())
+                        for contrib in (clr.calculate_atom_contributions(to_pred.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor)))
+                        for atom_contrib in contrib.values()
+                    )
+                    to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES'], ipython=False, external_limits=[-max_scale,max_scale])
+                                            for n in range(len(mols_predictor))]
+                empty_row = {x: '' for x in to_pred}
+                empty_row['ColorAtom'] = "<span style='text-align:center'>{}<p style='margin:0; padding:0;'>Color scale</p></span>".format(
+                    clr.output_colorbar_html(-max_scale, max_scale,10, 2, orient='horizontal', ipython=False))
+                to_pred = pd.concat((to_pred, pd.DataFrame([empty_row])))
 
             for col in mol_fields:
                 to_pred[col] = [str(x) for x in to_pred[col]]
