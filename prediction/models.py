@@ -30,6 +30,8 @@ from jsonfield import JSONField
 import joblib
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from chython import smiles
 from chython.exceptions import IncorrectSmiles
 from doptools.chem.coloratom import ColorAtom
@@ -129,7 +131,8 @@ class PretrainedModel(OwnedResourceModel):
         inputs = []
         model = joblib.load(self.file)
 
-        if not self.metadata['input_type'] or self.metadata['input_type'] == "descriptors_values":
+        # Model without DOPtools
+        if 'input_type' not in self.metadata.keys() or not self.metadata['input_type'] or self.metadata['input_type'] == "descriptors_values":
             for key, value in inports.items():
                 inputs.append(float(value))
             logger.info(inputs)
@@ -137,6 +140,7 @@ class PretrainedModel(OwnedResourceModel):
             outport = out[0]
             return outport
 
+        #Model using DOPtools
         elif self.metadata['input_type'] == "SMILES":
             mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys() else ["SMILES"]
             nb_mol_fields = len(mol_fields)
@@ -146,7 +150,6 @@ class PretrainedModel(OwnedResourceModel):
                 items = line.split()
                 line_dict = {}
                 line_error = False
-
                 for val, col in zip_longest(items, mol_fields):
                     if not val or not col:
                         if not val:  # required value
@@ -180,39 +183,32 @@ class PretrainedModel(OwnedResourceModel):
             if any([x is not None for x in real_props]):
                 to_pred['Real'] = real_props
 
-            mols_predictor = to_pred['SMILES'].to_list() if nb_mol_fields == 1 else to_pred
-            predictions = model.predict(mols_predictor)
-            to_pred['Predicted'] = predictions
+            to_pred['Predicted'] = model.predict(to_pred['SMILES'].to_list() if nb_mol_fields == 1 else to_pred)
 
-            if coloratom:
+            if coloratom and type(model[2]) in [SVC, RandomForestClassifier]:
+                    to_pred['ColorAtom'] = ['not available for classification models yet'*len(to_pred)]
+            elif coloratom:
                 import matplotlib
                 matplotlib.use('Agg')
                 clr = ColorAtom()
                 clr.set_pipeline(model)
 
-                if clr.complex:
-                    max_scale = max(
-                        max(abs(v) for v in atom_contrib.values())
-                        for contrib in (clr.calculate_atom_contributions(pd.Series(to_pred.iloc[n].to_dict())) for n in range(len(mols_predictor)))
-                        for atom_contrib in contrib.values()
-                    )
-                    to_pred['ColorAtom'] = [clr.output_html(pd.Series(to_pred.iloc[n].to_dict()), ipython=False, external_limits=[-max_scale,max_scale])
-                                            for n in range(len(mols_predictor))]
-                else:
-                    max_scale = max(
-                        max(abs(v) for v in atom_contrib.values())
-                        for contrib in (clr.calculate_atom_contributions(to_pred.iloc[n].to_dict()['SMILES']) for n in range(len(mols_predictor)))
-                        for atom_contrib in contrib.values()
-                    )
-                    to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n].to_dict()['SMILES'], ipython=False, external_limits=[-max_scale,max_scale])
-                                            for n in range(len(mols_predictor))]
-                empty_row = {x: '' for x in to_pred}
-                empty_row['ColorAtom'] = "<span style='text-align:center'>{}<p style='margin:0; padding:0;'>Color scale</p></span>".format(
+                contributions = {n: clr.calculate_atom_contributions(to_pred.iloc[n] if clr.complex else to_pred.iloc[n]['SMILES'])
+                                 for n in range(len(to_pred))}
+                max_scale = max(abs(v) for contrib in contributions.values() for atom_contrib in contrib.values() for v in atom_contrib.values())
+                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n] if clr.complex else to_pred.iloc[n]['SMILES'],
+                                                        ipython=False, external_limits=[-max_scale, max_scale],
+                                                        contributions=contributions[n])
+                                        for n in range(len(to_pred))]
+
+                colorbar_row = {x: '' for x in to_pred}
+                colorbar_row['ColorAtom'] = "<span style='text-align:center'>{}<p style='margin:0; padding:0;'>Color scale</p></span>".format(
                     clr.output_colorbar_html(-max_scale, max_scale,10, 2, orient='horizontal', ipython=False))
-                to_pred = pd.concat((to_pred, pd.DataFrame([empty_row])))
+                to_pred = pd.concat((to_pred, pd.DataFrame([colorbar_row])))
 
             for col in mol_fields:
                 to_pred[col] = [str(x) for x in to_pred[col]]
+
             return to_pred
 
         else:

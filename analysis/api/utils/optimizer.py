@@ -140,12 +140,12 @@ def get_model(data):
     if ml_method.endswith('C'):
         LE = LabelEncoder()
         data['data'][target_column] = LE.fit_transform([str(x) for x in data['data'][target_column]])
+        LE_is_required = not (np.all([x.isdigit() for x in LE.classes_])
+                              and np.all([float(x) for x in LE.classes_] == list(range(len(LE.classes_)))))
         try:
             p_target = LE.transform([str(data['view']['settings']['positiveLabel'])])[0]
         except ValueError:
-            raise ValueError("The provided property label is not within the target column values.")
-        # if len(LE.classes_) > 5:
-        #     raise ValueError("The provided property has more than 10 unique values for classification")
+            raise ValueError("The provided Positive label is not within the Property/Target column values.")
 
     df_train, df_test = split_dataset(data)
     df_target = df_train[target_column]
@@ -190,6 +190,8 @@ def get_model(data):
                         p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),
                         p_name+"_uncertain": np.std(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),}
     else:
+        if LE_is_required:
+            result['params']['label encoding'] = ', '.join(['{}={}'.format(x,y) for x,y in zip(LE.classes_, range(len(LE.classes_)))])
         preds = stats[rebuild_trial['trial']]['predictions'].copy()
         preds.columns = [re.sub(r"(class_)([^.]+)", lambda m: f"{m.group(1)}{LE.inverse_transform([int(m.group(2)) if str(m.group(2)).isdigit() else str(m.group(2)) ])[0]}", x) for x in preds.columns]
         for col in preds.columns:
@@ -231,8 +233,12 @@ def get_model(data):
 
 
 def get_model_rebuild(data):
-    method = data['view']['params'].pop('method')
-    scaling = data['view']['params'].pop('scaling')
+    params = data['view']['params'].copy()
+    method = params.pop('method')
+    # is_classification = method.endswith("C")
+    scaling =params.pop('scaling')
+    if 'label encoding' in params:
+        params.pop('label encoding')
 
     target_column = data['view']['settings']['targetColumn']
     df_train, _ = split_dataset(data)
@@ -246,7 +252,7 @@ def get_model_rebuild(data):
         pipeline_steps.append(('scaler', MinMaxScaler()))
     pipeline_steps.append(('variance', VarianceThreshold()))
 
-    pipeline_steps.append(('model', get_raw_model(method, data['view']['params'])))
+    pipeline_steps.append(('model', get_raw_model(method, params)))
 
     pipeline = Pipeline(pipeline_steps)
 

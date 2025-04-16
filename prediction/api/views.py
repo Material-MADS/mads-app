@@ -146,7 +146,8 @@ class PretrainedModelAPIViewSet(
         for c in viewSettings['newValues']['featureColumns']:
             metadata['inports'].append({'name': c})
         metadata['outports'].append({'name': viewSettings['newValues']['targetColumn']})
-        metadata['input_type'] = "SMILES" if viewSettings['view']['type'] == "optimizer" else "descriptors_values"
+        metadata['input_type'] = "SMILES" if (viewSettings['view']['type']  in ['optimizer', 'optimizerClassification']) \
+                                 else "descriptors_values"
 
         pm = PretrainedModel()
         pm.name = data['name']
@@ -156,8 +157,12 @@ class PretrainedModelAPIViewSet(
         arg_get_model = {'data': viewSettings['data'],
                          'view': viewSettings['view'], }
         if 'params' in viewSettings['view'].keys():  # for optimizer component
-            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn']) + "\n"
-            description += ("Descriptors: "+str(viewSettings['view']['settings']['method']) + " (" +
+            print("Dispo:", data)
+            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn'])
+            if 'label encoding' in viewSettings['view']['params']:
+                labels = viewSettings['view']['params'].pop('label encoding')
+                description += ("\n" + str(viewSettings['view']['settings']['targetColumn']) + " encoding: " + labels)
+            description += ("\n Descriptors: "+str(viewSettings['view']['settings']['method']) + " (" +
                             "; ".join(str(v) for v in viewSettings['view']['settings']['methodArguments'].values()) +
                             ")")
             if viewSettings['view']['settings']['solventColumn']:
@@ -168,7 +173,7 @@ class PretrainedModelAPIViewSet(
                                 ")")
             description += ("\n Parameters: " +
                             ', '.join('{}={}'.format(*t) for t in viewSettings['view']['params'].items()))
-            pm.description = description[:-2]
+            pm.description = description
         model = get_model(arg_get_model)
         if type(model) is Pipeline:
             if not isinstance(model[0], ComplexFragmentor):
