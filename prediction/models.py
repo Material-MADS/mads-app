@@ -29,6 +29,8 @@ from jsonfield import JSONField
 
 import joblib
 import numpy as np
+from csv import reader
+import re
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -146,8 +148,8 @@ class PretrainedModel(OwnedResourceModel):
             nb_mol_fields = len(mol_fields)
             to_pred = []
             real_props = []
-            for line in inports["SMILES"].splitlines():
-                items = line.split()
+            for items in list(reader([re.sub('\s+', ' ', x) for x in inports["SMILES"].splitlines()],
+                                     delimiter=' ', quotechar='"')):
                 line_dict = {}
                 line_error = False
                 for val, col in zip_longest(items, mol_fields):
