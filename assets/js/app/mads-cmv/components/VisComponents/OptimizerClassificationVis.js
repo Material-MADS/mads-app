@@ -64,6 +64,8 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   });
 
   fig.title.text = params.title; //title object must be set separately or it will become a string (bokeh bug)
+  fig.xaxis[0].axis_label = 'False Positive Rate (FPR)';
+  fig.yaxis[0].axis_label = 'True Positive Rate (TPR)';
   if(isThisOld){
     fig.title.text_color = "red";
     fig.title.text_font_size = "15px";
@@ -99,15 +101,11 @@ export default class OptimizerClassificationVis extends Component {
   // Initiation of the VizComp
   constructor(props) {
     super(props);
-    this.cds = null;
-    this.cds_whiskers = null;
-    this.cds2 = null;
 
     this.rootNode = React.createRef();
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
   }
@@ -130,17 +128,6 @@ export default class OptimizerClassificationVis extends Component {
 
     if (diff.colorTags) {
       return true;
-    }
-
-    if (diff.selectedIndices) {
-      if (this.cds) {
-        this.cds.selected.indices = diff.selectedIndices.filter(v => (v < this.props.data.d2.first_test));
-        if (this.cds2) {
-          this.cds2.selected.indices = diff.selectedIndices.filter(v =>
-                    (v >= this.props.data.d2.first_test)).map(v=> v - this.props.data.d2.first_test);
-        }
-      }
-      return false;
     }
 
     return true;
@@ -181,27 +168,6 @@ export default class OptimizerClassificationVis extends Component {
 
   componentWillUnmount() {
     this.clearChart();
-  }
-
-  handleSelectedIndicesChange() {
-    const { onSelectedIndicesChange, options } = this.props;
-    const { indices } = this.cds.selected;
-    let all_indices = indices;
-    if (this.cds2) {
-      const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
-      all_indices = [...new Set([...indices, ...indices2])];
-    }
-
-    if (this.selecting) {
-      return;
-    }
-
-    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, all_indices)) {
-      this.selecting = true;
-      this.lastSelections = all_indices;
-      onSelectedIndicesChange(all_indices);
-      this.selecting = false;
-    }
   }
 
   // Clear away the VizComp
@@ -247,7 +213,6 @@ export default class OptimizerClassificationVis extends Component {
 
     // Custom Download CSV buttons
     if (df.length > 0) {
-      console.log("part0")
       const tableDataStringTrain = df.to_csv('tmp.csv', {index: true, index_label: "Index"})
       const viewWrapperCustomButtonTrain_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData-training' + id);
       viewWrapperCustomButtonTrain_DLCSV.off('click');
@@ -261,14 +226,10 @@ export default class OptimizerClassificationVis extends Component {
     }
 
     // Figure starts here
-    this.mainFigure = createEmptyChart(options, !(xName && yName), (data.d1 === undefined && !this.state.dataShouldBeFine));
+    this.mainFigure = createEmptyChart(options, !(xName && yName && df.length > 0), (data.d1 === undefined && !this.state.dataShouldBeFine));
 
-    if (xName && yName) {
-      this.cds = new Bokeh.ColumnDataSource();
-
+    if (xName && yName && df.length > 0) { // && df.length > 0 &&
       this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.MLmethod + ") [" + this.props.method + "]";
-      this.mainFigure.xaxis[0].axis_label = 'False Positive Rate (FPR)';
-      this.mainFigure.yaxis[0].axis_label = 'True Positive Rate (TPR)';
 
       // data.scores
       if ('roc_repeats' in data.cv) {
@@ -377,13 +338,13 @@ export default class OptimizerClassificationVis extends Component {
                 <p>Optimization not yet performed.</p>
               ) : (
                 <>
-                  <h4>CV scores:</h4>
+                  <h4>CV scores <small>over all repeats and classes</small></h4>
                     <ul>
                       {Object.keys(this.state.scores).map((key, id) => (
-                            <li key={id}>{key}: {this.state.scores[key]}</li>
-                        ))}
+                            <li key={id}>Mean {key}: {this.state.scores[key]}</li>
+                      ))}
                     </ul>
-                  <h4>Optimized parameters:</h4>
+                  <h4>Optimized parameters</h4>
                     <ul>
                       {Object.keys(this.state.params).map((key, id) => (
                           <li key={id}>{key}: {this.state.params[key]}</li>

@@ -737,7 +737,7 @@ export const config = [
   //------------------------------------------
   {
     type: 'optimizer',
-    name: 'Optimizer',
+    name: 'Optimizer (Regression)',
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",

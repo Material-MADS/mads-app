@@ -62,8 +62,7 @@ def get_descriptors_and_transformer(data, df, df_target):
     if 'arg2' in method_args.keys() and len(methods_dict[method][1]) >= 2:
         methods_dict[method][1][list(methods_dict[method][1].keys())[1]] = int(method_args['arg2'])
     parameters_dict = methods_dict[method][1]
-    if 'lower' in parameters_dict and 'upper' in parameters_dict \
-       and int(method_args['arg1']) > int(method_args['arg1']):
+    if 'lower' in parameters_dict and 'upper' in parameters_dict and int(method_args['arg1']) > int(method_args['arg1']):
         raise ValueError("Lower value is higher than Upper value in Descriptors settings")
 
     mols = pd.DataFrame({x: smiles2mols(df[x].to_list()) for x in data['view']['settings']['featureColumns']})
@@ -146,6 +145,8 @@ def get_model(data):
             p_target = LE.transform([str(data['view']['settings']['positiveLabel'])])[0]
         except ValueError:
             raise ValueError("The provided Positive label is not within the Property/Target column values.")
+    else:
+        LE_is_required = False
 
     df_train, df_test = split_dataset(data)
     df_target = df_train[target_column]
@@ -193,7 +194,9 @@ def get_model(data):
         if LE_is_required:
             result['params']['label encoding'] = ', '.join(['{}={}'.format(x,y) for x,y in zip(LE.classes_, range(len(LE.classes_)))])
         preds = stats[rebuild_trial['trial']]['predictions'].copy()
-        preds.columns = [re.sub(r"(class_)([^.]+)", lambda m: f"{m.group(1)}{LE.inverse_transform([int(m.group(2)) if str(m.group(2)).isdigit() else str(m.group(2)) ])[0]}", x) for x in preds.columns]
+        preds.columns = [re.sub(r"(class_)([^.]+)",
+                                lambda m: f"{m.group(1)}{LE.inverse_transform([int(m.group(2)) if str(m.group(2)).isdigit() else str(m.group(2)) ])[0]}", x)
+                         for x in preds.columns]
         for col in preds.columns:
             if re.match(fr"{target_column}(\.predicted.class.+|\.observed)", col):
                 preds[col] = LE.inverse_transform(preds[col])
@@ -235,8 +238,7 @@ def get_model(data):
 def get_model_rebuild(data):
     params = data['view']['params'].copy()
     method = params.pop('method')
-    # is_classification = method.endswith("C")
-    scaling =params.pop('scaling')
+    scaling = params.pop('scaling')
     if 'label encoding' in params:
         params.pop('label encoding')
 

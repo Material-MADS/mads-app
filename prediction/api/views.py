@@ -147,7 +147,7 @@ class PretrainedModelAPIViewSet(
         for c in viewSettings['newValues']['featureColumns']:
             metadata['inports'].append({'name': c})
         metadata['outports'].append({'name': viewSettings['newValues']['targetColumn']})
-        metadata['input_type'] = "SMILES" if (viewSettings['view']['type']  in ['optimizer', 'optimizerClassification']) \
+        metadata['input_type'] = "SMILES" if (viewSettings['view']['type'] in ['optimizer', 'optimizerClassification']) \
                                  else "descriptors_values"
 
         pm = PretrainedModel()

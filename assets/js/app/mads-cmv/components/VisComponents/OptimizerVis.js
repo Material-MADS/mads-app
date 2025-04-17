@@ -464,18 +464,25 @@ export default class OptimizerVis extends Component {
         <div style={{marginLeft: '10px', marginRight: '10px'}}>
           <Card>
            <Card.Content>
-              <h4>CV scores:</h4>
-              <ul>
-                <li>Mean R2: {this.state.scores.R2}</li>
-                <li>Mean MAE: {this.state.scores.MAE}</li>
-                <li>Mean RMSE: {this.state.scores.RMSE}</li>
-              </ul>
-              <h4>Optimized parameters:</h4>
-              <ul>
-                {Object.keys(this.state.params).map((key, id) => (
-                    <li key={id}>{key}: {this.state.params[key]}</li>
-                ))}
-              </ul>
+              { Object.keys(this.state.scores).length === 0 ? (
+                <p>Optimization not yet performed.</p>
+              ) : (
+                <>
+                  <h4>CV scores <small>over all repeats</small></h4>
+                    <ul>
+                      {Object.keys(this.state.scores).map((key, id) => (
+                            <li key={id}>Mean {key}: {this.state.scores[key]}</li>
+                      ))}
+                    </ul>
+                  <h4>Optimized parameters</h4>
+                    <ul>
+                      {Object.keys(this.state.params).map((key, id) => (
+                          <li key={id}>{key}: {this.state.params[key]}</li>
+                      ))}
+                    </ul>
+                </>
+              )
+              }
             </Card.Content>
           </Card>
         </div>

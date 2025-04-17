@@ -34,7 +34,7 @@ import OptimizerForm from './OptimizerForm';
 // Custom Settings to pass to the VisComp
 //-------------------------------------------------------------------------------------------------
 const settings = {
-  options: { title: 'Optimizer' },
+  options: { title: 'Optimizer (Regression)' },
 };
 //-------------------------------------------------------------------------------------------------
 

@@ -25,7 +25,6 @@ from .clustering import get_clusters
 from .regression import get_regression
 from .descriptors import get_descriptors
 from .optimizer import get_model, get_model_rebuild
-from .optimizer import get_model as get_model_classification, get_model_rebuild as get_model_classification_rebuild
 from .classification import get_classification
 from .pairwise_correlation import get_pairwise_correlation
 from .pie import get_pie
@@ -59,8 +58,8 @@ processor_map = {
     'descriptors': get_descriptors,
     'optimizer': get_model,
     'optimizer_model': get_model_rebuild,
-    'optimizerClassification': get_model_classification,
-    'optimizerClassification_model': get_model_classification_rebuild,
+    'optimizerClassification': get_model,
+    'optimizerClassification_model': get_model_rebuild,
     'classification': get_classification,
     'pairwise-correlation': get_pairwise_correlation,
     'pie': get_pie,
