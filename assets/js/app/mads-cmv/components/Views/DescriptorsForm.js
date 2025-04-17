@@ -1,12 +1,13 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2024
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Philippe Gantzer (Component Developer) [2024-]
-//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'Descriptors' View, driven by ReduxForm
+// Description: This is the Settings Configuration Form for the 'Descriptors' View,
+//              driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
 // Notes: 'DescriptorsForm' opens a customized form for the 'Descriptors' component and allows
 //        the user to edit its parameters in multiple ways.

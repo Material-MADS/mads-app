@@ -1,12 +1,12 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'Pie' View, driven by ReduxForm
+// Description: This is the Settings Configuration Form for the 'OptimizerClassification' View
 // ------------------------------------------------------------------------------------------------
 // Notes: 'OptimizerClassificationForm' opens a customized form for the 'OptimizerClassification'
 //        component and allows the user to edit its look, feel and behavior in multiple ways.

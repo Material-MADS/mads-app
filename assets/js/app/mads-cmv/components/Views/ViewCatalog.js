@@ -145,6 +145,9 @@ export const config = [
     category: 'Visualization',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to depict molecules encoded as SMILES on a Table",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
     component: MolTableView,
     settings: {
       columns: [],
@@ -707,6 +710,9 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to compute ML descriptors and output them on a Table",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
     component: DescriptorsView,
     customBtns: [
       {name: 'saveCSVData', icon: 'download', text: 'Download descriptors as CSV'},
@@ -735,6 +741,9 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to create and evaluate chemistry-related ML regression models",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
     component: OptimizerView,
     customBtns: [
       {name: 'saveCSVData', icon: 'download', text: 'Download predictions as CSV'},
@@ -767,6 +776,9 @@ export const config = [
     category: 'Machine Learning',
     version: 1.0,
     devStage: "Stable Release",
+    description: "This component allows the user to create and evaluate chemistry-related ML classification models",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
     component: OptimizerClassificationView,
     customBtns: [
       {name: 'saveCSVData-training', icon: 'download', text: 'Download training cross-validation as CSV'},

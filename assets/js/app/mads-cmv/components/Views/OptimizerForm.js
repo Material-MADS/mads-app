@@ -1,15 +1,15 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'Pie' View, driven by ReduxForm
+// Description: This is the Settings Configuration Form for the 'Optimizer' View.
 // ------------------------------------------------------------------------------------------------
-// Notes: 'PieForm' opens a customized form for the 'PieChart' visualization component and allows
-//        the user to edit its look, feel and behavior in multiple ways.
+// Notes: 'OptimizerForm' opens a customized form for the 'Optimizer' ML component
+//        and allows the user to edit its parameters, feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components,
 //             Internal Serverside API access

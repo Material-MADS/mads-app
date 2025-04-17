@@ -1,17 +1,16 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Philippe Gantzer (Component Developer) [2024-]
-//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
 //              'DescriptorsVis' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'DescriptorsVis' is a visualization component using ML-Descriptors on the data before
-//        displaying its result in a classic Scatter plot. (rendered by the Bokeh-Charts library.)
+// Notes: 'DescriptorsVis' is a visualization component calculating ML-Descriptors on the data and
+//        displaying its result in a classic table.
 // ------------------------------------------------------------------------------------------------
 // References: React & prop-types Libs, 3rd party deepEqual, pandas, lodash and Bokeh libs with
 //             various color palettes

@@ -1,12 +1,12 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Philippe Gantzer (Component Developer) [2024-]
-//          Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
-// Description: This is the Inner workings and Content Manager Controler of the 'Descriptors' View
+// Description: This is the Inner workings and Content Manager Controller of the 'Descriptors' View
 // ------------------------------------------------------------------------------------------------
 // Notes: 'Descriptors' is the manager of all current input that controls the final view of the
 //         'DescriptorsVis' visualization component.

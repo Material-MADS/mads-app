@@ -1,16 +1,16 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q2 2025
 # ________________________________________________________________________________________________
-# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-#          Jun Fujima (Former Lead Developer) [2018-2021]
+# Authors: Philippe Gantzer [2024-]
+#          Pavel Sidorov [2024-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              'Smiles Table' components
+#              'smiles_table' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
-#         allows serverside work for the 'Smiles Table' component.
+#         allows serverside work for the 'smiles_table' component.
 # ------------------------------------------------------------------------------------------------
 # References: logging, pandas and chython libs
 #=================================================================================================
