@@ -36,6 +36,7 @@ import ImageViewView from './ImageView';
 import FeatureEngineeringView from './FeatureEngineeringView';
 import MonteCatView from './MonteCatView';
 import featureAssignmentView from './FeatureAssignmentView';
+import CatalystGeneView from './CatalystGeneView';
 
 // Analysis
 import ParCoordsView from './ParCoordsView';
@@ -45,6 +46,7 @@ import ClusteringView from './ClusteringView';
 import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
+import NetworkAnalysisView from './NetworkAnalysisView.js';
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -87,6 +89,7 @@ export const specialPass = ['micke.kuwahara@gmail.com', 'micke.kuwahara@sci.hoku
 // version: [Optional] any numerical string value to indicate for the developer and the user what version this component are at. Any value different than 1.0 will be displayed
 // devStage: [Optional] Any value or no value beside 'Stable Release' will generate a warning popup that the component is under development. Beside that any string will work, depending on what the developer wants to communicate,
 // description: [Optional] Some basic info about what this component basically can do and offer
+// manual:  [Optional] A URL string to a manual doc/pdf for this component
 // devInfo: [Optional] An array of objects containing name, affiliation and URL-link about the developer(s), [{name: "", affiliation: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component
 // supervisors: [Optional] An array of objects containing name, affiliation and URL-link about the supervising and support staff, that provided help during the development of this component, [{name: "", affiliation: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component if it exists
 // academicInfo: [Optional] An array of objects containing title and URL-link about any academic papers related to the component, [{title: "", link: ""}]. Will appear in an 'About' modal accessed via the (i) symbol in the top right corner of the component
@@ -447,9 +450,10 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "This component allows the user to assign features for machine learning",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
     component: featureAssignmentView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -480,9 +484,10 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "This component allows the user to engineer features used in machine learning",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
     component: FeatureEngineeringView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -515,9 +520,10 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "The MonteCat Component carries out an automated Descriptor search using successive randomized Additions and Removals, selecting Descriptors that lead to a high model Score through the Metropolis-Hastings algorithm.",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "MonteCat: A Basin-Hopping-Inspired Catalyst Descriptor Search Algorithm for Machine Learning Models", link: "https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952"}, {title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://placebear.com/200/300"}],
+    academicInfo: [{title: "MonteCat: A Basin-Hopping-Inspired Catalyst Descriptor Search Algorithm for Machine Learning Models", link: "https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952"}, {title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
     component: MonteCatView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -545,6 +551,37 @@ export const config = [
   },
   //------------------------------------------
 
+  
+  // Catalyst Gene View - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
+  //------------------------------------------
+  {
+    type: 'catalystGene',
+    name: 'CatalystGene',
+    category: 'Data Processing',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component automatically designs catalytic genes based on the specified column data. The calculated values during the introduction of catalytic genes exhibit distinct patterns for each catalyst, which can be visualized using a heatmap and a line graph. Additionally, the component enables an analysis that combines catalytic gene-based analysis with hierarchical clustering. This allows users to examine catalyst similarity from multiple perspectives. In table format visualization, users can check each catalyst's genes and extract common elemental patterns within similar catalysts, providing insights for designing new catalysts.",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/main/Component-Manuals/Catalyst_Gene_Manual.pdf",
+    devInfo: [{name: "Kenshin Shibata", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Kenshin-Shibata"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    component: CatalystGeneView,
+    settings: {
+      options: {
+        colorMap: 'Magma',
+        scaling:{
+          max: 1,
+          min: 0,
+        },
+        extent: {
+          width: 600,
+          height: 600,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // ANALYSIS CATEGORY
   //==================
@@ -694,6 +731,35 @@ export const config = [
         bkgCol: "#ffffff",
         txtCol: "#000000",
       },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // NetworkAnalysis - A collection of all VisComps that can be added via a smart 'Wizard'-form
+  //------------------------------------------
+  {
+    type: 'networkAnalysis',
+    name: 'NetworkAnalysis',
+    category: 'Analysis',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to display a network diagram from node data that reflects centrality and clustering.",
+    manual:  "https://github.com/Material-MADS/mads-docs/blob/7f968e20f6b46a9dec23882eb2de9fdc12838ae2/Component-Manuals/Network_Analysis_Manual.pdf",
+    devInfo: [{name: "Akihiro Honda", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Honda-Akihiro"}],
+    supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
+    component: NetworkAnalysisView,
+    settings: {
+      centrality: '',
+      markNode: '',
+      clusteringEnabled: false,
+      options: {
+        links: {},
+        graphLayout: {},
+        nodes: {},
+        clusterForse: 0.0025,
+        extent: { width: 700, height: 700 },
+      }
     },
     enabled: true,
   },
@@ -1081,6 +1147,7 @@ export const config = [
     devStage: "Draft",
     description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
     devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    // manual: "",
     // supervisors: [{name: "", affiliation: "", link: ""}],
     // academicInfo: [{title: "", link: ""}],
     component: Cads_Component_TemplateView,

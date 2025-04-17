@@ -36,7 +36,7 @@ export default function withCommandInterface(
   properties = {}
 ) {
 
-  const AboutInfoModal = ({compName, description, devInfo, superInfo, academicInfo}) => {
+  const AboutInfoModal = ({compName, description, manual, devInfo, superInfo, academicInfo}) => {
     const [open, setOpen] = React.useState(false)
 
     const theDescription = description != "" ? description : "No description provided for this component";
@@ -52,6 +52,15 @@ export default function withCommandInterface(
       }
       else{
         return (<p style={{marginLeft: "10px", fontFamily: "Georgia", fontWeight: "normal", fontSize: "15px"}}>This Developer has Decided to Remain Anonymous</p>);
+      }
+    };
+
+    const TheManual = () => {
+      if (manual != "") {
+        return (<p style={{marginLeft: "10px", fontFamily: "Georgia", fontWeight: "bold", fontSize: "16px"}}><a href={manual} target="_blank" style={{marginLeft: "7px"}}>{compName} Online Manual <Icon name='eye' /></a> </p>);
+      }
+      else{
+        return (<p style={{marginLeft: "10px", fontFamily: "Georgia", fontWeight: "normal", fontSize: "15px"}}>No Additional Manual Required</p>);
       }
     };
 
@@ -96,6 +105,11 @@ export default function withCommandInterface(
           <ModalDescription>
             <Header>Description</Header>
             <p style={{marginLeft: "10px"}}>{theDescription}</p>
+          </ModalDescription>
+          <hr/><br/>
+          <ModalDescription>
+            <Header>Component Manual</Header>
+            <TheManual />
           </ModalDescription>
           <hr/><br/>
           <ModalDescription>
@@ -248,6 +262,7 @@ export default function withCommandInterface(
         devStage,
         freeMobilityEnabled,
         devInfo,
+        manual,
         superInfo,
         academicInfo,
         description
@@ -321,7 +336,7 @@ export default function withCommandInterface(
 
           <DevStage stage={devStage} version={version} />
 
-          <AboutInfoModal compName={view.name} description={description} devInfo={devInfo} superInfo={superInfo} academicInfo={academicInfo} />
+          <AboutInfoModal compName={view.name} description={description} devInfo={devInfo} manual={manual} superInfo={superInfo} academicInfo={academicInfo} />
 
           <WrappedComponent
             data={data || []}
