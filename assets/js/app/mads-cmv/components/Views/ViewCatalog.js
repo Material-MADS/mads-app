@@ -551,7 +551,7 @@ export const config = [
   },
   //------------------------------------------
 
-  
+
   // Catalyst Gene View - A collection of all VisComps that can be added via a smart 'Wizard'-form
   // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
   //------------------------------------------
@@ -818,7 +818,8 @@ export const config = [
       method: 'Circus',
       methodArguments: {
         arg1: 0,
-        arg2: 3
+        arg2: 3,
+        arg3: 'no',
       },
       MLmethod: 'SVR',
       CVsplits: '5',
@@ -854,7 +855,8 @@ export const config = [
       method: 'Circus',
       methodArguments: {
         arg1: 0,
-        arg2: 3
+        arg2: 3,
+        arg3: 'no',
       },
       MLmethod: 'SVC',
       CVsplits: '5',

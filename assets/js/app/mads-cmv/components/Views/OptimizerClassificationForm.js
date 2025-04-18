@@ -101,7 +101,8 @@ const OptimizerClassificationForm = (props) => {
   const methodsArgs = {
     Circus: [
       { name: 'Lower', defVal: 0 },
-      { name: 'Upper', defVal: 4 }
+      { name: 'Upper', defVal: 3 },
+      { name: 'Use stereo fragments', defVal: 'no' }
     ],
     Morgan_fingerprints: [
       { name: '#Bits', defVal: 1024 },
@@ -138,6 +139,7 @@ const OptimizerClassificationForm = (props) => {
     ],
     Mordred_2D: [],
   };
+  const Circus_keep_stereo_options = ['no', 'yes', 'both'];
 
   const MLmethods = ['SVC', 'RFC'];
 
@@ -235,6 +237,9 @@ const OptimizerClassificationForm = (props) => {
       props.change('methodArguments.arg1', initialValues.methodArguments.arg1);
       props.change('methodArguments.arg2', initialValues.methodArguments.arg2);
     }
+    if(event == 'Circus'){
+      props.change('methodArguments.arg3', initialValues.methodArguments.arg3);
+    };
   };
 
 
@@ -282,6 +287,15 @@ const OptimizerClassificationForm = (props) => {
                 name="methodArguments.arg2"
                 component="input"
                 type="number"
+              />
+            </Form.Field>}
+            {(currentMethodVal == 'Circus') && <Form.Field>
+            <label>{methodsArgs[currentMethodVal][2].name}</label>
+              <Field
+                name="methodArguments.arg3"
+                component={SemanticDropdown}
+                placeholder="Yes/No/Both"
+                options={getDropdownOptions(Circus_keep_stereo_options)}
               />
             </Form.Field>}
           </Form.Group>

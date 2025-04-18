@@ -36,32 +36,55 @@ logger = logging.getLogger(__name__)
 
 
 #-------------------------------------------------------------------------------------------------
-methods_dict = {'Morgan_fingerprints': ['morgan', {'nBits': 1024, 'radius': 2}],
-                'Morgan_features': ['morganfeatures', {'nBits': 1024, 'radius': 2}],
-                'RDKit_Fingerprints': ['rdkfp', {'nBits': 1024, 'radius': 3}],
-                'RDKit_Linear_Fingerprints': ['rdkfplinear', {'nBits': 1024, 'radius': 3}],
-                'Layered': ['layered', {'nBits': 1024, 'radius': 3}],
-                'Avalon': ['avalon', {'nBits': 1024}],
-                'Torsion': ['torsion', {'nBits': 1024}],
-                'Atom_Pairs': ['atompairs', {'nBits': 1024}],
-                'Circus': ['circus', {'lower': 1, 'upper': 2}],
-                'Linear_fragments': ['chyline', {'lower': 2, 'upper': 5}],
-                'Mordred_2D': ['mordred2d', {}],
+methods_dict = {'Morgan_fingerprints': {'name': 'morgan',
+                                        'args': {'nBits': 1024, 'radius': 2},
+                                        'args_parse': {'arg1': 'nBits', 'arg2': 'radius'}},
+                'Morgan_features': {'name': 'morganfeatures',
+                                    'args': {'nBits': 1024, 'radius': 2},
+                                    'args_parse': {'arg1': 'nBits', 'arg2': 'radius'}},
+                'RDKit_Fingerprints': {'name': 'rdkfp',
+                                       'args': {'nBits': 1024, 'radius': 3},
+                                       'args_parse': {'arg1': 'nBits', 'arg2': 'radius'}},
+                'RDKit_Linear_Fingerprints': {'name': 'rdkfplinear',
+                                              'args': {'nBits': 1024, 'radius': 3},
+                                              'args_parse': {'arg1': 'nBits', 'arg2': 'radius'}},
+                'Layered': {'name': 'layered',
+                            'args': {'nBits': 1024, 'radius': 3},
+                            'args_parse': {'arg1': 'nBits', 'arg2': 'radius'}},
+                'Avalon': {'name': 'avalon',
+                           'args': {'nBits': 1024},
+                           'args_parse': {'arg1': 'nBits'}},
+                'Torsion': {'name': 'torsion',
+                            'args': {'nBits': 1024},
+                            'args_parse': {'arg1': 'nBits'}},
+                'Atom_Pairs': {'name': 'atompairs',
+                               'args': {'nBits': 1024},
+                               'args_parse': {'arg1': 'nBits'}},
+                'Circus': {'name': 'circus',
+                           'args': {'lower': 1, 'upper': 2, 'keep_stereo': 'no'},
+                           'args_parse': {'arg1': 'lower', 'arg2': 'upper', 'arg3': 'keep_stereo'}},
+                'Linear_fragments': {'name': 'chyline',
+                                     'args': {'lower': 2, 'upper': 5},
+                                     'args_parse': {'arg1': 'lower', 'arg2': 'upper'}},
+                'Mordred_2D': {'name': 'mordred2d',
+                               'args': {},
+                               'args_parse': {}},
                 }
 
 
 def get_descriptors_and_transformer(data, df, df_target):
     method = data['view']['settings']['method']
-    if method not in methods_dict.keys():
+    if method not in methods_dict:
         raise ValueError("Descriptors type is not allowed")
-    descriptors_name = methods_dict[method][0]
 
     method_args = data['view']['settings']['methodArguments']
-    if 'arg1' in method_args.keys() and len(methods_dict[method][1]) >= 1:
-        methods_dict[method][1][list(methods_dict[method][1].keys())[0]] = int(method_args['arg1'])
-    if 'arg2' in method_args.keys() and len(methods_dict[method][1]) >= 2:
-        methods_dict[method][1][list(methods_dict[method][1].keys())[1]] = int(method_args['arg2'])
-    parameters_dict = methods_dict[method][1]
+    parameters_dict = methods_dict[method]['args'].copy()
+    for form_arg in method_args:
+        if form_arg in methods_dict[method]['args_parse']:
+            parameters_dict[methods_dict[method]['args_parse'][form_arg]] = int(method_args[form_arg]) \
+                                                                            if str(method_args[form_arg]).isdigit() \
+                                                                            else str(method_args[form_arg])
+
     if 'lower' in parameters_dict and 'upper' in parameters_dict and int(method_args['arg1']) > int(method_args['arg1']):
         raise ValueError("Lower value is higher than Upper value in Descriptors settings")
 
@@ -92,7 +115,7 @@ def get_descriptors_and_transformer(data, df, df_target):
             raise ValueError(f"Unknown solvent(s): {display_solvents}. Please refer to solvents supported in DOPtools.")
         input_dict['solvents'] = df_sc
 
-    result = calculate_descriptor_table(input_dict, descriptors_name, parameters_dict)
+    result = calculate_descriptor_table(input_dict, methods_dict[method]['name'], parameters_dict)
     return result['prop1']['table'], result['prop1']['calculator']  # descriptors, transformer
 
 
