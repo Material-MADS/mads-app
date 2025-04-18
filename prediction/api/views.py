@@ -186,7 +186,7 @@ class PretrainedModelAPIViewSet(
                         metadata['input_spec'] += x[1].get_feature_names()
                     else:
                         metadata['input_spec'].append(x[0])
-        # logger.info(model)
+        logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
             f.seek(0)
@@ -216,6 +216,8 @@ class PretrainedModelAPIViewSet(
         for c in viewSettings['newValues']['featureColumns']:
             metadata['inports'].append({'name': c})
         metadata['outports'].append({'name': viewSettings['newValues']['targetColumn']})
+        metadata['input_type'] = "SMILES" if (viewSettings['view']['type'] in ['optimizer', 'optimizerClassification']) \
+            else "descriptors_values"
 
         pm = self.get_object()
         pm.name = data['name']
@@ -223,10 +225,37 @@ class PretrainedModelAPIViewSet(
         pm.metadata = metadata
 
         # file
-        model = get_model({
-            'data': viewSettings['data'],
-            'view': viewSettings['view'],
-        })
+        arg_get_model = {'data': viewSettings['data'],
+                         'view': viewSettings['view'], }
+        if 'params' in viewSettings['view'].keys():  # for optimizer component
+            print("Dispo:", data)
+            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn'])
+            if 'label encoding' in viewSettings['view']['params']:
+                labels = viewSettings['view']['params'].pop('label encoding')
+                description += ("\n" + str(viewSettings['view']['settings']['targetColumn']) + " encoding: " + labels)
+            description += ("\n Descriptors: " + str(viewSettings['view']['settings']['method']) + " (" +
+                            "; ".join(str(v) for v in viewSettings['view']['settings']['methodArguments'].values()) +
+                            ")")
+            if viewSettings['view']['settings']['solventColumn']:
+                description += ", Solvent (" + viewSettings['view']['settings']['solventColumn'] + ")"
+            if viewSettings['view']['settings']['numericalFeatureColumns']:
+                description += (", Passthrough (" +
+                                ", ".join(str(v) for v in viewSettings['view']['settings']['numericalFeatureColumns']) +
+                                ")")
+            description += ("\n Parameters: " +
+                            ', '.join('{}={}'.format(*t) for t in viewSettings['view']['params'].items()))
+            pm.description = description
+        model = get_model(arg_get_model)
+        if type(model) is Pipeline:
+            if not isinstance(model[0], ComplexFragmentor):
+                metadata['input_spec'] = ["SMILES"]
+            else:
+                metadata['input_spec'] = []
+                for x in model[0].associator:
+                    if x[0] == "numerical":
+                        metadata['input_spec'] += x[1].get_feature_names()
+                    else:
+                        metadata['input_spec'].append(x[0])
         logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
@@ -235,6 +264,7 @@ class PretrainedModelAPIViewSet(
             pm.file = SimpleUploadedFile('test.pkl', f.read())
 
         serializer = PretrainedModelSerializer(pm)
+        pm.metadata = metadata
         pm.save()
 
         return Response(serializer.data)

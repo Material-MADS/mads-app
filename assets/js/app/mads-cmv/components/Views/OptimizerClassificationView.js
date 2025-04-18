@@ -108,20 +108,22 @@ export default class OptimizerClassificationView extends withCommandInterface( O
   };
 
   // Manages Save Model Requests
-  handleModelSave = (name, overwrite, id) => {
-    // Note: override this if necessary
+  handleModelSave = async (name, overwrite, id) => {
     const { actions, dataset, view, data } = this.props;
 
     if(dataset[this.props.id] && dataset[this.props.id]['params']) {
+      actions.setLoadingState(true)
       let newValues, data, params, tmpViewParams;
       newValues = view.settings
       data = dataset[this.props.id].data.data
       view['params'] = dataset[this.props.id]['params'];
       tmpViewParams = { view, newValues, data }
-      actions.saveModel(name, tmpViewParams, overwrite, id);
+      const a = await actions.saveModel(name, tmpViewParams, overwrite, id);
+      actions.setLoadingState(false)
+      this.close()
     }
     else {
-      this.props.actions.showMessage({
+      actions.showMessage({
           header: 'MODEL NOT OPTIMIZED',
           content: 'The model is not optimized yet and cannot be saved. Please submit the module first.',
           type: 'warning',

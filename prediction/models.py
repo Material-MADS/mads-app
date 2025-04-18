@@ -189,7 +189,7 @@ class PretrainedModel(OwnedResourceModel):
             to_pred['Predicted'] = model.predict(to_pred['SMILES'].to_list() if nb_mol_fields == 1 else to_pred)
 
             if coloratom and type(model[2]) in [SVC, RandomForestClassifier]:
-                    to_pred['ColorAtom'] = ['not available for classification models yet'*len(to_pred)]
+                to_pred['ColorAtom'] = ['not available for classification models yet'] * to_pred.shape[0]
             elif coloratom:
                 import matplotlib
                 matplotlib.use('Agg')
