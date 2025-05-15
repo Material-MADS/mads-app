@@ -97,7 +97,7 @@ def get_contents_from_file(file):
         file_type = 'csv'
 
         # Extract which delimiter is used in this csv file
-        delimiter = '\u2021' #double dagger
+        delimiter = '#'
         possible_delimeters = [',', ';', '\t', '\s', '|']
         df_check = pd.read_csv(file, sep=delimiter, nrows=2, encoding_errors='replace')
         cellStr = df_check.iat[0,0]
