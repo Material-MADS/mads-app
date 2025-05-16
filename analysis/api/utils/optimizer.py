@@ -108,10 +108,10 @@ def get_descriptors_and_transformer(data, df, df_target):
 
     if 'solventColumn' in data['view']['settings'] and data['view']['settings']['solventColumn']:
         df_sc = df[data['view']['settings']['solventColumn']]
-        bad_solvents = [x for x in df_sc if x not in available_solvents]
+        bad_solvents = [str(x) for x in df_sc if str(x) not in available_solvents]
         if bad_solvents:
-            display_solvents = (", ".join(bad_solvents) if len(bad_solvents) < 11
-        else ", ".join(bad_solvents[:10])+f", ...and {len(bad_solvents) - 10} more")
+            display_solvents = (", ".join(bad_solvents) if len(bad_solvents) < 11 else
+                                ", ".join(bad_solvents[:10])+f", ...and {len(bad_solvents) - 10} more")
             raise ValueError(f"Unknown solvent(s): {display_solvents}. Please refer to solvents supported in DOPtools.")
         input_dict['solvents'] = df_sc
 
@@ -138,14 +138,17 @@ def split_dataset(data):
 def smiles2mols(smiles_list):
     mols = []
     for x in smiles_list:
-        mol = smiles(x)
-        if mol:
-            try:
-                mol.canonicalize(fix_tautomers=False)
-            except:  # Magic trick of chython
-                mol.canonicalize(fix_tautomers=False)
-            mols.append(mol)
-        else:
+        try:
+            mol = smiles(x)
+            if mol:
+                try:
+                    mol.canonicalize(fix_tautomers=False)
+                except:  # Magic trick of chython
+                    mol.canonicalize(fix_tautomers=False)
+                mols.append(mol)
+            else:
+                raise ValueError()
+        except:
             raise ValueError("The SMILES string " + str(x) + " could not be parsed")
     return mols
 
@@ -187,6 +190,8 @@ def get_model(data):
     try:
         st, stats = launch_study(for_opt, pd.DataFrame(df_target), "", ml_method, trials, cv_splits,
                                  cv_repeats, 5, 60, (0, 1), False)
+        if not len(stats):
+            raise StopIteration() #StopIteration can also be raised by launch_study above
     except StopIteration:
         raise ValueError("No solution found. Try increasing iterations number or change parameters.")
     rebuild_trial = st.sort_values(by='score', ascending=False).iloc[0]

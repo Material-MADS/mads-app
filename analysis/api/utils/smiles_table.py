@@ -24,9 +24,6 @@ logger = logging.getLogger(__name__)
 
 def get_mol_svg(data):
     DEPICT.depict_settings(aam=False)
-    print("called with arg", data['view'])
-    print("")
-    print("Data is", data)
     svg_strings = {}
     for col in data['view']['settings']['smiles_columns']:
         svg_strings[col] = []
@@ -44,6 +41,6 @@ def get_mol_svg(data):
                     else:
                         raise Exception()
                 except:
-                    line[col] = "Not parsable"
+                    line[col] = "Not parsable "+str(line[col])
 
     return {'data': data}
