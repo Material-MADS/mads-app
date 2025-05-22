@@ -779,6 +779,7 @@ export const config = [
     description: "This component allows the user to compute ML descriptors and output them on a Table",
     devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
               {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
     component: DescriptorsView,
     customBtns: [
       {name: 'saveCSVData', icon: 'download', text: 'Download descriptors as CSV'},
@@ -810,6 +811,7 @@ export const config = [
     description: "This component allows the user to create and evaluate chemistry-related ML regression models",
     devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
               {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
     component: OptimizerView,
     customBtns: [
       {name: 'saveCSVData', icon: 'download', text: 'Download predictions as CSV'},
@@ -846,6 +848,7 @@ export const config = [
     description: "This component allows the user to create and evaluate chemistry-related ML classification models",
     devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
               {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
     component: OptimizerClassificationView,
     customBtns: [
       {name: 'saveCSVData-training', icon: 'download', text: 'Download training cross-validation as CSV'},
