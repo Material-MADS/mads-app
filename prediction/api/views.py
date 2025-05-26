@@ -1,10 +1,11 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q2 2025
 # ________________________________________________________________________________________________
 # Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 #          Jun Fujima (Former Lead Developer) [2018-2021]
+#          Philippe Gantzer (for predictions of models issued by Optimizer components) [2024-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) Provided rest api for the 'Prediction' page involving
 #              views
@@ -35,6 +36,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 import joblib
+from sklearn.pipeline import Pipeline
+from doptools import ComplexFragmentor
 
 from ..models import PretrainedModel
 from .serializers import PretrainedModelSerializer
@@ -144,25 +147,53 @@ class PretrainedModelAPIViewSet(
         for c in viewSettings['newValues']['featureColumns']:
             metadata['inports'].append({'name': c})
         metadata['outports'].append({'name': viewSettings['newValues']['targetColumn']})
+        metadata['input_type'] = "SMILES" if (viewSettings['view']['type'] in ['optimizer', 'optimizerClassification']) \
+                                 else "descriptors_values"
 
         pm = PretrainedModel()
         pm.name = data['name']
         pm.owner = request.user
-        pm.metadata = metadata
 
         # file
-        model = get_model({
-            'data': viewSettings['data'],
-            'view': viewSettings['view'],
-        })
+        arg_get_model = {'data': viewSettings['data'],
+                         'view': viewSettings['view'], }
+        if 'params' in viewSettings['view'].keys():  # for optimizer component
+            print("Dispo:", data)
+            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn'])
+            if 'label encoding' in viewSettings['view']['params']:
+                labels = viewSettings['view']['params'].pop('label encoding')
+                description += ("\n" + str(viewSettings['view']['settings']['targetColumn']) + " encoding: " + labels)
+            description += ("\n Descriptors: "+str(viewSettings['view']['settings']['method']) + " (" +
+                            "; ".join(str(v) for v in viewSettings['view']['settings']['methodArguments'].values()) +
+                            ")")
+            if viewSettings['view']['settings']['solventColumn']:
+                description += ", Solvent ("+viewSettings['view']['settings']['solventColumn']+")"
+            if viewSettings['view']['settings']['numericalFeatureColumns']:
+                description += (", Passthrough (" +
+                                ", ".join(str(v) for v in viewSettings['view']['settings']['numericalFeatureColumns']) +
+                                ")")
+            description += ("\n Parameters: " +
+                            ', '.join('{}={}'.format(*t) for t in viewSettings['view']['params'].items()))
+            pm.description = description
+        model = get_model(arg_get_model)
+        if type(model) is Pipeline:
+            if not isinstance(model[0], ComplexFragmentor):
+                metadata['input_spec'] = ["SMILES"]
+            else:
+                metadata['input_spec'] = []
+                for x in model[0].associator:
+                    if x[0] == "numerical":
+                        metadata['input_spec'] += x[1].get_feature_names()
+                    else:
+                        metadata['input_spec'].append(x[0])
         logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
             f.seek(0)
-
             pm.file = SimpleUploadedFile('test.pkl', f.read())
 
         serializer = PretrainedModelSerializer(pm)
+        pm.metadata = metadata
         pm.save()
 
         return Response(serializer.data)
@@ -185,6 +216,8 @@ class PretrainedModelAPIViewSet(
         for c in viewSettings['newValues']['featureColumns']:
             metadata['inports'].append({'name': c})
         metadata['outports'].append({'name': viewSettings['newValues']['targetColumn']})
+        metadata['input_type'] = "SMILES" if (viewSettings['view']['type'] in ['optimizer', 'optimizerClassification']) \
+            else "descriptors_values"
 
         pm = self.get_object()
         pm.name = data['name']
@@ -192,10 +225,37 @@ class PretrainedModelAPIViewSet(
         pm.metadata = metadata
 
         # file
-        model = get_model({
-            'data': viewSettings['data'],
-            'view': viewSettings['view'],
-        })
+        arg_get_model = {'data': viewSettings['data'],
+                         'view': viewSettings['view'], }
+        if 'params' in viewSettings['view'].keys():  # for optimizer component
+            print("Dispo:", data)
+            description = "Predicts: " + str(viewSettings['view']['settings']['targetColumn'])
+            if 'label encoding' in viewSettings['view']['params']:
+                labels = viewSettings['view']['params'].pop('label encoding')
+                description += ("\n" + str(viewSettings['view']['settings']['targetColumn']) + " encoding: " + labels)
+            description += ("\n Descriptors: " + str(viewSettings['view']['settings']['method']) + " (" +
+                            "; ".join(str(v) for v in viewSettings['view']['settings']['methodArguments'].values()) +
+                            ")")
+            if viewSettings['view']['settings']['solventColumn']:
+                description += ", Solvent (" + viewSettings['view']['settings']['solventColumn'] + ")"
+            if viewSettings['view']['settings']['numericalFeatureColumns']:
+                description += (", Passthrough (" +
+                                ", ".join(str(v) for v in viewSettings['view']['settings']['numericalFeatureColumns']) +
+                                ")")
+            description += ("\n Parameters: " +
+                            ', '.join('{}={}'.format(*t) for t in viewSettings['view']['params'].items()))
+            pm.description = description
+        model = get_model(arg_get_model)
+        if type(model) is Pipeline:
+            if not isinstance(model[0], ComplexFragmentor):
+                metadata['input_spec'] = ["SMILES"]
+            else:
+                metadata['input_spec'] = []
+                for x in model[0].associator:
+                    if x[0] == "numerical":
+                        metadata['input_spec'] += x[1].get_feature_names()
+                    else:
+                        metadata['input_spec'].append(x[0])
         logger.info(model)
         with tempfile.TemporaryFile('w+b') as f:
             joblib.dump(model, f)
@@ -204,6 +264,7 @@ class PretrainedModelAPIViewSet(
             pm.file = SimpleUploadedFile('test.pkl', f.read())
 
         serializer = PretrainedModelSerializer(pm)
+        pm.metadata = metadata
         pm.save()
 
         return Response(serializer.data)

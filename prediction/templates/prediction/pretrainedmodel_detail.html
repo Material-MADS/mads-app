@@ -8,6 +8,7 @@
 # ________________________________________________________________________________________________
 # Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 #          Jun Fujima (Former Lead Developer) [2018-2021]
+#          Philippe Gantzer (for predictions of models issued by Optimizer components) [2024-]
 # ________________________________________________________________________________________________
 # Description: (Django) Frontside template for the 'Prediction' page involving executing a
 #              predition
@@ -19,13 +20,32 @@
 {% endcomment %}
 
 {% load ex_filters %}
+{% load render_table from django_tables2 %}
+{% load static %}
 
 {% block title %}Prediction - {{PROJECT_NAME_ABBR}}{% endblock %}
 
 {% block local_style %}
 <style>
 #cc {
-    overflow: auto;
+  overflow: auto;
+}
+td, th {
+  border-radius: .28571429rem 0 0 0;
+  padding: .92857143em .78571429em;
+  border-top: 1px solid rgba(34,36,38,.1);
+  border-left: 1px solid rgba(34,36,38,.1)
+}
+th {
+  background: #f9fafb;
+  border-bottom: 1px solid rgba(34,36,38,.1);
+  font-weight: bold;
+}
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: .28571429rem;
 }
 </style>
 {% endblock %}
@@ -51,7 +71,7 @@
 
 
 {% if pretrainedmodel.description %}
-<div>{{pretrainedmodel.description}}</div>
+<div>{{pretrainedmodel.description|linebreaks}}</div>
 {% endif %}
 
 <div class="ui secondary stackable menu">
@@ -70,16 +90,51 @@
     </div>
 </div>
 
+{% if input_type == "SMILES" %}
+  <p>Please input on each line:
+    {% for fieldname in input_spec %}{{fieldname}} {% endfor %}
+    [**OR**]
+    {% for fieldname in input_spec %}{{fieldname}} {% endfor %}Experimental_value</p>
+{% else %}
+  <p>Please input the feature values</p>
+{% endif %}
+
 <form class="ui form" action="" method="POST">
     {% csrf_token %}
     {{form}}
-    <input class="ui button" type="submit" value="Predict">
+    <input class="ui button" type="submit" name="predict" value="Predict">
+    {% if input_type == "SMILES" %}
+      <input class="ui button" type="submit" name="predict_save" value="Predict and export as csv">
+      <input class="ui button" type="submit" name="predict_coloratom" value="Predict and color">
+    {% endif %}
 </form>
 
-<h4>Prediction result</h4>
+{% if outputs %}
+  <h3>Prediction result</h3>
 
-<p>{{outputs.name}}:  {{outputs.value}}</p>
-
+  {% if input_type == "SMILES" %}
+    <table>
+      <tr>
+        {% for col in outputs.value.columns %}
+          <th>
+            {{col}}
+          </th>
+        {% endfor %}
+      </tr>
+        {% for index, row in outputs.value.iterrows %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell|safe}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+  {% else %}
+    <p>{{outputs.name}}:  {{outputs.value|linebreaksbr}}</p>
+  {% endif %}
+{% endif %}
 <hr>
 
 {% endblock %}

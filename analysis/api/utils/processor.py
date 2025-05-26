@@ -18,10 +18,13 @@
 #-------------------------------------------------------------------------------------------------
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
+from .smiles_table import get_mol_svg
 from .histogram import get_histograms
 from .feature_importance import get_feature_importance
 from .clustering import get_clusters
 from .regression import get_regression
+from .descriptors import get_descriptors
+from .optimizer import get_model, get_model_rebuild
 from .classification import get_classification
 from .pairwise_correlation import get_pairwise_correlation
 from .pie import get_pie
@@ -49,10 +52,16 @@ logger = logging.getLogger(__name__)
 
 
 processor_map = {
+    'moltable': get_mol_svg,
     'histogram': get_histograms,
     'feature-importance': get_feature_importance,
     'clustering': get_clusters,
     'regression': get_regression,
+    'descriptors': get_descriptors,
+    'optimizer': get_model,
+    'optimizer_model': get_model_rebuild,
+    'optimizerClassification': get_model,
+    'optimizerClassification_model': get_model_rebuild,
     'classification': get_classification,
     'pairwise-correlation': get_pairwise_correlation,
     'pie': get_pie,
@@ -78,8 +87,7 @@ def process_view(data):
 
     result = {'status': 'error: data is incorrect'}
 
-    if data['view']['type'] == 'regression' or \
-         data['view']['type'] == 'classification':
+    if data['view']['type'] in ['regression', 'classification', 'optimizer', 'optimizerClassification']:
         result, _ = processor_map[data['view']['type']](data)
     else:
         result = processor_map[data['view']['type']](data)
@@ -91,7 +99,8 @@ def process_view(data):
 #-------------------------------------------------------------------------------------------------
 def get_model(data):
     # logger.info(data['view']['type'])
-
+    if data['view']['type'] in ['optimizer', 'optimizerClassification']:
+        data['view']['type'] = "optimizer_model"
     _, model = processor_map[data['view']['type']](data)
 
     return model

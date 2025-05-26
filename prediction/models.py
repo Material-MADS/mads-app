@@ -1,10 +1,11 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q2 2025
 # ________________________________________________________________________________________________
 # Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 #          Jun Fujima (Former Lead Developer) [2018-2021]
+#          Philippe Gantzer (for predictions of models issued by Optimizer components) [2024-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) Provided models for the 'Prediction' page
 # ------------------------------------------------------------------------------------------------
@@ -29,11 +30,21 @@ from jsonfield import JSONField
 
 import joblib
 import numpy as np
+from csv import reader
+import re
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from chython import smiles
+from chython.exceptions import IncorrectSmiles
+from doptools.chem.coloratom import ColorAtom
+from doptools.chem.solvents import available_solvents
 
 from common.models import OwnedResourceModel
 
 import os
 import uuid
+from itertools import zip_longest
 
 import logging
 
@@ -118,19 +129,93 @@ class PretrainedModel(OwnedResourceModel):
     def get_public_models(self):
         return PretrainedModel.objects.filter(accessibility=PretrainedModel.ACCESSIBILITY_PUBLIC)
 
-    def predict(self, inports):
-
+    def predict(self, inports, coloratom:bool = False):
         outport = {}
         inputs = []
-        for key, value in inports.items():
-            inputs.append(float(value))    # TODO: support different types: str, etc,
-        logger.info(inputs)
         model = joblib.load(self.file)
-        out = model.predict([inputs])
 
-        outport = out[0]
+        # Model without DOPtools
+        if 'input_type' not in self.metadata.keys() or not self.metadata['input_type'] or self.metadata['input_type'] == "descriptors_values":
+            for key, value in inports.items():
+                inputs.append(float(value))
+            logger.info(inputs)
+            out = model.predict([inputs])
+            outport = out[0]
+            return outport
 
-        return outport
+        #Model using DOPtools
+        elif self.metadata['input_type'] == "SMILES":
+            mol_fields = self.metadata['input_spec'] if 'input_spec' in self.metadata.keys() else ["SMILES"]
+            nb_mol_fields = len(mol_fields)
+            to_pred = []
+            real_props = []
+            for items in list(reader([re.sub('\s+', ' ', x) for x in inports["SMILES"].splitlines()],
+                                     delimiter=' ', quotechar='"')):
+                line_dict = {}
+                line_error = False
+                for val, col in zip_longest(items, mol_fields):
+                    if not val or not col:
+                        if not val:  # required value
+                            line_error = True
+                        break
+                    try:
+                        mol = smiles(val)
+                        try:
+                            mol.canonicalize(fix_tautomers=False)
+                        except:
+                            mol.canonicalize(fix_tautomers=False)
+                        line_dict[col] = mol
+                    except IncorrectSmiles:
+                        try:
+                            nbr = float(val)
+                            line_dict[col] = nbr
+                        except ValueError:
+                            if val in available_solvents:
+                                line_dict[col] = val
+                            else:
+                                line_error = True
+                                break
+                if not line_error:
+                    to_pred.append(line_dict)
+                    real_props.append(float(items[-1]) if len(items) > nb_mol_fields else None)
+
+            if not to_pred:
+                return pd.DataFrame.from_records([{"ERROR": "No correct item to predict"}])
+
+            to_pred = pd.DataFrame.from_records(to_pred)
+            if any([x is not None for x in real_props]):
+                to_pred['Real'] = real_props
+
+            to_pred['Predicted'] = model.predict(to_pred['SMILES'].to_list() if nb_mol_fields == 1 else to_pred)
+
+            if coloratom and type(model[2]) in [SVC, RandomForestClassifier]:
+                to_pred['ColorAtom'] = ['not available for classification models yet'] * to_pred.shape[0]
+            elif coloratom:
+                import matplotlib
+                matplotlib.use('Agg')
+                clr = ColorAtom()
+                clr.set_pipeline(model)
+
+                contributions = {n: clr.calculate_atom_contributions(to_pred.iloc[n] if clr.complex else to_pred.iloc[n]['SMILES'])
+                                 for n in range(len(to_pred))}
+                max_scale = max(abs(v) for contrib in contributions.values() for atom_contrib in contrib.values() for v in atom_contrib.values())
+                to_pred['ColorAtom'] = [clr.output_html(to_pred.iloc[n] if clr.complex else to_pred.iloc[n]['SMILES'],
+                                                        ipython=False, external_limits=[-max_scale, max_scale],
+                                                        contributions=contributions[n])
+                                        for n in range(len(to_pred))]
+
+                colorbar_row = {x: '' for x in to_pred}
+                colorbar_row['ColorAtom'] = "<span style='text-align:center'>{}<p style='margin:0; padding:0;'>Color scale</p></span>".format(
+                    clr.output_colorbar_html(-max_scale, max_scale,10, 2, orient='horizontal', ipython=False))
+                to_pred = pd.concat((to_pred, pd.DataFrame([colorbar_row])))
+
+            for col in mol_fields:
+                to_pred[col] = [str(x) for x in to_pred[col]]
+
+            return to_pred
+
+        else:
+            return outport
 
     @delete_previous_file
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):

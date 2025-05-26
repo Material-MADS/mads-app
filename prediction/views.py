@@ -1,10 +1,11 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q2 2025
 # ________________________________________________________________________________________________
 # Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 #          Jun Fujima (Former Lead Developer) [2018-2021]
+#          Philippe Gantzer (for predictions of models issued by Optimizer components) [2024-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) Provided views for the 'Prediction' page
 # ------------------------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ from django.views.generic import UpdateView
 from django.views.generic.edit import ModelFormMixin
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.http import HttpResponse
 
 from django_filters.views import FilterView
 from django_tables2.config import RequestConfig
@@ -44,6 +46,7 @@ from .models import PretrainedModel
 from .helpers import PretrainedModelTable
 from users.models import User
 
+import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
@@ -177,11 +180,13 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         context["metadata"] = context["object"].metadata
 
         context["outputs"] = {"name": context["metadata"]["outports"][0]["name"]}
+        context["input_type"] = context["metadata"]['input_type'] if 'input_type' in context["metadata"].keys() else str()
+        context["input_spec"] = context["metadata"]['input_spec'] if 'input_spec' in context["metadata"].keys() else str()
 
         if self.inputs:
             context["inputs"] = self.inputs
-        if self.outputs:
-            context["outputs"] = self.outputs
+        # if self.outputs:
+        context["outputs"] = self.outputs
 
         return context
 
@@ -189,21 +194,32 @@ class PretrainedModelDetailView(PermissionRequiredMixin, ModelFormMixin, DetailV
         self.object = self.get_object()
         form = self.get_form()
         if form.is_valid():
-            return self.form_valid(form)
+            as_csv = True if 'predict_save' in request.POST else False
+            coloratom = True if 'predict_coloratom' in request.POST else False
+            return self.form_valid(form, as_csv, coloratom)
         else:
             return self.form_invalid(form)
 
-    def form_valid(self, form):
+    def form_valid(self, form, as_csv: bool = False, coloratom: bool = False):
         # put logic here
         logger.debug(form.fields)
         logger.debug(form.cleaned_data)
 
-        out = self.object.predict(form.cleaned_data)
+        context = self.get_context_data(form=form)
+
+        if 'input_type' in context["metadata"].keys():  # doptools optimizer
+            out = self.object.predict(form.cleaned_data, coloratom)
+        else:
+            out = self.object.predict(form.cleaned_data)
         logger.info(out)
         self.inputs = form.cleaned_data
         self.outputs = out
+        if as_csv and not coloratom and type(out) is pd.DataFrame:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=predictions.csv'
+            out.to_csv(path_or_buf=response)
+            return response
 
-        context = self.get_context_data(form=form)
         context["inputs"] = form.cleaned_data
         context["outputs"] = {
             "name": self.object.metadata["outports"][0]["name"],
