@@ -22,6 +22,7 @@
 
 // Visualization
 import TableView from './TableView';
+import MolTableView from './MolTableView';
 import ScatterView from './ScatterView';
 import BarView from './BarView';
 import PieView from './PieView';
@@ -49,6 +50,9 @@ import NetworkAnalysisView from './NetworkAnalysisView.js';
 
 // Machine Learning
 import RegressionView from './RegressionView';
+import DescriptorsView from './DescriptorsView';
+import OptimizerView from './OptimizerView';
+import OptimizerClassificationView from './OptimizerClassificationView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
@@ -123,6 +127,31 @@ export const config = [
     description: "This component is a basic table that gets filled by the current loaded data and allows various interaction.",
     devInfo: [{name: "Jun Fujima", affiliation: "Hokkaido University", link: "https://researchmap.jp/jjjjffff"}],
     component: TableView,
+    settings: {
+      columns: [],
+      options: {
+        extent: {
+          width: 800,
+          height: 400,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // MolTable - A Customizable Data Table with 2D molecular visualisation
+  //------------------------------------------
+  {
+    type: 'moltable',
+    name: 'Table with molecules',
+    category: 'Visualization',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to depict molecules encoded as SMILES on a Table",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    component: MolTableView,
     settings: {
       columns: [],
       options: {
@@ -522,7 +551,7 @@ export const config = [
   },
   //------------------------------------------
 
-  
+
   // Catalyst Gene View - A collection of all VisComps that can be added via a smart 'Wizard'-form
   // IT IS NOT YET FINISHED AND/OR FULLY IMPLEMENTED
   //------------------------------------------
@@ -738,6 +767,113 @@ export const config = [
 
   // MACHINE LEARNING CATEGORY
   //==========================
+
+  // Descriptors - A Customizable Descriptors calculator for molecules
+  //------------------------------------------
+  {
+    type: 'descriptors',
+    name: 'Descriptors',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to compute ML descriptors and output them on a Table",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
+    component: DescriptorsView,
+    customBtns: [
+      {name: 'saveCSVData', icon: 'download', text: 'Download descriptors as CSV'},
+    ],
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 3
+      },
+      featureColumns: [],
+      numericalFeatureColumns: [],
+      solventColumn: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // Optimizer - A Customizable Descriptors calculator + model optimizer for molecules
+  //------------------------------------------
+  {
+    type: 'optimizer',
+    name: 'Optimizer (Regression)',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to create and evaluate chemistry-related ML regression models",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
+    component: OptimizerView,
+    customBtns: [
+      {name: 'saveCSVData', icon: 'download', text: 'Download predictions as CSV'},
+    ],
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 3,
+        arg3: 'no',
+      },
+      MLmethod: 'SVR',
+      CVsplits: '5',
+      CVrepeats: '3',
+      trials: '100',
+      featureColumns: [],
+      numericalFeatureColumns: [],
+      solventColumn: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // Classification Optimizer - A customizable descriptors calculator + classification optimizer for molecules
+  //------------------------------------------
+  {
+    type: 'optimizerClassification',
+    name: 'Optimizer (Classification)',
+    category: 'Machine Learning',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the user to create and evaluate chemistry-related ML classification models",
+    devInfo: [{name: "Philippe Gantzer", affiliation: "Hokkaido University"},
+              {name: "Pavel Sidorov", affiliation: "Hokkaido University"},],
+    academicInfo: [{title: "DOPtools: a Python platform for descriptor calculation and model optimization", link: "https://doi.org/10.1039/D4DD00399C"}],
+    component: OptimizerClassificationView,
+    customBtns: [
+      {name: 'saveCSVData-training', icon: 'download', text: 'Download training cross-validation as CSV'},
+      {name: 'saveCSVData-test', icon: 'download', text: 'Download test predictions as CSV'},
+    ],
+    settings: {
+      method: 'Circus',
+      methodArguments: {
+        arg1: 0,
+        arg2: 3,
+        arg3: 'no',
+      },
+      MLmethod: 'SVC',
+      CVsplits: '5',
+      CVrepeats: '3',
+      trials: '100',
+      featureColumns: [],
+      numericalFeatureColumns: [],
+      solventColumn: '',
+      targetColumn: '',
+      mappings: {},
+    },
+    enabled: true,
+  },
+  //------------------------------------------
 
   // Regression - A Customizable Regression Scatter Line Plot
   //------------------------------------------

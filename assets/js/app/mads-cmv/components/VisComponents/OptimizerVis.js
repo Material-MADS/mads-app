@@ -1,22 +1,20 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q2 2025
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
-//          Jun Fujima (Former Lead Developer) [2018-2021]
+// Authors: Philippe Gantzer [2024-]
+//          Pavel Sidorov [2024-]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
-//              'RegressionVis' module
+//              'OptimizerVis' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'RegressionVis' is a visualization component using ML-Regression on the data before
+// Notes: 'OptimizerVis' is a visualization component using ML-Optimizer on the data before
 //        displaying its result in a classic Scatter plot. (rendered by the Bokeh-Charts library.)
 // ------------------------------------------------------------------------------------------------
 // References: React & prop-types Libs, 3rd party deepEqual, pandas, lodash and Bokeh libs with
 //             various color palettes
 =================================================================================================*/
-
-//*** TODO: Could this (and perhaps Classification) be deleted, and just leave the Scatter Plot Chart with some new settings to replace them
 
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
@@ -43,11 +41,13 @@ const Category10_10 = Category10.Category10_10;
 // Default Options / Settings
 //-------------------------------------------------------------------------------------------------
 const defaultOptions = {
-  title: 'Regression',
-  color: `#${Category10_10[0].toString(16)}`, //blue
+  title: 'Optimizer',
+  color_trainData: `#${Category10_10[0].toString(16)}`, //blue
+  color_testData: 'red',
   selectionColor: 'orange',
   nonselectionColor: `#${Greys9[3].toString(16)}`,
   extent: { width: 400, height: 400 },
+  show_uncertainties: true,
 };
 //-------------------------------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
   const params = Object.assign({}, defaultOptions, options);
   if(isThisOld){ params.title = "Out of date. Old Settings! Replace with New!" }
 
-  const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,reset,save';
+  const tools = 'pan,crosshair,wheel_zoom,box_zoom,box_select,tap,reset,save';
   const fig = Bokeh.Plotting.figure({
     tools,
     x_range: params.x_range || (dataIsEmpty ? [-1, 1] : undefined),
@@ -77,35 +77,49 @@ function createEmptyChart(options, dataIsEmpty, isThisOld) {
     fig.title.text_color = "#303030";
     fig.title.text_font_size = "13px";
   }
-  //fig.title.text_font_size = "40px";
-  //fig.title.text_font = "Times New Roman";
 
   return fig;
 }
 //-------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------
+// Save predictions to the local computer
+//-------------------------------------------------------------------------------------------------
+function downloadCSV(csvStr, fileName) {
+  const link = document.createElement("a");
+  link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvStr));
+  link.setAttribute("target", "_blank");
+  link.setAttribute("download", fileName);
+  link.click();
+  try {
+    document.body.removeChild(link)
+  } catch (error) {}
+}
+//-------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component Creation Method
 //-------------------------------------------------------------------------------------------------
-export default class RegressionVis extends Component {
+export default class OptimizerVis extends Component {
   // Initiation of the VizComp
   constructor(props) {
     super(props);
     this.cds = null;
+    this.cds_whiskers = null;
+    this.cds2 = null;
 
     this.rootNode = React.createRef();
 
     this.clearChart = this.clearChart.bind(this);
     this.createChart = this.createChart.bind(this);
-    this.handleSelectedIndicesChange =
-      this.handleSelectedIndicesChange.bind(this);
+    this.handleSelectedIndicesChange = this.handleSelectedIndicesChange.bind(this);
     this.lastSelections = [];
     this.selecting = false;
   }
 
   state = {
     scores: {},
+    params: {},
     dataShouldBeFine: false,
   };
 
@@ -125,7 +139,11 @@ export default class RegressionVis extends Component {
 
     if (diff.selectedIndices) {
       if (this.cds) {
-        this.cds.selected.indices = diff.selectedIndices;
+        this.cds.selected.indices = diff.selectedIndices.filter(v => (v < this.props.data.d2.first_test));
+        if (this.cds2) {
+          this.cds2.selected.indices = diff.selectedIndices.filter(v =>
+                    (v >= this.props.data.d2.first_test)).map(v=> v - this.props.data.d2.first_test);
+        }
       }
       return false;
     }
@@ -133,9 +151,37 @@ export default class RegressionVis extends Component {
     return true;
   }
 
-  componentDidUpdate() {
-    this.clearChart();
-    this.createChart();
+  componentDidUpdate(prevProps, prevState) {
+    const {
+      filteredIndices,
+      colorTags,
+      data,
+      options,
+    } = this.props;
+
+    if (!deepEqual(prevProps.filteredIndices, filteredIndices)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.colorTags, colorTags)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.data, data)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
+
+    if (!deepEqual(prevProps.options, options)) {
+      this.clearChart();
+      this.createChart();
+      return;
+    }
   }
 
   componentWillUnmount() {
@@ -143,17 +189,35 @@ export default class RegressionVis extends Component {
   }
 
   handleSelectedIndicesChange() {
-    const { onSelectedIndicesChange } = this.props;
+    const { onSelectedIndicesChange, options } = this.props;
     const { indices } = this.cds.selected;
+    let all_indices = indices;
+    if (this.cds2) {
+      const indices2 = this.cds2.selected.indices.map(v=> v+this.props.data.d2.first_test);
+      all_indices = [...new Set([...indices, ...indices2])];
+    }
+
+    let newData_whiskers = {};
+    if (options.show_uncertainties) {
+      if (all_indices.length > 0) {
+        for (const key in this.cds.data) {
+          newData_whiskers[key] = indices.map(i => this.cds.data[key][i]);
+        }
+      } else {
+        newData_whiskers = Object.assign({}, this.cds.data);
+      }
+      this.cds_whiskers.data = newData_whiskers;
+      this.cds_whiskers.change.emit();
+    }
 
     if (this.selecting) {
       return;
     }
 
-    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, indices)) {
+    if (onSelectedIndicesChange && !deepEqual(this.lastSelections, all_indices)) {
       this.selecting = true;
-      this.lastSelections = [...indices];
-      onSelectedIndicesChange(indices);
+      this.lastSelections = all_indices;
+      onSelectedIndicesChange(all_indices);
       this.selecting = false;
     }
   }
@@ -181,10 +245,11 @@ export default class RegressionVis extends Component {
     this.views = null;
   }
 
-  // Create the VizComp based on the incomming parameters
+  // Create the VizComp based on the incoming parameters
   async createChart() {
     const {
       data,
+      id,
       mappings,
       options,
       colorTags,
@@ -192,35 +257,44 @@ export default class RegressionVis extends Component {
       filteredIndices,
     } = this.props;
 
-    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: []}};
+    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: [], first_test: 0}};
 
     const { x: xName, y: yName } = mappings;
     const df = new DataFrame(internalData.d1.data);
     const df2 = new DataFrame(internalData.d2.data);
-    let x = [];
-    let y = [];
     const cols = df.columns;
 
+    // Custom Download CSV button
+    var tableDataString = "empty";
+    const viewWrapperCustomButton_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData' + id);
+    viewWrapperCustomButton_DLCSV.off('click');
+    viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
+    tableDataString = df.to_csv('tmp.csv')+df2.to_csv('tmp.csv');
+
+    // Figure starts here
     this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined && !this.state.dataShouldBeFine));
 
     if (xName && yName && cols.includes(xName) && cols.includes(yName)) {
-      y = df.get(xName).to_json({ orient: 'records' });
-      x = df.get(yName).to_json({ orient: 'records' });
+      const x = df.get(xName).to_json({ orient: 'records' });
+      const y = df.get(yName).to_json({ orient: 'records' });
+      const y_i = df.get(yName+'_uncertain').to_json({ orient: 'records' });
+      const y_lower = y.map((value, index) => value - y_i[index])
+      const y_upper = y.map((value, index) => value + y_i[index])
 
-      this.cds = new Bokeh.ColumnDataSource({ data: { x, y } });
+      this.cds = new Bokeh.ColumnDataSource({ data: { x, y, y_i, y_lower, y_upper } });
 
-      this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.cvmethod + ") [" + this.props.method + "]";
-      this.mainFigure.xaxis[0].axis_label = yName;
-      this.mainFigure.yaxis[0].axis_label = xName + '--True';
+      this.mainFigure.title.text = this.mainFigure.title.text + " (" + this.props.MLmethod + ") [" + this.props.method + "]";
+      this.mainFigure.xaxis[0].axis_label = xName + '--True';
+      this.mainFigure.yaxis[0].axis_label = yName;
 
       // selection
       if (selectedIndices.length > 0) {
-        this.cds.selected.indices = selectedIndices;
+        this.cds.selected.indices = selectedIndices.filter(v=> (v < internalData.d2.first_test));
         this.lastSelections = selectedIndices;
       }
 
       // color
-      const colors = new Array(x.length).fill(defaultOptions.color);
+      const colors = new Array(x.length).fill(defaultOptions.color_trainData);
       colorTags.forEach((colorTag) => {
         colorTag.itemIndices.forEach((i) => {
           colors[i] = colorTag.color;
@@ -251,27 +325,81 @@ export default class RegressionVis extends Component {
           legend: (internalData.d2.data.length != 0)?'Train':undefined,
         }
       );
-      let xMax = Math.max.apply(null, x);
-      let xMin = Math.min.apply(null, x);
 
-      // Plot Separate Test data if such exists
+      if (options.show_uncertainties) {
+        this.cds_whiskers = new Bokeh.ColumnDataSource({ data: Object.assign({}, this.cds.data) });
+        if (selectedIndices.length > 0) {
+          const newData_whiskers = Object.fromEntries(
+            Object.entries(this.cds.data).map(([key, values]) => [key, selectedIndices.map(i => values[i])])
+          );
+          this.cds_whiskers.data = newData_whiskers;
+          this.cds_whiskers.change.emit();
+        }
+      }
+      else {
+        this.cds_whiskers = new Bokeh.ColumnDataSource()
+      }
+
+      let customHead = new Bokeh.TeeHead({
+        size: 5,
+        line_width: 0.5,
+        line_color: "black"
+      });
+
+      let whiskers = new Bokeh.Whisker({
+          base: { field: 'x' },
+          upper: { field: 'y_upper' },
+          lower: { field: 'y_lower' },
+          source: this.cds_whiskers,
+          line_color: "black",
+          line_width: 0.5,
+          upper_head: customHead,
+          lower_head: customHead,
+      });
+      this.mainFigure.add_layout(whiskers);
+
+      const tips_train = "<div style='padding:2.5px 0px'><p>Index: $index <br /> True: @x{0.000} <br /> Predicted: @y{0.000}±@y_i{0.000}</p></div>";
+      this.mainFigure.add_tools(new Bokeh.HoverTool({tooltips: tips_train, renderers: [circles], description: "Training Tooltips"},))
+
+      // Plot Test data if such exists
       if(internalData.d2.data.length != 0){
-        let y2 = df2.get(xName).to_json({ orient: 'records' });
-        let x2 = df2.get(yName).to_json({ orient: 'records' });
-        const colors2 = new Array(x2.length).fill("red");
-        let cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2 } });
+        let x2 = df2.get(xName).to_json({ orient: 'records' });
+        let y2 = df2.get(yName).to_json({ orient: 'records' });
+        const true_index = y2.map((_, index) => index + internalData.d2.first_test);
+        this.cds2 = new Bokeh.ColumnDataSource({ data: { x2, y2, true_index } });
+        const colors_test = new Array(x2.length).fill(defaultOptions.color_testData);
+        colorTags.forEach((colorTag) => {
+          colorTag.itemIndices.forEach((i) => {
+            colors[i] = colorTag.color;
+          });
+        });
         let circles2 = this.mainFigure.triangle(
           { field: 'x2' },
           { field: 'y2' },
           {
-            source: cds2,
+            source: this.cds2,
             fill_alpha: 0.6,
-            fill_color: colors2,
+            fill_color: colors_test,
+            selection_color: selectionColor,
+            nonselection_color: nonselectionColor,
             line_alpha: 0.7,
-            line_color: colors2,
+            line_color: colors_test,
             legend: 'Test',
           }
         );
+        this.mainFigure.legend.location = 'bottom_right'
+
+        if (selectedIndices.length > 0) {
+          this.cds2.selected.indices = selectedIndices.filter(v=> (v > internalData.d2.first_test)).map(v=> v - internalData.d2.first_test);
+        }
+
+        // setup callback
+        this.cds2.connect(this.cds2.selected.change, () => {
+          this.handleSelectedIndicesChange();
+        });
+
+        const tips_test = "<div style='padding:2.5px 0px'><p>Index: @true_index <br /> True: @x2{0.000} <br /> Predicted: @y2{0.000}</p></div>";
+        this.mainFigure.add_tools(new Bokeh.HoverTool({tooltips: tips_test, renderers: [circles2], description: "Test Tooltips"},))
       }
 
       // filter
@@ -286,6 +414,8 @@ export default class RegressionVis extends Component {
         circles.view = view;
       }
 
+      const xMax = Math.max.apply(null, x);
+      const xMin = Math.min.apply(null, x);
 
       const source = new Bokeh.ColumnDataSource({
         data: { x: [xMin, xMax], y: [xMin, xMax] },
@@ -297,18 +427,13 @@ export default class RegressionVis extends Component {
         line_width: 1,
       });
 
-      const scores = {};
+
       if (internalData.scores) {
-        const ss = internalData.scores;
-        if (ss['test_r2']) {
-          scores.meanR2 = _.mean(ss['test_r2']);
-        }
-        if (ss['test_mae']) {
-          scores.meanMAE = _.mean(ss['test_mae']);
-        }
+        this.setState({ scores: internalData.scores });
       }
-      if((scores.meanR2 || scores.meanMAE) && (scores.meanR2 !== this.state.scores.meanR2 || scores.meanMAE !== this.state.scores.meanMAE)){
-        this.setState({ scores: scores });
+
+      if (internalData.params) {
+        this.setState({ params: internalData.params });
       }
 
       this.mainFigure.add_glyph(line, source);
@@ -318,6 +443,7 @@ export default class RegressionVis extends Component {
       this.mainFigure,
       this.rootNode.current
     );
+    window.fig = this.mainFigure;
 
     if (this.views) {
       this.clearChart();
@@ -338,11 +464,25 @@ export default class RegressionVis extends Component {
         <div style={{marginLeft: '10px', marginRight: '10px'}}>
           <Card>
            <Card.Content>
-              <h3>CV scores:</h3>
-              <ul>
-                <li>mean r2: {this.state.scores.meanR2}</li>
-                <li>mean MAE: {this.state.scores.meanMAE}</li>
-              </ul>
+              { Object.keys(this.state.scores).length === 0 ? (
+                <p>Optimization not yet performed.</p>
+              ) : (
+                <>
+                  <h4>CV scores <small>over all repeats</small></h4>
+                    <ul>
+                      {Object.keys(this.state.scores).map((key, id) => (
+                            <li key={id}>Mean {key}: {this.state.scores[key]}</li>
+                      ))}
+                    </ul>
+                  <h4>Optimized parameters</h4>
+                    <ul>
+                      {Object.keys(this.state.params).map((key, id) => (
+                          <li key={id}>{key}: {this.state.params[key]}</li>
+                      ))}
+                    </ul>
+                </>
+              )
+              }
             </Card.Content>
           </Card>
         </div>
@@ -356,9 +496,10 @@ export default class RegressionVis extends Component {
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's Allowed and expected Property Types
 //-------------------------------------------------------------------------------------------------
-RegressionVis.propTypes = {
+OptimizerVis.propTypes = {
   data: PropTypes.shape({
     data: PropTypes.arrayOf(PropTypes.object),
+    parameters: PropTypes.arrayOf(PropTypes.object),
   }),
   mappings: PropTypes.shape({
     x: PropTypes.string,
@@ -368,6 +509,7 @@ RegressionVis.propTypes = {
     title: PropTypes.string,
     selectionColor: PropTypes.string,
     nonselectionColor: PropTypes.string,
+    show_uncertainties: PropTypes.bool,
     extent: PropTypes.shape({
       width: PropTypes.number.isRequired,
       height: PropTypes.number.isRequired,
@@ -380,19 +522,23 @@ RegressionVis.propTypes = {
 };
 //-------------------------------------------------------------------------------------------------
 
-
 //-------------------------------------------------------------------------------------------------
 // This Visualization Component's default initial start Property Values
 //-------------------------------------------------------------------------------------------------
-RegressionVis.defaultProps = {
-  data: {data: []},
+OptimizerVis.defaultProps = {
+  data: {
+    data: [],
+    parameters: [],
+  },
   mappings: {},
   options: {
-    title: 'Regression',
+    title: defaultOptions.title,
     color: defaultOptions.color,
+    color_testData: defaultOptions.color_testData,
     selectionColor: defaultOptions.selectionColor,
     nonselectionColor: defaultOptions.nonselectionColor,
-    extent: { width: 400, height: 400 },
+    show_uncertainties: defaultOptions.show_uncertainties,
+    extent: { width: defaultOptions.width, height: defaultOptions.height },
   },
   colorTags: [],
   selectedIndices: [],
