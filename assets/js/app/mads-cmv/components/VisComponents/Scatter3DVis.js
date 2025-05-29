@@ -259,32 +259,6 @@ export default function Scatter3D({
   } catch (error) { /*Just ignore and move on*/ }
 
   // Create the VizComp based on the incoming parameters
-  // const createChart = async () => {
-  //   if(actions){ actions.setLoadingState(true); }
-  //   internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
-  //   let sData = getChartData(data, internalOptions, selectedIndices, colorTags);
-  //   let layout = getChartLayout(data, internalOptions, currentDataSourceName);
-  //   let config = getChartConfig(internalOptions);
-
-  //   loadingActions.setLoadingState(true);
-  //   $(function(){
-  //     const glCanvas = rootNode.current?.querySelector('canvas');
-  //     if (glCanvas && glCanvas.getContext) {
-  //       const gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl');
-  //       if (gl) {
-  //         gl.clearColor(1.0, 0.0, 0.0, 1.0); // bright red background
-  //         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  //       }
-  //     }
-  //     Plotly.react(rootNode.current, sData, layout, config).then(function() {
-  //     })
-  //     .finally(function() {
-  //       internalOptions["camera"] = (rootNode.current).layout.scene.camera;
-  //       if(actions){ actions.setLoadingState(false); }
-  //     });
-  //   });
-  // };
-
   const createChart = async () => {
     if (actions) actions.setLoadingState(true);
 
@@ -315,7 +289,6 @@ export default function Scatter3D({
         });
       });
   };
-
 
   // Clear away the VizComp
   const clearChart = () => { /* Called when component is deleted */ };
