@@ -183,7 +183,7 @@ export default class BokehBarChart extends Component {
       selectedIndices,
       onSelectedIndicesChange,
     } = this.props;
-    console.log(data);
+    // console.log(data);
 
     let selectedIndicesInternal = [];
     let internalOptions = {...defaultOptions, ...options};
@@ -194,8 +194,8 @@ export default class BokehBarChart extends Component {
     // setup ranges
     if (dimension && measures && data[dimension] && data[testDataMapMeasure]) {
       data[dimension] = data[dimension].map(String);
-      if(internalOptions.barType == "Vertical"){ internalOptions.x_range = data[dimension]; }
-      else { internalOptions.y_range = data[dimension]; }
+      if(internalOptions.barType == "Vertical"){ internalOptions.x_range = new Bokeh.FactorRange({ factors: data[dimension] }); }
+      else { internalOptions.y_range = new Bokeh.FactorRange({ factors: data[dimension] }); }
     }
 
     this.mainFigure = createEmptyChart(internalOptions, !(dimension && measures && data[dimension] && data[testDataMapMeasure]));
