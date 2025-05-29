@@ -24,10 +24,15 @@ import PropTypes from "prop-types";
 
 import _ from 'lodash';
 import $ from "jquery";
-import Plotly from 'plotly.js-dist-min';
+import Plotly from 'plotly.js/lib/core';
+
+Plotly.register([
+  require('plotly.js/lib/scatter3d'),
+  require('plotly.js/lib/groupby'),
+]);
+
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
-
 
 import * as loadingActions from '../../actions/loading';
 
@@ -255,21 +260,34 @@ export default function Scatter3D({
 
   // Create the VizComp based on the incoming parameters
   const createChart = async () => {
-    if(actions){ actions.setLoadingState(true); }
+    if (actions) actions.setLoadingState(true);
+
     internalOptions.colorMap = internalOptions.colorMap || defaultOptions.colorMap;
     let sData = getChartData(data, internalOptions, selectedIndices, colorTags);
     let layout = getChartLayout(data, internalOptions, currentDataSourceName);
     let config = getChartConfig(internalOptions);
 
     loadingActions.setLoadingState(true);
-    $(function(){
-      Plotly.react(rootNode.current, sData, layout, config).then(function() {
+
+    Plotly.react(rootNode.current, sData, layout, config)
+      .then(() => {
+        // Save camera if needed
+        internalOptions["camera"] = rootNode.current?.layout?.scene?.camera || null;
       })
-      .finally(function() {
-        internalOptions["camera"] = (rootNode.current).layout.scene.camera;
-        if(actions){ actions.setLoadingState(false); }
+      .finally(() => {
+        if (actions) actions.setLoadingState(false);
+
+        // 🧠 Delay canvas styling until after DOM paint
+        requestAnimationFrame(() => {
+          document.querySelectorAll('.js-plotly-plot canvas').forEach(c => {
+            c.style.position = 'relative';
+            c.style.zIndex = '9999';
+            // c.style.border = '4px solid red';
+            c.style.opacity = '1';
+            c.style.visibility = 'visible';
+          });
+        });
       });
-    });
   };
 
   // Clear away the VizComp

@@ -112,7 +112,6 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
       }
     }
 
-
     const data = {};
     const df = (categorizedData != undefined) ? new DataFrame(categorizedData) : new DataFrame(dataSource);
     const dimensions = df.get(newValues.mappings.dimension);
@@ -136,10 +135,11 @@ export default class BarView extends withCommandInterface(Bar, BarForm) {
 
     var dataFields = this.props.dataset.main.schema ? this.props.dataset.main.schema.fields.map(a => a.name) : [];
     var currUsedField = this.props.view.settings.mappings.dimension;
+    const isTransposed = !!(this.props.view.settings.options && this.props.view.settings.options.transposeEnabled);
 
-    if (dataFields.length > 0 && !dataFields.some(e => e === currUsedField)) {
-      if(this.props.view.settings){
-        this.props.view.settings["appMsg"] = {resetRequest: true};
+    if (!isTransposed && dataFields.length > 0 && !dataFields.includes(currUsedField)) {
+      if (this.props.view.settings) {
+        this.props.view.settings["appMsg"] = { resetRequest: true };
       }
     }
 

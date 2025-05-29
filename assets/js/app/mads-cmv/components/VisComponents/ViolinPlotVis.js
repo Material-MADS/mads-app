@@ -24,7 +24,14 @@ import PropTypes from "prop-types";
 
 import _, { forEach } from 'lodash';
 import $ from "jquery";
-import Plotly from 'plotly.js-dist-min';
+import Plotly from 'plotly.js/lib/core';
+
+Plotly.register([
+  require('plotly.js/lib/violin'),
+  require('plotly.js/lib/groupby'),
+]);
+
+
 
 import * as allPal from "@bokeh/bokehjs/build/js/lib/api/palettes";
 import { cmMax } from '../Views/FormUtils';
