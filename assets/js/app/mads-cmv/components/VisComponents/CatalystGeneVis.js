@@ -563,7 +563,6 @@ function AreaPlot({
 
   const { extent, margin } = internalOptions;
   const { width,height } = extent;
-  console.log(data)
   const { l: left, r: right, t: top, b: bottom } = margin;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
@@ -595,11 +594,11 @@ function AreaPlot({
     const backGroundSource = new Bokeh.ColumnDataSource({
       data: {
         xData: [xAxisRange / 2],
-        yData: [(yMax + yRangeMin)/ 2],
+        yData: [(yMax - yRangeMin + yMin)/ 2],
       }
     });
 
-    // Make the vack ground color white
+    // Make the back ground color white
     const renderer = plot.rect({
       x: { field: "xData" },
       y: { field: "yData" },
