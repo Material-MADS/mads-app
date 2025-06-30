@@ -257,10 +257,14 @@ export default class OptimizerVis extends Component {
       filteredIndices,
     } = this.props;
 
-    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d2: {data: [], first_test: 0}};
+    let internalData = data.d1 !== undefined ? data : {d1: {data: []}, d1_detailed: {}, d2: {data: [], first_test: 0}};
+    let internalData_detailed = data.d1_detailed;
 
     const { x: xName, y: yName } = mappings;
     const df = new DataFrame(internalData.d1.data);
+    const df_detailed = Object.keys(internalData_detailed).length > 0
+        ? new DataFrame(internalData_detailed)
+        : new DataFrame([]);
     const df2 = new DataFrame(internalData.d2.data);
     const cols = df.columns;
 
@@ -269,7 +273,7 @@ export default class OptimizerVis extends Component {
     const viewWrapperCustomButton_DLCSV = $(this.rootNode.current).parent().parent().find('#saveCSVData' + id);
     viewWrapperCustomButton_DLCSV.off('click');
     viewWrapperCustomButton_DLCSV.on( "click", function () { downloadCSV(tableDataString, 'stats_data.csv'); });
-    tableDataString = df.to_csv('tmp.csv')+df2.to_csv('tmp.csv');
+    tableDataString = df_detailed.to_csv('tmp.csv')+df2.to_csv('tmp.csv');
 
     // Figure starts here
     this.mainFigure = createEmptyChart(options, !(xName && yName && cols.includes(xName) && cols.includes(yName)), (data.d1 === undefined && !this.state.dataShouldBeFine));

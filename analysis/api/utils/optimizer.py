@@ -218,6 +218,7 @@ def get_model(data):
         result['d1'] = {target_column: y_train,
                         p_name: np.mean(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),
                         p_name+"_uncertain": np.std(stats[rebuild_trial['trial']]['predictions'].iloc[:, 2:], axis=1),}
+        result['d1_detailed'] = stats[rebuild_trial['trial']]['predictions'].to_dict(orient='records')
     else:
         if LE_is_required:
             result['params']['label encoding'] = ', '.join(['{}={}'.format(x,y) for x,y in zip(LE.classes_, range(len(LE.classes_)))])
