@@ -46,6 +46,7 @@ import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
 import NetworkAnalysisView from './NetworkAnalysisView.js';
+import ASEView from './AseView'
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -323,6 +324,43 @@ export const config = [
   },
   //------------------------------------------
 
+
+  // Atomic situation environment GUI
+  //----------------------------------------------------------------
+  {
+    type: 'ase',
+    name: 'ASE',
+    category: 'Visualization',
+    version: 0.1,
+    devStage: "Draft",
+    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
+    devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
+    // manual: "",
+    // supervisors: [{name: "", affiliation: "", link: ""}],
+    // academicInfo: [{title: "", link: ""}],
+    component: ASEView,
+    customBtns: [
+      {name: 'trajFile', icon: 'save', text: 'Download as "structure.traj".'},
+    ],
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+        pbc:false,
+        cell: {
+          a: 1.0,
+          b: 1.0,
+          c: 1.0,
+          alpha: 90,
+          beta: 90,
+          gamma: 90
+        },
+      },
+    },
+    enabled: true,
+  },
 
   // DATA PROCESSING CATEGORY
   //=========================
