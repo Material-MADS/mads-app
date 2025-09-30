@@ -329,19 +329,13 @@ export const config = [
   //----------------------------------------------------------------
   {
     type: 'ase',
-    name: 'ASE',
+    name: 'Atomic Simulation Environment',
     category: 'Visualization',
     version: 0.1,
     devStage: "Draft",
     description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
     devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
-    // manual: "",
-    // supervisors: [{name: "", affiliation: "", link: ""}],
-    // academicInfo: [{title: "", link: ""}],
     component: ASEView,
-    customBtns: [
-      {name: 'trajFile', icon: 'save', text: 'Download as "structure.traj".'},
-    ],
     settings: {
       options: {
         extent: {

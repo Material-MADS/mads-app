@@ -19,19 +19,12 @@
 //-------------------------------------------------------------------------------------------------
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
-import React, { useState,useCallback } from 'react';
-import { Field, reduxForm, Label, change } from 'redux-form';
-import { Button, Form, Popup } from 'semantic-ui-react';
+import React from 'react';
+import { Field, reduxForm, } from 'redux-form';
+import { Form, Popup } from 'semantic-ui-react';
 
-import SemanticDropdown from '../FormFields/Dropdown';
-import Input from '../FormFields/Input';
-import inputTrad from '../FormFields/inputTraditional';
+
 import DropzoneField from '../FormFields/DropzoneField';
-// import SemCheckbox from '../FormFields/Checkbox';
-
-import { getDropdownOptions } from './FormUtils';
-
-// import _, { values } from 'lodash';
 
 //-------------------------------------------------------------------------------------------------
 
@@ -40,11 +33,6 @@ import { getDropdownOptions } from './FormUtils';
 // Form Support Methods and Variables that manages various individual form fields that requires
 // some form of attention to its content
 //-------------------------------------------------------------------------------------------------
-
-//=======================
-const cads_component_templateOpts = ['Create', 'Edit your files'];
-
-//=======================
 
 
 //=======================
@@ -78,132 +66,42 @@ const AseForm = (props) => {
   const {
     handleSubmit,
     initialValues,
-    defaultOptions,
-    pristine,
-    reset,
-    submitting,
-    colorTags,
   } = props;
-  const mergedInitialValues = {
-    ...initialValues,
-    options: {
-      ...defaultOptions,
-      ...(initialValues.options || {}),
-    },
-  };
 
-  const [currentChoice, setValue] = useState(
-    mergedInitialValues.options.something
-  );
-  const [usePBC, setUsePBC] = useState(
-    mergedInitialValues.options.usePBC || false
-  );
-  
-
-  const onSomeChange = (event) => {
-    setValue(event);
-  };
-  const onPBCChange = (event) => {
-    setUsePBC(event.target.checked);
-  };
-
-
-  if (!mergedInitialValues.options.anotherThing) {
-    mergedInitialValues.options.anotherThing = 1;
-  }
+  initialValues.options.something="Upload";
 
   // The form itself, as being displayed in the DOM
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit}>      
 
-      <Form.Field>
-        <label>Select<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' /></label>
-        <Field
-          name="options.something"
-          placeholder="Create or Edit"
-          component={SemanticDropdown}
-          options={getDropdownOptions(cads_component_templateOpts)}
-          onChange={onSomeChange}
-        />
-      </Form.Field>
-
-      {(currentChoice === cads_component_templateOpts[0]) && (
-        <div>
-          <Form.Group widths="equal" style={{ paddingTop: "6px" }}>
-            <Form.Field>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5em" }}>
-                <label htmlFor="usePBC">Use Periodic Boundary Conditions (PBC)</label>
-                <Field
-                  name = "options.pbc"
-                  id="usePBC"
-                  component="input"
-                  type = "checkbox"
-                  onChange={onPBCChange}
-                />
-              </div>
-            </Form.Field>
-
-            {usePBC && (
-              <div style={{ marginTop: "1em" }}>
-                <label>
-                  a:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.a" component="input" />
-                </label>
-                <label>
-                  b:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.b" component="input" />
-                </label>
-                <label>
-                  c:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.c" component="input" />
-                </label>
-                <label>
-                  α:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.alpha" component="input" />
-                </label>
-                <label>
-                  β:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.beta" component="input" />
-                </label>
-                <label>
-                  γ:<Popup trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} content='Bla bla bla' size='small' />
-                  <Field type="number" name="options.cell.gamma" component="input" />
-                </label>
-              </div>
-            )}
-          </Form.Group>
-        </div>
-      )}
-
-      {(currentChoice == cads_component_templateOpts[1]) && <div>
+      <div>
         <label style={{fontWeight: "bold", textDecoration: "underline"}}>File upload:</label>
+        <Popup 
+          trigger={<span style={{fontSize: "20px", color: "blue"}}>ⓘ</span>} 
+          content={
+            <div>
+              <p>Please drag and drop or select the atomic structure file you want to load.</p>
+              <p>
+                For the list of supported file formats, please check the 
+                <a href="https://ase-lib.org/ase/io/io.html" target="_blank" rel="noopener noreferrer">
+                  ASE documentation
+                </a>.
+              </p>
+            </div>
+          }
+          size='small' 
+          hoverable
+        />
         <Form.Group widths="equal" style={{paddingTop: "6px"}}>
           <Form.Field>
             <Field
-              name="options.diff"
+              name="options.upload"
               component={DropzoneField}
             />
           </Form.Field>
+
         </Form.Group>
-      </div>}
-
-      <hr />
-
-      <Form.Group widths="equal">
-        <label>Extent:</label>
-        <Field
-          fluid
-          name="options.extent.width"
-          component={Input}
-          placeholder="Width"
-        />
-        <Field
-          fluid
-          name="options.extent.height"
-          component={Input}
-          placeholder="Height"
-        />
-      </Form.Group>
+      </div>
 
     </Form>
   );

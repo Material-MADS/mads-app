@@ -55,7 +55,6 @@ export default class ASEView extends withCommandInterface(ASE, AseForm) {
 
     if (dataset[id]) {
       data = dataset[id];
-      data["theAnswer"] = 42;
     }
 
     return data;

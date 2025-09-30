@@ -27,7 +27,7 @@ from ase import Atoms
 from ase.cell import Cell
 from ase.atom import Atom
 from ase.visualize import view
-from io import BytesIO
+from io import BytesIO, StringIO
 from ase.geometry import cellpar_to_cell
 
 #-------------------------------------------------------------------------------------------------
@@ -44,11 +44,11 @@ def save_binary_to_file(binary_data):
 
 
 
-def read_traj_with_ase(binary_data):
+def read_traj_with_ase(binary_data,fmt):
     traj_file_path = save_binary_to_file(binary_data)
 
     from ase.io import read
-    atoms = read(traj_file_path) 
+    atoms = read(traj_file_path, format = fmt) 
 
     return atoms
 
@@ -56,49 +56,45 @@ def read_traj_with_ase(binary_data):
 
 def get_ase(data):
 
-    #energy = atoms.get_potential_energy()
     something = data['view']['settings']['options']['something']
-    print(something)
     result = {}
 
-    if(something == "Create"):
-        pbc = data['view']['settings']['options']['pbc']
-        if(pbc):
-            cellpar = data['view']['settings']['options']['cell']
-            cell = cellpar_to_cell([float(cellpar['a']),float(cellpar['b']),float(cellpar['c']),float(cellpar['alpha']),float(cellpar['beta']),float(cellpar['gamma'])])
-            result["cell"] = cell
-        else:
-            result["cell"] = Cell([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-        result["symbols"] = []
-        result["positions"] = []
-        result["pbc"] = pbc
-    elif(something == "Edit your files"):
-        base64_data = data['view']['settings']['options']['diff']['buffer']
+    if(something == "Upload"):
+        base64_data = data['view']['settings']['options']['upload']['buffer']
+        filename = data['view']['settings']['options']['upload']['name']
+        fmt = os.path.splitext(filename)[1].lstrip(".")
+        if fmt =="xyz":
+            fmt = "extxyz"
         binary_data = base64.b64decode(base64_data)
-        atoms = read_traj_with_ase(binary_data)
+        atoms = read_traj_with_ase(binary_data,fmt)
         result["cell"] = atoms.get_cell()
-        result["symbols"] = atoms.get_chemical_symbols()
+        result["numbers"] = atoms.get_atomic_numbers()
         result["positions"] = atoms.get_positions().tolist()
         result["pbc"] = atoms.pbc
+        result["cellpar"] = atoms.get_cell_lengths_and_angles()
+        result["uploaded"] = True
     elif(something == "Download"):
-        #atoms = build_atoms_from_data()
-        celldata = data['view']['settings']['options']['cell']
-        atomsdata = data['view']['settings']['options']['atoms']
-        positions = data['view']['settings']['options']['positions']
-        pbc = data['view']['settings']['options']['pbc']
-        print(pbc)
+        download_data = data['view']['settings']['options']['download']
+        celldata = download_data['cell']
+        atomsdata = download_data['atoms']
+        positions = download_data['positions']
+        pbc = download_data['pbc']
+        format = download_data['format']
         cell = Cell(celldata)
-        atoms_list = [Atom(symbol=symbol,position=pos) for symbol,pos in zip(atomsdata, positions)]
+        atoms_list = [Atom(symbol=Z,position=pos) for Z,pos in zip(atomsdata, positions)]
         atoms = Atoms(atoms_list,cell = cell,pbc=pbc)
-        buffer = BytesIO()
-        write(buffer, atoms, format = 'traj')
-        traj_data = buffer.getvalue()
-        encoded = base64.b64encode(traj_data).decode('ascii')
-        result['traj'] = encoded
-        result['cell'] = celldata
-        result['symbols'] = atoms.get_chemical_symbols()
-        result['positions'] = atoms.get_positions().tolist()
-        result['pbc']  = pbc
+        if(format in [ "traj","png","cif"]):
+            buffer = BytesIO()
+            write(buffer, atoms, format = format)
+            file_data = buffer.getvalue()
+        else:
+            buffer = StringIO()
+            if(format == "txt"):
+                format = "xyz"
+            write(buffer, atoms, format = format)
+            file_data = buffer.getvalue().encode("utf-8") 
+        encoded = base64.b64encode(file_data).decode('ascii')
+        result['file'] = encoded
     else:
         result["content"] = "No"
 
