@@ -1,14 +1,14 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2025
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Shotaro Okamoto [2025]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
-//              'Cads_Component_Template' module
+//              'Atomic Simulation Environment' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Cads_Component_Template' is a component that makes amazing things.
+// Notes: 'Atomic Simulation Environment' is a component that makes amazing things.
 // ------------------------------------------------------------------------------------------------
 // References: React & prop-types Libs, 3rd party jquery, internal support methods fr. VisCompUtils
 =================================================================================================*/
@@ -343,7 +343,7 @@ export default function ASE ({
       setCurrentVectors(cellpar_to_cell(cellLengths));
     }
     viewerRef.current.setPBC(pbc)
-    setCellForm(false); // フォームを閉じる
+    setCellForm(false); 
   };
 
   const handleModifyAtoms = () => {
@@ -834,7 +834,7 @@ export default function ASE ({
 
 
 function base64ToBlob(base64, mimeType = 'application/octet-stream') {
-  const byteCharacters = atob(base64);  // base64デコード
+  const byteCharacters = atob(base64); 
   const byteNumbers = new Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);

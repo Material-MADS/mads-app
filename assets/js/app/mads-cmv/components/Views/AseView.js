@@ -6,10 +6,10 @@
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Inner workings and Content Manager Controler of the
-//              'cads_component_template' View
+//              'Atomic Simulation Environment' View
 // ------------------------------------------------------------------------------------------------
-// Notes: 'cads_component_template' is the manager of all current input that controls the final
-//        view of the 'cads_component_template' visualization component.
+// Notes: 'Atomic Simulation Environment' is the manager of all current input that controls the final
+//        view of the 'Atomic Simulation Environment' visualization component.
 // ------------------------------------------------------------------------------------------------
 // References: Internal ViewWrapper & Form Utility Support, Internal "ASE"
 //             View & Form libs

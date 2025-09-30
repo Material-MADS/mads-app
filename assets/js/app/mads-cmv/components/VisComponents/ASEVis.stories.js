@@ -6,9 +6,9 @@
 // Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 // ________________________________________________________________________________________________
 // Description: This is the Storybook test displays for the React Component for the Visualization
-//              View of the 'Cads_Component_Template' module
+//              View of the 'Atomic Simulation Environment' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Cads_Component_Template' is a visualization component that do nothing really.
+// Notes: 'Atomic Simulation Environment' is a visualization component that do nothing really.
 // ------------------------------------------------------------------------------------------------
 // References: React & storybook Libs, component Vis
 =================================================================================================*/

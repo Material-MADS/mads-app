@@ -1,12 +1,12 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q3 2025
 # ________________________________________________________________________________________________
 # Authors: Shotaro Okamoto [2025]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
-#              'Ase' components
+#              'Atomic Simulation Environment' components
 # ------------------------------------------------------------------------------------------------
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
 #         allows serverside work for the 'Ase' component.
@@ -35,21 +35,16 @@ from ase.geometry import cellpar_to_cell
 
 #-------------------------------------------------------------------------------------------------
 def save_binary_to_file(binary_data):
-    # 一時ファイルを作成
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        # バイナリデータをファイルに書き込む
         temp_file.write(binary_data)
-        temp_filename = temp_file.name  # 一時ファイルのパスを取得
+        temp_filename = temp_file.name  
     return temp_filename
 
 
 
 def read_traj_with_ase(binary_data,fmt):
     traj_file_path = save_binary_to_file(binary_data)
-
-    from ase.io import read
     atoms = read(traj_file_path, format = fmt) 
-
     return atoms
 
 

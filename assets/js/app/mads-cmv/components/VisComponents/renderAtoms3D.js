@@ -5,11 +5,13 @@
 // ________________________________________________________________________________________________
 // Authors: Shotaro Okamoto [2025]
 // ________________________________________________________________________________________________
-// Description: This is a 'Form Field' React Component (used in data editing/displaying forms)
-//              of the 'Dropzone' type
+// Description: This module provides a 3D visualization tool using Three.js.  
+//              It is designed to render atomic structures within the 'Atomic Simulation Environment' (ASE) component,  
+//              reproducing the graphical interface of the Python ASE library in a web-based environment.
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Form Fields' are component used inside all forms for editing and viewing connected data.
-//        'Dropzone' is of classic type, look and feel. (Multiple is allowed )
+// Notes: The code utilizes Three.js for interactive visualization of atomic models.  
+//        - It is integrated into the ASE component, serving as a frontend counterpart to the Python ASE library.  
+//        - The goal is to replicate key aspects of the ASE graphical user interface (GUI) for use in a browser-based application.
 // ------------------------------------------------------------------------------------------------
 // References: three
 =================================================================================================*/
@@ -25,7 +27,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
 //-------------------------------------------------------------------------------------------------
-// The FormField Component
+// The renderAtoms3D Code
 //-------------------------------------------------------------------------------------------------
 
 let cellMatrix, pbc, nonCell, line;
@@ -373,7 +375,7 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
 
   canvas.addEventListener('mousedown', (e) => {
     
-    if (e.button !== 0) return; // 左クリックのみ対象
+    if (e.button !== 0) return; 
     isclicking = true;
 
     startX = e.clientX + window.scrollX;
@@ -484,7 +486,7 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
         obj2.getWorldPosition(p2);
         obj3.getWorldPosition(p3);
       
-        // 2. 各辺ベクトルを取得
+
         const a = p2.clone().sub(p3);
         const b = p1.clone().sub(p3);
         const c = p1.clone().sub(p2);
@@ -493,7 +495,7 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
         const angleB = c.angleTo(a);
         const angleC = a.negate().angleTo(b);
       
-        // 4. ラジアン → 度 に変換
+
         const toDegrees = rad => (rad * 180) / Math.PI;
         textchange(obj1.name+"-"+obj2.name+"-"+obj3.name+": "+toDegrees(angleA).toFixed(1)+"°, "+toDegrees(angleB).toFixed(1)+"°, "+toDegrees(angleC).toFixed(1)+"°")
       }else{ textchange(selected.size+" atoms")}
@@ -568,17 +570,15 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
         obj2.getWorldPosition(p2);
         obj3.getWorldPosition(p3);
       
-        // 2. 各辺ベクトルを取得
-        const a = p2.clone().sub(p3); // B - C
-        const b = p1.clone().sub(p3); // A - C
-        const c = p1.clone().sub(p2); // A - B
+        const a = p2.clone().sub(p3); 
+        const b = p1.clone().sub(p3); 
+        const c = p1.clone().sub(p2); 
       
-        // 3. 各角度を内積から計算（余弦定理）
-        const angleA = b.negate().angleTo(c.negate()); // ∠A（obj1の角度）
-        const angleB = c.angleTo(a); // ∠B（obj2の角度）
-        const angleC = a.negate().angleTo(b); // ∠C（obj3の角度）
+        const angleA = b.negate().angleTo(c.negate()); 
+        const angleB = c.angleTo(a); 
+        const angleC = a.negate().angleTo(b); 
       
-        // 4. ラジアン → 度 に変換
+
         const toDegrees = rad => (rad * 180) / Math.PI;
         textchange(obj1.name+"-"+obj2.name+"-"+obj3.name+": "+toDegrees(angleA).toFixed(1)+"°, "+toDegrees(angleB).toFixed(1)+"°, "+toDegrees(angleC).toFixed(1)+"°")
       }else{ textchange(selected.size+" atoms")}
@@ -620,18 +620,15 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
 
   function setMove() {
     if (rotate.length > 0) {
-      // 既に move にオブジェクトがある場合は削除
       rotate = [];
       scene.remove(rotategroup)
       console.log("rotate list cleared");
     };
     if (move.length > 0) {
-      // 既に move にオブジェクトがある場合は削除
       move = [];
       scene.remove(movegroup)
       console.log("move list cleared");
     } else {
-      // selected の内容を move にコピー
       move = [...selected];
       movegroup = new THREE.Group();
       move.forEach(obj => {

@@ -1,15 +1,15 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2025
 // ________________________________________________________________________________________________
 // Authors: Shotaro Okamoto [2025]
 // ________________________________________________________________________________________________
-// Description: This is the Settings Configuration Form for the 'cads_component_template' View,
+// Description: This is the Settings Configuration Form for the 'Atomic Simulation Environment' View,
 //              driven by ReduxForm
 // ------------------------------------------------------------------------------------------------
-// Notes: 'cads_component_template Form' opens a customized form for the
-//        'cads_component_template' visualization component and allows the user to edit its look,
+// Notes: 'Atomic Simulation Environment Form' opens a customized form for the
+//        'Atomic Simulation Environment' visualization component and allows the user to edit its look,
 //        feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
 // References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
