@@ -325,36 +325,7 @@ export const config = [
   //------------------------------------------
 
 
-  // Atomic situation environment GUI
-  //----------------------------------------------------------------
-  {
-    type: 'ase',
-    name: 'Atomic Simulation Environment',
-    category: 'Visualization',
-    version: 0.1,
-    devStage: "Draft",
-    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
-    devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
-    component: ASEView,
-    settings: {
-      options: {
-        extent: {
-          width: 400,
-          height: 400,
-        },
-        pbc:false,
-        cell: {
-          a: 1.0,
-          b: 1.0,
-          c: 1.0,
-          alpha: 90,
-          beta: 90,
-          gamma: 90
-        },
-      },
-    },
-    enabled: true,
-  },
+
 
   // DATA PROCESSING CATEGORY
   //=========================
@@ -976,6 +947,37 @@ export const config = [
     enabled: true,
   },
   //------------------------------------------
+
+  // Atomic situation environment GUI
+  //----------------------------------------------------------------
+  {
+    type: 'ase',
+    name: 'Atomic Simulation Environment',
+    category: 'Static Data Visual Support',
+    version: 0.1,
+    devStage: "Draft",
+    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
+    devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
+    component: ASEView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+        pbc:false,
+        cell: {
+          a: 1.0,
+          b: 1.0,
+          c: 1.0,
+          alpha: 90,
+          beta: 90,
+          gamma: 90
+        },
+      },
+    },
+    enabled: true,
+  },
 
 
   // OTHER CATEGORY

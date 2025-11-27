@@ -19,7 +19,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Popup } from 'semantic-ui-react';
 import PropTypes from "prop-types";
-import renderAtoms3D from './renderAtoms3D.js';
+import renderAtoms3D from './componentSupport/renderAtoms3D.js';
 
 
 
@@ -110,43 +110,57 @@ export default function ASE ({
         ">
         </div>
       </div>
-      <div name='instCont' style='width: 80p%; text-align: left; margin-top: -2px; line-height: 1.0; cursor: pointer;'>
-      <span name='molViewInstrHdr' style='font-size: 14px; font-weight: bold;'>
-        Click to show Full Instructions:</br>
-      </span>
-      <section aria-labelledby="fi-title" name='instr' style='font-weight: normal; display: none;'>
-        <p>
-          This software provides an interactive environment for visualizing and editing atomic structures.
-          You can select atoms, measure geometrical properties, manipulate the view, and manage structure files.
-        </p>
-
-        <section aria-labelledby="fi-selecting">
-          <h3 id="fi-selecting">Selecting Atoms</h3>
-          <ul>
-            <li><strong>Single selection:</strong> Left-click on an atom to select it.</li>
-            <li><strong>Multiple selection:</strong> Click and drag with the left mouse button to draw a rectangle and select multiple atoms.</li>
-            <li><strong>Add to selection:</strong> Hold the <kbd>Ctrl</kbd> key while left-clicking to keep the current selection and add additional atoms.</li>
-          </ul>
-        </section>
-
-        <section aria-labelledby="fi-geometry">
-          <h3 id="fi-geometry">Measuring Geometry</h3>
-          <ul>
-            <li><strong>One atom selected:</strong> Its 3D coordinates are displayed.</li>
-            <li><strong>Two atoms selected:</strong> The distance between them is shown.</li>
-            <li><strong>Three atoms selected:</strong> The angle defined by the triangle is calculated.</li>
-          </ul>
-        </section>
-
-        <section aria-labelledby="fi-files">
-          <h3 id="fi-files">Working with Structure Files</h3>
+      <div name="instCont" 
+          style="width: 560px; text-align: left; margin-top: -20px; line-height: 1.4; cursor: pointer;">
+        <span name="molViewInstrHdr" style="font-size: 14px; font-weight: bold;">
+          Click to show Full Instructions:<br/>
+        </span>
+        <section aria-labelledby="fi-title" name="instr" 
+                style="font-weight: normal; display: none; 
+                        max-height: 120px;
+                        overflow-y: auto; 
+                        overflow-x: hidden;
+                        word-break: break-word;
+                        white-space: normal; 
+                        padding-right: 5px;
+                        box-sizing: border-box;
+                        text-align: left;">
           <p>
-            Upload an atomic structure file to begin editing.  
-            To upload, click the <strong>Configure</strong> button.
+            This component provides an interactive environment for visualizing and editing atomic structures.
+            You can select atoms, measure geometrical properties, manipulate the view, and manage structure files.
           </p>
+          <section aria-labelledby="fi-viewcontrol">
+            <h3 id="fi-viewcontrol" style="margin: 0">Controlling the View</h3>
+            <ul style="margin-top: 0; padding-left: 18px; max-width: 100%; word-break: break-word;">
+              <li><strong>Rotate view:</strong> Right-click and drag to rotate the camera around the model.</li>
+              <li><strong>Pan view:</strong> Hold the <kbd>Ctrl</kbd> key while right-clicking and dragging to move the camera parallel to the viewing plane.</li>
+            </ul>
+          </section>
+          <section aria-labelledby="fi-selecting">
+            <h3 id="fi-selecting" style="margin: 0">Selecting Atoms</h3>
+            <ul style="margin-top: 0; padding-left: 18px; max-width: 100%; word-break: break-word;">
+              <li><strong>Single selection:</strong> Left-click on an atom to select it.</li>
+              <li><strong>Multiple selection:</strong> Click and drag with the left mouse button to draw a rectangle and select multiple atoms.</li>
+              <li><strong>Add to selection:</strong> Hold the <kbd>Ctrl</kbd> key while left-clicking to keep the current selection and add additional atoms.</li>
+            </ul>
+          </section> 
+          <section aria-labelledby="fi-geometry">
+            <h3 id="fi-geometry" style="margin: 0">Measuring Geometry</h3>
+            <ul style="margin-top: 0; padding-left: 18px; max-width: 100%; word-break: break-word;">
+              <li><strong>One atom selected:</strong> Its 3D coordinates are displayed.</li>
+              <li><strong>Two atoms selected:</strong> The distance between them is shown.</li>
+              <li><strong>Three atoms selected:</strong> The angle defined by the triangle is calculated.</li>
+            </ul>
+          </section>
+          <section aria-labelledby="fi-files">
+            <h3 id="fi-files" style="margin: 0">Working with Structure Files</h3>
+            <p style="margin: 0; max-width: 100%; word-break: break-word;">
+              Upload an atomic structure file to begin editing.<br/>
+              To upload, click the <strong>Configure</strong> button.
+            </p>
+          </section>
         </section>
-      </section>
-    </div>`
+      </div>`
     );
 
     var outputContainer = $(rootNode.current).find("#outputContainer" + id);
@@ -166,7 +180,7 @@ export default function ASE ({
         </p>
       </div>
     `);
-    viewerRef.current = renderAtoms3D(`#three-container${id}`, initialdata, setViewerText);
+    viewerRef.current = renderAtoms3D(`#three-container${id}`, initialdata, setViewerText, setCellVectors);
   };
 
    // Clear away the VizComp
@@ -181,7 +195,7 @@ export default function ASE ({
 
   useEffect(() => {
     if (containerRef.current) {
-      viewerRef.current = renderAtoms3D(`#three-container${id}`, initialdata, setViewerText,);
+      viewerRef.current = renderAtoms3D(`#three-container${id}`, initialdata, setViewerText, setCellVectors);
     }
   }, [containerRef.current]);
 
@@ -619,19 +633,19 @@ export default function ASE ({
           <h2>Add Atom</h2>
           <div>
             <label>Add:</label>
-            <input type="text" value={atom} onChange={(e) => setAtom(e.target.value)} placeholder="H, C, O, etc." />
+            <input style={{ width: '80px', margin: '0 10px' }} type="text" value={atom} onChange={(e) => setAtom(e.target.value)} placeholder="H, C, O, etc." />
           </div>
           <div>
             <label>X:</label>
-            <input type="number" value={x} onChange={(e) => setX(e.target.value)} />
+            <input style={{ width: '80px', margin: '0 10px' }} type="number" value={x} onChange={(e) => setX(e.target.value)} />
           </div>
           <div>
             <label>Y:</label>
-            <input type="number" value={y} onChange={(e) => setY(e.target.value)} />
+            <input style={{ width: '80px', margin: '0 10px' }} type="number" value={y} onChange={(e) => setY(e.target.value)} />
           </div>
           <div>
             <label>Z:</label>
-            <input type="number" value={z} onChange={(e) => setZ(e.target.value)} />
+            <input style={{ width: '80px', margin: '0 10px' }} type="number" value={z} onChange={(e) => setZ(e.target.value)} />
           </div>
           <br />
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -666,7 +680,7 @@ export default function ASE ({
                       key={index}
                       type="number"
                       step="0.1"
-                      value={value.toFixed(3)}
+                      value={value}
                       onChange={(e) =>
                         handleVectorChange(axisIndex, index, e.target.value)
                       }
@@ -683,7 +697,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="0.1"
-                  value={cellLengths[0].toFixed(3)}
+                  value={cellLengths[0]}
                   onChange={(e) => handleLengthChange(0, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -691,7 +705,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="0.1"
-                  value={cellLengths[1].toFixed(3)}
+                  value={cellLengths[1]}
                   onChange={(e) => handleLengthChange(1, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -699,7 +713,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="0.1"
-                  value={cellLengths[2].toFixed(3)}
+                  value={cellLengths[2]}
                   onChange={(e) => handleLengthChange(2, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -710,7 +724,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="1"
-                  value={cellLengths[3].toFixed(1)}
+                  value={cellLengths[3]}
                   onChange={(e) => handleLengthChange(3, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -718,7 +732,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="1"
-                  value={cellLengths[4].toFixed(1)}
+                  value={cellLengths[4]}
                   onChange={(e) => handleLengthChange(4, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -726,7 +740,7 @@ export default function ASE ({
                 <input
                   type="number"
                   step="1"
-                  value={cellLengths[5].toFixed(1)}
+                  value={cellLengths[5]}
                   onChange={(e) => handleLengthChange(5, e.target.value)}
                   style={{ width: '80px', margin: '0 10px' }}
                 />
@@ -853,16 +867,16 @@ function cellpar_to_cell([a, b, c, alphaDeg, betaDeg, gammaDeg]) {
   const gamma = toRadians(gammaDeg);
 
   const ax = a;
-  const ay = 0;
-  const az = 0;
+  const ay = 0.000;
+  const az = 0.000;
 
-  const bx = b * Math.cos(gamma);
-  const by = b * Math.sin(gamma);
-  const bz = 0;
+  const bx = nearZero(b * Math.cos(gamma));
+  const by = nearZero(b * Math.sin(gamma));
+  const bz = 0.000;
 
-  const cx = c * Math.cos(beta);
-  const cy = (c * Math.cos(alpha) - cx * Math.cos(gamma)) / Math.sin(gamma);
-  const cz = Math.sqrt(c ** 2 - cx ** 2 - cy ** 2);
+  const cx = nearZero(c * Math.cos(beta));
+  const cy = nearZero((c * Math.cos(alpha) - cx * Math.cos(gamma)) / Math.sin(gamma));
+  const cz = nearZero(Math.sqrt(c ** 2 - cx ** 2 - cy ** 2));
 
   return [
     [ax, ay, az],
@@ -881,11 +895,24 @@ function cell_to_cellpar(cell) {
   const b = norm(bVec);
   const c = norm(cVec);
 
-  const alpha = toDegrees(Math.acos(dot(bVec, cVec) / (b * c)));
-  const beta  = toDegrees(Math.acos(dot(aVec, cVec) / (a * c)));
-  const gamma = toDegrees(Math.acos(dot(aVec, bVec) / (a * b)));
+  var alpha = toDegrees(Math.acos(dot(bVec, cVec) / (b * c)));
+  var beta  = toDegrees(Math.acos(dot(aVec, cVec) / (a * c)));
+  var gamma = toDegrees(Math.acos(dot(aVec, bVec) / (a * b)));
+  if(!alpha){
+    alpha = 90.0;
+  }
+  if(!beta){
+    beta = 90.0;
+  }
+  if(!gamma){
+    gamma = 90.0;
+  }
 
   return [a, b, c, alpha, beta, gamma];
+}
+
+function nearZero(x, tol = 1e-10) {
+  return Math.abs(x) < tol ? 0 : x;
 }
 
 

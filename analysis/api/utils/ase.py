@@ -37,14 +37,17 @@ from ase.geometry import cellpar_to_cell
 def save_binary_to_file(binary_data):
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(binary_data)
-        temp_filename = temp_file.name  
+        temp_filename = temp_file.name
     return temp_filename
 
 
 
 def read_traj_with_ase(binary_data,fmt):
     traj_file_path = save_binary_to_file(binary_data)
-    atoms = read(traj_file_path, format = fmt) 
+    if(fmt == "txt"):
+        atoms = read(traj_file_path)
+    else:
+        atoms = read(traj_file_path, format = fmt) 
     return atoms
 
 

@@ -61,6 +61,7 @@ six = "*"
 django-webpack-loader = "~=1.1.0"
 scikit-image = "*"
 nltk = "*"
+ase = "*"
 
 [requires]
 python_version = "3.9"

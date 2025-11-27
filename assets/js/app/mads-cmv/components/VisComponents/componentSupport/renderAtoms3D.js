@@ -49,41 +49,44 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
   canvas.setAttribute("id",`${containerSelector}`)
   container.appendChild(canvas);
 
+  const ambientLight = new THREE.AmbientLight(0xffffff);
+  scene.add(ambientLight);
 
+  // camera
+  const aspect = width / height;
+  const frustumSize = 15; 
+  const camera = new THREE.OrthographicCamera(
+    frustumSize * aspect / -2,  // left
+    frustumSize * aspect / 2,   // right
+    frustumSize / 2,            // top
+    frustumSize / -2,           // bottom
+    0.1,                        // near
+    1000                        // far
+  );
+
+  camera.position.set(100,100,100);
   // light
   const light = new THREE.DirectionalLight(0xffffff);
   light.position.set(1, 1, 1).normalize();
   scene.add(light);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff);
-  scene.add(ambientLight);
 
-    // camera
-    const aspect = width / height;
-    const frustumSize = 15; 
-    
-    const camera = new THREE.OrthographicCamera(
-      frustumSize * aspect / -2,  // left
-      frustumSize * aspect / 2,   // right
-      frustumSize / 2,            // top
-      frustumSize / -2,           // bottom
-      0.1,                        // near
-      1000                        // far
-    );
-  
-    camera.position.set(100,100,100);
-  
-  
-  
-    // controls
-    const controls = new OrbitControls(camera,canvas);
-    controls.minPolarAngle = -Infinity;
-    controls.maxPolarAngle = Infinity;
-    controls.minAzimuthAngle = -Infinity;
-    controls.maxAzimuthAngle = Infinity;
-    controls.mouseButtons.LEFT = null;
-    controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
 
+  // controls
+  const controls = new OrbitControls(camera,canvas);
+  controls.minPolarAngle = -Infinity;
+  controls.maxPolarAngle = Infinity;
+  controls.minAzimuthAngle = -Infinity;
+  controls.maxAzimuthAngle = Infinity;
+  controls.mouseButtons.LEFT = null;
+  controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+  controls.addEventListener('change', () => {
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    light.position.copy(camera.position);
+    light.target.position.copy(camera.position.clone().add(dir));
+    light.target.updateMatrixWorld();
+  });
 
 
   // write atoms
@@ -157,7 +160,12 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
 
   return {
     addObject: (atom, pos) => {
-      const number = symbol_to_number[atom];
+      let number;
+      if(isNaN(atom.trim())){
+        number = symbol_to_number[atom];
+      }else{
+        number = Number(atom);
+      }
       const newAtom = addAtoms(scene, number, pos);
       if (newAtom) {
         const newSet = new Set([newAtom]);
@@ -582,7 +590,6 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
         const toDegrees = rad => (rad * 180) / Math.PI;
         textchange(obj1.name+"-"+obj2.name+"-"+obj3.name+": "+toDegrees(angleA).toFixed(1)+"°, "+toDegrees(angleB).toFixed(1)+"°, "+toDegrees(angleC).toFixed(1)+"°")
       }else{ textchange(selected.size+" atoms")}
-      console.log('グループ化したオブジェクト数:', selected.size);
     }
   });
   return {
@@ -702,6 +709,7 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
           setCellVectors(cellMatrix);
           updateCellBox(camera,controls);
           pbc = parseNdArray(json.pbc);
+          nonCell = false;
         };
         const newSet = new Set();
         numbers.forEach((number, i) => {
@@ -814,6 +822,7 @@ function updateCellBox(camera,controls) {
   }
 
   positionAttr.needsUpdate = true;
+  const positions = line.geometry.attributes.position.array;
   line.geometry.computeBoundingSphere(); // オプション（描画最適化）
   line.computeLineDistances(); // 点線のために必要！
 
@@ -860,19 +869,17 @@ function createOutlineMesh(originalMesh, color = 0x000000,rad = 0.05) {
 
 
 function rotateObjectsRelativeToCamera(objects1,objects2, camera, center, direction) {
-  const angle = Math.PI / 60; // 1回のキー入力での回転角（調整可能）
+  const angle = Math.PI / 60;
   let axis;
 
   switch (direction) {
     case 'ArrowLeft':
-      // カメラの "上" ベクトルに垂直（= -right）方向に回転（Z軸に対する水平回転）
       axis = new THREE.Vector3().crossVectors(camera.up, camera.getWorldDirection(new THREE.Vector3())).normalize();
       break;
     case 'ArrowRight':
       axis = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), camera.up).normalize();
       break;
     case 'ArrowUp':
-      // カメラの右方向に回転（= pitch down）
       axis = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), new THREE.Vector3().crossVectors(camera.up, camera.getWorldDirection(new THREE.Vector3()))).normalize();
       break;
     case 'ArrowDown':
@@ -885,16 +892,16 @@ function rotateObjectsRelativeToCamera(objects1,objects2, camera, center, direct
   const quaternion = new THREE.Quaternion().setFromAxisAngle(axis, angle);
 
   objects1.forEach(obj => {
-    const pos = obj.position.clone().sub(center); // 中心からの相対位置
-    pos.applyQuaternion(quaternion);             // 回転
-    obj.position.copy(pos.add(center));           // 回転後の位置に戻す
-    obj.quaternion.premultiply(quaternion);       // 見た目の回転も適用（必要なら）
+    const pos = obj.position.clone().sub(center); 
+    pos.applyQuaternion(quaternion); 
+    obj.position.copy(pos.add(center)); 
+    obj.quaternion.premultiply(quaternion); 
   });
   objects2.forEach(obj => {
-    const pos = obj.position.clone().sub(center); // 中心からの相対位置
-    pos.applyQuaternion(quaternion);             // 回転
-    obj.position.copy(pos.add(center));           // 回転後の位置に戻す
-    obj.quaternion.premultiply(quaternion);       // 見た目の回転も適用（必要なら）
+    const pos = obj.position.clone().sub(center); 
+    pos.applyQuaternion(quaternion);        
+    obj.position.copy(pos.add(center));     
+    obj.quaternion.premultiply(quaternion);   
   });
 }
 
