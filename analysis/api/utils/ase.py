@@ -11,7 +11,7 @@
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
 #         allows serverside work for the 'Ase' component.
 # ------------------------------------------------------------------------------------------------
-# References: logging, numpy, tempfile, os, base64, io, ase, asel ibs
+# References: logging, numpy, tempfile, os, base64, io, ase, aselibs
 #=================================================================================================
 
 #-------------------------------------------------------------------------------------------------
@@ -99,6 +99,3 @@ def get_ase(data):
     return result
 #-------------------------------------------------------------------------------------------------
 
-# If Custom Error Message is needed use the following:
-# result['status'] = 'error'
-# result['detail'] = "This is the Custom Error Message"

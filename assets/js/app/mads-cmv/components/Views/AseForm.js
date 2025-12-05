@@ -12,8 +12,7 @@
 //        'Atomic Simulation Environment' visualization component and allows the user to edit its look,
 //        feel and behavior in multiple ways.
 // ------------------------------------------------------------------------------------------------
-// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components, 3rd party
-//             lodash lib
+// References: React, ReduxForm and semantic-view-ui libs, Needed FormField components
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
