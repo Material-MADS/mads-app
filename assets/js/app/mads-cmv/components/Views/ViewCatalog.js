@@ -1090,8 +1090,8 @@ export const config = [
     type: 'ase',
     name: 'Atomic Simulation Environment',
     category: 'Static Data Visual Support',
-    version: 0.1,
-    devStage: "Draft",
+    version: 1.0,
+    devStage: "Stable Release",
     description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
     devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
     component: ASEView,
@@ -1113,6 +1113,24 @@ export const config = [
       },
     },
     enabled: true,
+    supervisors: [
+      {
+        name: "Mikael Nicander Kuwahara",
+        affiliation: "Hokkaido University",
+        link: "https://researchmap.jp/kuwahara_micke?lang=en"
+      },
+      {
+        name: "Prof. Keisuke Takahashi",
+        affiliation: "Hokkaido University",
+        link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"
+      }
+    ],
+    manual: "https://github.com/Material-MADS/mads-docs/blob/main/Component-Manuals/Atomic_Simulation_Environment_Manual.pdf",
+    devInfo: [{
+      name: "Shotaro Okamaoto",
+      affiliation: "Hokkaido University",
+      link: ""
+    }],
   },
 
 
