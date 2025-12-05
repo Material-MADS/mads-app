@@ -26,7 +26,15 @@ import PropTypes from "prop-types";
 
 import _ from 'lodash';
 import $ from "jquery";
-import Plotly from 'plotly.js-dist-min';
+import Plotly from 'plotly.js/lib/core';
+
+Plotly.register([
+  require('plotly.js/lib/table'),
+  require('plotly.js/lib/scatter'),
+  require('plotly.js/lib/surface'),
+  require('plotly.js/lib/parcoords'),
+]);
+
 
 import * as loadingActions from '../../actions/loading';
 
@@ -292,10 +300,22 @@ export default function GaussianProcess({
     loadingActions.setLoadingState(true);
     $(function(){
       Plotly.react(rootNode.current, sData, layout, config).then(function() {
+        // Save camera if needed
+        if (featureColumns == 2) {internalOptions["camera"] = (rootNode.current).layout.scene.camera;}
       })
       .finally(function() {
-        if (featureColumns == 2) {internalOptions["camera"] = (rootNode.current).layout.scene.camera;}
         if(actions){ actions.setLoadingState(false); }
+
+        // 🧠 Delay canvas styling until after DOM paint
+        requestAnimationFrame(() => {
+          document.querySelectorAll('.js-plotly-plot canvas').forEach(c => {
+            c.style.position = 'relative';
+            c.style.zIndex = '9999';
+            // c.style.border = '4px solid red';
+            c.style.opacity = '1';
+            c.style.visibility = 'visible';
+          });
+        });
       });
     });
     };

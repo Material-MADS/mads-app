@@ -21,6 +21,7 @@
 import os
 import sys
 from decouple import config
+import multiprocessing
 
 #-------------------------------------------------------------------------------------------------
 
@@ -30,6 +31,7 @@ from decouple import config
 #-------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     settings_module = config('DJANGO_SETTINGS_MODULE', default=None)
+    multiprocessing.set_start_method('spawn', force=True)
 
     if sys.argv[1] == 'test':
         if settings_module:

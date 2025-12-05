@@ -196,4 +196,9 @@ MARKDOWNX_MARKDOWNIFY_FUNCTION = "markdownx.utils.markdownify"
 DISABLE_SIGNUP = config("APP_DISABLE_SIGNUP") == "True"
 
 MAX_FILE_SIZE = config("MAX_FILE_SIZE")
+
+# --- Site News (Google Doc embed)
+NEWS_IFRAME_URL = config("NEWS_IFRAME_URL", default="")
+NEWS_VIEW_URL   = config("NEWS_VIEW_URL", default="")
+
 #-------------------------------------------------------------------------------------------------

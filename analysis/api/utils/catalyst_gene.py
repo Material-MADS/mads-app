@@ -77,7 +77,6 @@ def combination_wrapping(combination_list):
 def get_catalyst_gene(data):
 
 # ##########  data loading ###############################################################
-    logger.info(data['view']['settings'])
     feature_columns = data['view']['settings']['featureColumns']
     fields = data["data"]['main']["schema"]["fields"]
     columns = [fields[a]["name"] for a in range(len(fields))]
@@ -127,8 +126,8 @@ def get_catalyst_gene(data):
                 elif scaling == 'MaxAbsScaler':
                     scaler = MaxAbsScaler()
                 elif scaling == 'MinMaxScaler':
-                    min_value = data['view']["settings"]["options"]["scaling"]["min"]
-                    max_value = data['view']["settings"]["options"]["scaling"]["max"]
+                    min_value = float(data['view']["settings"]["options"]["scaling"]["min"])
+                    max_value = float(data['view']["settings"]["options"]["scaling"]["max"])
                     scaler = MinMaxScaler(feature_range=(min_value, max_value))
                 scaled_df = pd.DataFrame(scaler.fit_transform(df_numerized), columns = df_numerized.columns)
             else:
@@ -164,7 +163,7 @@ def get_catalyst_gene(data):
     ##########################################################################################################################################################
     ##########   calculate under line area  ##################################################################################################################
         scaled_df_columns = scaled_df.columns.values.tolist()
-        max_in_df = np.max(scaled_df.values)
+
         dict_height = {}
 
 
@@ -176,29 +175,38 @@ def get_catalyst_gene(data):
 
         gene_columns = [f"gene{a}" for a in range(1, len(scaled_df_columns))]
 
+        list_area = []
+
         list_df_areas = []
-
-        list_df_genes = []
-
-        gene_criteion = np.linspace(0, max_in_df, 15)
-
-        genes = string.ascii_uppercase
 
         for i, column in enumerate(scaled_df_columns[:-1]):
             
             array_left, array_right = dict_height[scaled_df_columns[i]], dict_height[scaled_df_columns[i+1]]
             
             area = (array_left + array_right) / 2
+
+            list_area.append(area)
+            list_df_areas.append(pd.DataFrame(area, columns = [area_columns[i]]))
             
+        max_area = max([np.max(list_area[a]) for a in range(len(list_area))])
+        min_area = min([np.min(list_area[a]) for a in range(len(list_area))])
+        margin = (max_area - min_area) / 1000
+
+        gene_criteion = np.linspace(min_area, max_area + margin, 16)
+
+        genes = string.ascii_uppercase
+
+        list_df_genes = []
+
+        for i, area in enumerate(list_area):
+                   
             digitized = np.digitize(area, bins = gene_criteion)
             
-            array_gene = np.zeros_like(array_left).astype(object)
+            array_gene = np.zeros_like(area).astype(object)
             
-            for raw in range(array_left.shape[0]):
+            for raw in range(array_gene.shape[0]):
                 
                 array_gene[raw] = genes[digitized[raw]-1]
-                
-            list_df_areas.append(pd.DataFrame(area, columns = [area_columns[i]]))
             
             list_df_genes.append(pd.DataFrame(array_gene, columns = [gene_columns[i]]))
                

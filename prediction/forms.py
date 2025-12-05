@@ -1,10 +1,11 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q2 2025
 # ________________________________________________________________________________________________
 # Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
 #          Jun Fujima (Former Lead Developer) [2018-2021]
+#          Philippe Gantzer (for predictions of models issued by Optimizer components) [2024-]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) Provided forms for the 'Prediction' page
 # ------------------------------------------------------------------------------------------------
@@ -103,9 +104,15 @@ class PredictionForm(forms.ModelForm):
         pretrainedmodel = self.instance
         metadata = pretrainedmodel.metadata
         logger.debug(self.instance)
-        for inport in metadata['inports']:
-            self.fields[inport['name']] = forms.CharField(
-                max_length=100, label=inport['name'],
+        if 'input_type' not in metadata.keys() or not metadata['input_type'] or metadata['input_type'] == "descriptors_values":
+            for inport in metadata['inports']:
+                self.fields[inport['name']] = forms.CharField(
+                    max_length=100, label=inport['name'],
+                )
+        elif metadata['input_type'] == "SMILES":
+            self.fields["SMILES"] = forms.CharField(
+                widget=forms.Textarea,
+                label="Please input items as specified above (one line per item and \"double-quoted values with spaces\")",
             )
 
     class Meta(object):

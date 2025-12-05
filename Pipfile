@@ -61,6 +61,14 @@ six = "*"
 django-webpack-loader = "~=1.1.0"
 scikit-image = "*"
 nltk = "*"
+doptools = { git = 'https://github.com/PGantzer/DOPtools.git@dev_pg' }
+chython = "*"
+rdkit = "*"
+mordred = "*"
+matplotlib = "*"
+xgboost = "*"
+optuna = "*"
+timeout-decorator = "*"
 ase = "*"
 
 [requires]
