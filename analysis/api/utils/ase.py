@@ -54,10 +54,16 @@ def read_traj_with_ase(binary_data,fmt):
 
 def get_ase(data):
 
-    something = data['view']['settings']['options']['something']
+    options = data.get('view', {}).get('settings', {}).get('options', {})
+    something = options.get('something')
+    
     result = {}
 
-    if(something == "Upload"):
+    if not something or not options.get(something):
+        result["content"] = "No something provided"
+        return result
+
+    if(something == "upload"):
         base64_data = data['view']['settings']['options']['upload']['buffer']
         filename = data['view']['settings']['options']['upload']['name']
         fmt = os.path.splitext(filename)[1].lstrip(".")
@@ -71,7 +77,7 @@ def get_ase(data):
         result["pbc"] = atoms.pbc
         result["cellpar"] = atoms.get_cell_lengths_and_angles()
         result["uploaded"] = True
-    elif(something == "Download"):
+    elif(something == "download"):
         download_data = data['view']['settings']['options']['download']
         celldata = download_data['cell']
         atomsdata = download_data['atoms']

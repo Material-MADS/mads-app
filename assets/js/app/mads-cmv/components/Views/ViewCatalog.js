@@ -1092,7 +1092,7 @@ export const config = [
     category: 'Static Data Visual Support',
     version: 1.0,
     devStage: "Stable Release",
-    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
+    description: "A web-based tool for visualizing and editing atomic structures using the Atomic Simulation Environment.",
     devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
     component: ASEView,
     settings: {

@@ -30,8 +30,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // The renderAtoms3D Code
 //-------------------------------------------------------------------------------------------------
 
-let cellMatrix, pbc, nonCell, line;
-
 
 function renderAtoms3D(containerSelector, atomsData,onTextChange) {
   const container = document.querySelector(containerSelector);
@@ -88,11 +86,11 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
     light.target.updateMatrixWorld();
   });
 
-
+  let cellMatrix, pbc, nonCell, line;
   // write atoms
   if(atomsData.cell){
     cellMatrix = atomsData.cell; 
-    line = drawCellBox(scene, camera, controls);
+    line = drawCellBox(cellMatrix,scene, camera, controls);
     nonCell = false;
     atomsData.positions.forEach((pos, i) => {
       const number = atomsData.numbers[i];
@@ -101,20 +99,10 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
     pbc = atomsData.pbc;
   }else{
     cellMatrix = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]];
-    line = drawCellBox(scene, camera, controls);
+    line = drawCellBox(cellMatrix,scene, camera, controls);
     pbc = [false,false,false]
     nonCell = true;
   }
-
-
-
-
-
-
-
-
-
-
 
   const axesScene = new THREE.Scene();
   const axesCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
@@ -123,8 +111,6 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
   
   const axesHelper = new THREE.AxesHelper(1);
   axesScene.add(axesHelper);
-
-
 
 
   function animate() {
@@ -154,7 +140,7 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
   }
 
 
-  const selectionManager = enableSelectionBox(canvas, scene, camera,onTextChange,controls);
+  const selectionManager = enableSelectionBox(canvas, scene, camera,onTextChange);
 
   animate();
 
@@ -189,15 +175,27 @@ function renderAtoms3D(containerSelector, atomsData,onTextChange) {
     getText: ()=> selectionManager.gettext(),
     setCell:(newCellMatrix)=> {
       cellMatrix = newCellMatrix;
-      updateCellBox(camera,controls);
+      updateCellBox(cellMatrix,line,camera,controls);
+      nonCell = false;
     },
     setPBC: (newpbc) => pbc = newpbc,
     setMove: () => selectionManager.setMove(),
     setRotate: () => selectionManager.setRotate(),
-    copy: () => selectionManager.copy(),
+    copy: () => selectionManager.copy(cellMatrix, pbc),
     deleteAtoms: () => selectionManager.deleteAtoms(),
-    cut: () => selectionManager.cut(),
-    paste: (setCellVectors) => selectionManager.paste(setCellVectors),
+    cut: () => selectionManager.cut(cellMatrix, pbc),
+    paste: (setCellVectors) =>{
+      selectionManager.paste().then(({newCellMatrix, newpbc}) =>{
+        console.log(nonCell)
+        if(nonCell){
+          cellMatrix = newCellMatrix;
+          setCellVectors(cellMatrix);
+          updateCellBox(cellMatrix,line,camera,controls);
+          pbc = newpbc
+          nonCell = false;
+        }
+      });
+    },
     modify: (element) => selectionManager.modify(element),
   };
 }
@@ -358,7 +356,7 @@ function addAtoms(scene,number,pos){
 }
 
 
-function enableSelectionBox(canvas,scene,camera,textchange,controls) {
+function enableSelectionBox(canvas,scene,camera,textchange) {
   const rect = canvas.getBoundingClientRect();
   const absRectTop = rect.top + window.scrollY;
   const absRectLeft = rect.left + window.scrollX;  
@@ -374,9 +372,6 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
   let isclicking = false;
   let isDragged = 0;
   let startX = 0, startY = 0;
-  let text = '';
-
-  let outlineGroup = null;
   
   let selected = new Set();
 
@@ -597,18 +592,21 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
     select: (newSet) => select(newSet),
     setMove: () => setMove(),
     setRotate: () => setRotate(),
-    copy: () => copy(),
+    copy: (cellMatrix, pbc) => copy(cellMatrix, pbc),
     deleteAtoms: () => {
       if(selected.size > 0){
         const shouldProceed = window.confirm("Delete selected atoms?");
         if (shouldProceed) {deleteAtoms();}
       }
     },
-    cut: () => {
-      copy();
+    cut: (cellMatrix, pbc) => {
+      copy(cellMatrix, pbc);
       deleteAtoms();
     },
-    paste: (setCellVectors) => paste(setCellVectors),
+    paste: async () => {
+      const { newCellMatrix, newpbc } = await paste();
+      return { newCellMatrix, newpbc };
+    },
     modify: (element) => modify(element),
   };
 
@@ -670,7 +668,8 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
     }
   };
 
-  function copy(){
+  function copy(cellMatrix, pbc){
+    console.log(cellMatrix);
     const numbers = [...selected].map(obj => obj.number);
     const flatPositions = Array.from(selected).flatMap(sphere => [sphere.position.x, sphere.position.y, sphere.position.z]);
     var copytext = '{"numbers": {"__ndarray__": [[' + selected.size + '], "int64", ['+ numbers +']]}, "positions": {"__ndarray__": [[' + selected.size +', 3], "float64", [' + flatPositions + ']]}, "cell": {"__ndarray__": [[3, 3], "float64", [' + cellMatrix.flat() + ']]}, "pbc": {"__ndarray__": [[3], "bool", [' + pbc + ']]}, "__ase_objtype__": "atoms"}';
@@ -697,35 +696,35 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
     });
   }
 
-  function paste(setCellVectors){
-    navigator.clipboard.readText()
-    .then(text => {
-      try{
-        const json = JSON.parse(text);
-        const numbers = parseNdArray(json.numbers);
-        const positions = parseNdArray(json.positions);
-        if(nonCell){
-          cellMatrix = parseNdArray(json.cell);
-          setCellVectors(cellMatrix);
-          updateCellBox(camera,controls);
-          pbc = parseNdArray(json.pbc);
-          nonCell = false;
-        };
-        const newSet = new Set();
-        numbers.forEach((number, i) => {
-          const newAtom = addAtoms(scene, number, positions[i]);
-          newSet.add(newAtom);
-        });
-        select(newSet);
-      } catch (err){
-        console.log(err);
-        alert("Pasting currently works only with the ASE JSON format.");
-      }
-    })
-    .catch(err => {
-      alert("Failed to read clipboard content.");
-    });
-  };
+  function paste() {
+    return navigator.clipboard.readText()
+      .then(text => {
+        try {
+          const json = JSON.parse(text);
+          const numbers = parseNdArray(json.numbers);
+          const positions = parseNdArray(json.positions);
+          const newSet = new Set();
+          numbers.forEach((number, i) => {
+            newSet.add(addAtoms(scene, number, positions[i]));
+          });
+          select(newSet);
+          return {
+            newCellMatrix: parseNdArray(json.cell),
+            newpbc: parseNdArray(json.pbc)
+          };
+        } catch (err) {
+          console.log(err);
+          alert("Pasting currently works only with the ASE JSON format.");
+          return {
+            newCellMatrix: [[0,0,0],[0,0,0],[0,0,0]],
+            newpbc: [false,false,false]
+          };
+        }
+      })
+      .catch(err => {
+        alert("Failed to read clipboard content.");
+      });
+  }
 
   function modify(element) {
     move = [];
@@ -755,13 +754,11 @@ function enableSelectionBox(canvas,scene,camera,textchange,controls) {
 
 
 
-function drawCellBox(scene, camera, controls) {
-  // セルの3つのベクトル（a, b, c）を取り出す
+function drawCellBox(cellMatrix,scene, camera, controls) {
   const a = new THREE.Vector3(...cellMatrix[0]);
   const b = new THREE.Vector3(...cellMatrix[1]);
   const c = new THREE.Vector3(...cellMatrix[2]);
 
-  // 8つの頂点を計算（原点から順に）
   const origin = new THREE.Vector3(0, 0, 0);
   const ab = new THREE.Vector3().addVectors(a, b);
   const ac = new THREE.Vector3().addVectors(a, c);
@@ -769,9 +766,9 @@ function drawCellBox(scene, camera, controls) {
   const abc = new THREE.Vector3().addVectors(ab, c);
 
   const vertices = [
-    origin, a, a, ab, ab, b, b, origin,  // bottom rectangle
-    c, ac, ac, abc, abc, bc, bc, c,      // top rectangle
-    origin, c, a, ac, ab, abc, b, bc     // vertical edges
+    origin, a, a, ab, ab, b, b, origin, 
+    c, ac, ac, abc, abc, bc, bc, c,     
+    origin, c, a, ac, ab, abc, b, bc  
   ];
 
   const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
@@ -784,7 +781,7 @@ function drawCellBox(scene, camera, controls) {
   });
 
   const line = new THREE.LineSegments(geometry, material);
-  line.computeLineDistances(); // 点線に必要！
+  line.computeLineDistances();
 
 
   var center = new THREE.Vector3();
@@ -799,7 +796,7 @@ function drawCellBox(scene, camera, controls) {
   return line;
 }
 
-function updateCellBox(camera,controls) {
+function updateCellBox(cellMatrix,line,camera,controls) {
   const a = new THREE.Vector3(...cellMatrix[0]);
   const b = new THREE.Vector3(...cellMatrix[1]);
   const c = new THREE.Vector3(...cellMatrix[2]);
@@ -823,8 +820,8 @@ function updateCellBox(camera,controls) {
 
   positionAttr.needsUpdate = true;
   const positions = line.geometry.attributes.position.array;
-  line.geometry.computeBoundingSphere(); // オプション（描画最適化）
-  line.computeLineDistances(); // 点線のために必要！
+  line.geometry.computeBoundingSphere();
+  line.computeLineDistances();
 
   var center = new THREE.Vector3();
   cellMatrix.forEach(vec => {
@@ -833,7 +830,6 @@ function updateCellBox(camera,controls) {
   camera.lookAt(center)
   controls.target.copy(center);
   controls.update();
-  nonCell = false;
 }
 
 function parseNdArray(ndarrayObj) {

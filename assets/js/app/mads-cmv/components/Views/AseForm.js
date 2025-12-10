@@ -67,7 +67,7 @@ const AseForm = (props) => {
     initialValues,
   } = props;
 
-  initialValues.options.something="Upload";
+  initialValues.options.something="upload";
 
   // The form itself, as being displayed in the DOM
   return (

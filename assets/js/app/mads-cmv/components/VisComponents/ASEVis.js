@@ -300,6 +300,7 @@ export default function ASE ({
           }
           else if(e.key.toLowerCase() === 'e'){
             e.preventDefault();
+            console.log(viewerRef.current.getCell());
             setCellForm((prev) => !prev);
           }
           else if(e.key.toLowerCase() === 'm'){
@@ -373,7 +374,7 @@ export default function ASE ({
     internalOptions.download.positions = viewerRef.current.getPositions();
     internalOptions.download.pbc = viewerRef.current.getPBC();
     internalOptions.download.format = format;
-    internalOptions.something = 'Download';
+    internalOptions.something = 'download';
     handleSubmit(internalOptions);
     setDownloadForm(false);
   };
