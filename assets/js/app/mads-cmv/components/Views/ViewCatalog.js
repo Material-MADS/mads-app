@@ -1084,11 +1084,11 @@ export const config = [
   },
   //------------------------------------------
 
-  // Atomic situation environment GUI
+  // Atomic Model Editor
   //----------------------------------------------------------------
   {
     type: 'ase',
-    name: 'Atomic Simulation Environment',
+    name: 'Atomic Structure Editor',
     category: 'Static Data Visual Support',
     version: 1.0,
     devStage: "Stable Release",
