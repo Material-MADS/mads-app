@@ -1084,7 +1084,7 @@ export const config = [
   },
   //------------------------------------------
 
-  // Atomic Model Editor
+  // Atomic Structure Editor
   //----------------------------------------------------------------
   {
     type: 'ase',
