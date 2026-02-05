@@ -63,6 +63,12 @@ scikit-image = "*"
 nltk = "*"
 doptools = { git = 'https://github.com/PGantzer/DOPtools.git@CADS' }
 chython = "1.78"
+rdkit = "*"
+mordred = "*"
+matplotlib = "*"
+xgboost = "*"
+optuna = "*"
+timeout-decorator = "*"
 
 [requires]
 python_version = "3.9"
