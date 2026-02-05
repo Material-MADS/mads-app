@@ -199,9 +199,9 @@ def get_model(data):
     except StopIteration:
         raise ValueError("No solution found. Try increasing iterations number or change parameters.")
     rebuild_trial = st.sort_values(by='score', ascending=False).iloc[0]
-    logger.info("Required/done/best", trials, len(st), rebuild_trial['trial'])
+    logger.info("Required/done/best: {}/{}/{}".format(trials, len(st), rebuild_trial['trial']))
     logger.info("BEST:", rebuild_trial)
-    logger.info("TIME:", time.perf_counter() - start_time)
+    logger.info("TIME: {}".format(time.perf_counter() - start_time))
 
     scores_df = stats[rebuild_trial['trial']]['score'].iloc[0]
     cv = {}
