@@ -61,7 +61,7 @@ six = "*"
 django-webpack-loader = "~=1.1.0"
 scikit-image = "*"
 nltk = "*"
-doptools = { git = 'https://github.com/PGantzer/DOPtools.git@dev_pg' }
+doptools = { git = 'https://github.com/PGantzer/DOPtools.git@CADS' }
 
 [requires]
 python_version = "3.9"

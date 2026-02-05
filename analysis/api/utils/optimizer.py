@@ -1,7 +1,7 @@
 #=================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q2 2025
+#          Last Update: Q1 2026
 # ________________________________________________________________________________________________
 # Authors: Philippe Gantzer [2024-]
 #          Pavel Sidorov [2024-]
@@ -30,6 +30,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.feature_selection import VarianceThreshold
 import re
+import multiprocessing as mp
+import time
 
 logger = logging.getLogger(__name__)
 #-------------------------------------------------------------------------------------------------
@@ -154,6 +156,7 @@ def smiles2mols(smiles_list):
 
 
 def get_model(data):
+    start_time = time.perf_counter()
     ml_method = data['view']['settings']['MLmethod']
     if ml_method not in ["SVR", "RFR", "SVC", "RFC"]:  # "XGBR"]:
         raise ValueError("ML method not supported")
@@ -187,6 +190,7 @@ def get_model(data):
     cv_repeats = int(data['view']['settings']['CVrepeats'])
     trials = int(data['view']['settings']['trials'])
 
+    mp.set_start_method("spawn", force=True)
     try:
         st, stats = launch_study(for_opt, pd.DataFrame(df_target), "", ml_method, trials, cv_splits,
                                  cv_repeats, 5, 60, (0, 1), False)
@@ -195,8 +199,9 @@ def get_model(data):
     except StopIteration:
         raise ValueError("No solution found. Try increasing iterations number or change parameters.")
     rebuild_trial = st.sort_values(by='score', ascending=False).iloc[0]
-    print("Required/done/best", trials, len(st), rebuild_trial['trial'])
-    print("BEST:", rebuild_trial)
+    logger.info("Required/done/best", trials, len(st), rebuild_trial['trial'])
+    logger.info("BEST:", rebuild_trial)
+    logger.info("TIME:", time.perf_counter() - start_time)
 
     scores_df = stats[rebuild_trial['trial']]['score'].iloc[0]
     cv = {}

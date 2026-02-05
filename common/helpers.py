@@ -105,7 +105,7 @@ def get_contents_from_file(file):
         delimiter = possible_delimeters[cnt.index(max(cnt))]
         file.seek(0)
 
-        df = pd.read_csv(file, sep=delimiter, encoding_errors='replace')
+        df = pd.read_csv(file, sep=delimiter, encoding_errors='replace', low_memory=False)
         json = df.to_json(orient='table')
         contents = json
         columns = df.columns
