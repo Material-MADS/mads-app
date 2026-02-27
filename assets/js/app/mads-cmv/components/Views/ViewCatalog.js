@@ -1093,7 +1093,7 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "A web-based tool for visualizing and editing atomic structures using the Atomic Simulation Environment.",
-    devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
+    devInfo: [{name: "Shotaro Okamoto", affiliation: "Hokkaido University", link: "https://github.com/shotaro-488"}],
     component: ASEView,
     settings: {
       options: {
@@ -1122,7 +1122,7 @@ export const config = [
       {
         name: "Prof. Keisuke Takahashi",
         affiliation: "Hokkaido University",
-        link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"
+        link: "https://researchmap.jp/zat"
       }
     ],
     manual: "https://github.com/Material-MADS/mads-docs/blob/main/Component-Manuals/Atomic_Simulation_Environment_Manual.pdf",
