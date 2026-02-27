@@ -69,6 +69,7 @@ matplotlib = "*"
 xgboost = "*"
 optuna = "*"
 timeout-decorator = "*"
+ase = "*"
 
 [requires]
 python_version = "3.9"
