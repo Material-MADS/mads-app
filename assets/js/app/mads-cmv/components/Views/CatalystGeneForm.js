@@ -53,9 +53,6 @@ const setSubmitButtonDisable = (disableState) => {
 
 const errors = {};
 const errorValidate = (value, values, props, fieldName) => {
-  console.log(value);
-  console.log(values);
-
   const loadData = props.dataset
   const dataColumns = loadData.main.schema.fields.map(a => a.name);
   if (values.featureColumns){
@@ -107,15 +104,6 @@ const errorValidate = (value, values, props, fieldName) => {
   }
 
   if(values){
-    if((values.visualizationMethod == 'Hierarchical Clustering' | values.visualizationMethod == 'Heatmap') && fieldName == "clusteringMethod"){
-      if(!value || _.isEmpty(value)){
-        error = 'Required';
-      }else{
-        errors[fieldName] = false;
-      }
-    }
-  }
-  if(values){
     if(values.preprocessingEnabled && fieldName == "preprocMethod"){
       if(!value || _.isEmpty(value)){
         error = 'Required';
@@ -125,7 +113,15 @@ const errorValidate = (value, values, props, fieldName) => {
     }
   }
 
-  errors[fieldName] = (error != undefined);
+  if(values){
+    if((values.visualizationMethod == 'Hierarchical Clustering' | values.visualizationMethod == 'Heatmap') && fieldName == "clusteringMethod"){
+      if(!value || _.isEmpty(value)){
+        error = 'Required';
+      }else{
+        errors[fieldName] = false;
+      }
+    }
+  }
 
   if(values){
     if(!values.preprocessingEnabled){
@@ -136,6 +132,8 @@ const errorValidate = (value, values, props, fieldName) => {
 
     }
   }
+
+  errors[fieldName] = (error != undefined);
 
   return error;
 }
@@ -281,17 +279,16 @@ const CatalystGeneForm = (props) => {
     initialValues.options.colorMap
   );
   
-  const [scalingMethod, setScalingMethod] = useState();
+  const [scalingMethod, setScalingMethod] = useState(
+    initialValues.preprocMethod
+  );
 
   const [isDataOneHOt, setIsDataOneHot] = useState(
     !initialValues.dataOneHot
   );
 
-  console.log(dataset)
-
   if(dataset.main.schema){
     const columnsName = dataset.main.schema.fields.map(s => s.name)
-    // console.log(columnsName)
     const dataHaveCatalyst = columnsName.includes("Catalyst");
   }else{
     setSubmitButtonDisable(true);
@@ -303,7 +300,7 @@ const CatalystGeneForm = (props) => {
   }
 
   const columnsName = dataset.main.schema.fields.map(s => s.name)
-  // console.log(columnsName)
+
   const dataHaveCatalyst = columnsName.includes("Catalyst");
 
 
@@ -454,10 +451,10 @@ const CatalystGeneForm = (props) => {
           component={SemanticDropdown}
           placeholder="Visualization method"
           options={getDropdownOptions(visualizationMethod)}
-          validate={[ errorValidate ]}
           onChange={(e, data) => {
             setVisualization(data);
           }}
+          validate={[ errorValidate ]}
         />
       </Form.Field>
 

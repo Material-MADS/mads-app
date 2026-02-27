@@ -17,6 +17,7 @@
 # Import required Libraries
 #-------------------------------------------------------------------------------------------------
 import os
+from django.conf import settings
 #-------------------------------------------------------------------------------------------------
 
 
@@ -32,6 +33,11 @@ def export_vars(request):
 
     data['APP_DISABLE_SIGNUP'] = os.environ.get('APP_DISABLE_SIGNUP') == 'True'
     data['GOOGLE_ANALYTICS_TRACKING_ID'] = os.environ.get('GOOGLE_ANALYTICS_TRACKING_ID')
+
+    # --- New: News iframe (Google Doc embed) ---
+    data['NEWS_IFRAME_URL'] = os.environ.get('NEWS_IFRAME_URL') or getattr(settings, 'NEWS_IFRAME_URL', '')
+    data['NEWS_VIEW_URL']   = os.environ.get('NEWS_VIEW_URL')   or getattr(settings, 'NEWS_VIEW_URL', '')
+
 
     return data
 #-------------------------------------------------------------------------------------------------

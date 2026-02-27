@@ -47,6 +47,7 @@ import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
 import NetworkAnalysisView from './NetworkAnalysisView.js';
+import ASEView from './AseView'
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -353,6 +354,8 @@ export const config = [
   //------------------------------------------
 
 
+
+
   // DATA PROCESSING CATEGORY
   //=========================
 
@@ -453,7 +456,7 @@ export const config = [
     manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://www.tandfonline.com/doi/full/10.1080/27660400.2024.2441103"}],
     component: featureAssignmentView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -487,7 +490,7 @@ export const config = [
     manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
+    academicInfo: [{title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://www.tandfonline.com/doi/full/10.1080/27660400.2024.2441103"}],
     component: FeatureEngineeringView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -523,7 +526,7 @@ export const config = [
     manual:  "https://github.com/Material-MADS/mads-docs/blob/c10078c949b31c7edd23fe6338b6fc14f977b12f/Component-Manuals/Feature-Assignment_Feature-Engineering_Monte-Cat_Components_Manual.pdf",
     devInfo: [{name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa"}],
     supervisors: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}, {name: "Fernando García Escobar", affiliation: "Hokkaido University", link: "https://scholar.google.com/citations?hl=en&user=QZUMe10AAAAJ"}, {name: "Prof. Keisuke Takahashi", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"}],
-    academicInfo: [{title: "MonteCat: A Basin-Hopping-Inspired Catalyst Descriptor Search Algorithm for Machine Learning Models", link: "https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952"}, {title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://dummyimage.com/800x600/fcfbb6/000000.png&text=The+Paper+is+not+yet+published,+please+check+back+later."}],
+    academicInfo: [{title: "MonteCat: A Basin-Hopping-Inspired Catalyst Descriptor Search Algorithm for Machine Learning Models", link: "https://pubs.acs.org/doi/full/10.1021/acs.jcim.3c01952"}, {title: "Web based Graphical User Interface for Automated Materials Feature Engineering for Machine Learning", link: "https://www.tandfonline.com/doi/full/10.1080/27660400.2024.2441103"}],
     component: MonteCatView,
     customBtns: [
       {name: 'inputcsvfile', icon: 'file image', text: 'Input CSV File Data Requirements Format. Click here. '},
@@ -1080,6 +1083,55 @@ export const config = [
     enabled: true,
   },
   //------------------------------------------
+
+  // Atomic Structure Editor
+  //----------------------------------------------------------------
+  {
+    type: 'ase',
+    name: 'Atomic Structure Editor',
+    category: 'Static Data Visual Support',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "A web-based tool for visualizing and editing atomic structures using the Atomic Simulation Environment.",
+    devInfo: [{name: "Shotaro Okamaoto", affiliation: "Hokkaido University", link: ""}],
+    component: ASEView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
+        },
+        pbc:false,
+        cell: {
+          a: 1.0,
+          b: 1.0,
+          c: 1.0,
+          alpha: 90,
+          beta: 90,
+          gamma: 90
+        },
+      },
+    },
+    enabled: true,
+    supervisors: [
+      {
+        name: "Mikael Nicander Kuwahara",
+        affiliation: "Hokkaido University",
+        link: "https://researchmap.jp/kuwahara_micke?lang=en"
+      },
+      {
+        name: "Prof. Keisuke Takahashi",
+        affiliation: "Hokkaido University",
+        link: "https://www.researchgate.net/profile/Keisuke-Takahashi-5"
+      }
+    ],
+    manual: "https://github.com/Material-MADS/mads-docs/blob/main/Component-Manuals/Atomic_Simulation_Environment_Manual.pdf",
+    devInfo: [{
+      name: "Shotaro Okamaoto",
+      affiliation: "Hokkaido University",
+      link: ""
+    }],
+  },
 
 
   // OTHER CATEGORY

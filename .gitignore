@@ -52,3 +52,4 @@ tmp_email/
 .vscode
 .history
 yarn-error.log
+.VSCodeCounter/

@@ -57,3 +57,8 @@ DEV_SERVER_PUBLIC_ORIGIN=
 # Additional server settings (Current Value: 10485760 (10Mb) / Previous Value: 4194304 (4Mb))
 MAX_FILE_SIZE=10485760
 MAX_PRIVATE_DATA_FILES=25
+
+# Fast info links
+NEWS_IFRAME_URL=https://docs.google.com/document/d/e/ID/pub?embedded=true
+NEWS_VIEW_URL=https://docs.google.com/document/d/e/ID/pub
+
