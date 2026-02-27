@@ -61,8 +61,8 @@ six = "*"
 django-webpack-loader = "~=1.1.0"
 scikit-image = "*"
 nltk = "*"
-doptools = { git = 'https://github.com/PGantzer/DOPtools.git@dev_pg' }
-chython = "*"
+doptools = { git = 'https://github.com/PGantzer/DOPtools.git@CADS' }
+chython = "1.78"
 rdkit = "*"
 mordred = "*"
 matplotlib = "*"
