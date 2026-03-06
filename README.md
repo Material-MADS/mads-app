@@ -64,6 +64,10 @@ The platform helps material scientists design new materials with:
   ```
   python manage.py makemigrations
   ```
+  If you have any problems at this point, please consider to install and update to the proper setuptools, before trying again.
+  ```
+  pipenv run pip install setuptools==68.2.2
+  ```
 - Run the migrations:
   ```
   python manage.py migrate
