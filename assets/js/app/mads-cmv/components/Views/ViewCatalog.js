@@ -57,6 +57,7 @@ import OptimizerClassificationView from './OptimizerClassificationView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
+import MLPView from './MLPView';
 
 // Static Data Visual Support
 import PeriodicTableView from './PeriodicTableView';
@@ -1029,6 +1030,32 @@ export const config = [
         extent: {
           width: 400,
           height: 300,
+        },
+      },
+    },
+    enabled: true,
+  },
+  //------------------------------------------
+
+  // THIS IS A TEMPLATE COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  //----------------------------------------------------------------
+  {
+    type: 'mlp',
+    name: 'MLP',
+    category: 'Machine Learning',
+    version: 0.1,
+    devStage: "Draft",
+    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
+    devInfo: [{name: "Miyu Shinotsuka", affiliation: "Hokkaido University", link: ""}],
+    // manual: "",
+    // supervisors: [{name: "", affiliation: "", link: ""}],
+    // academicInfo: [{title: "", link: ""}],
+    component: MLPView,
+    settings: {
+      options: {
+        extent: {
+          width: 400,
+          height: 400,
         },
       },
     },
