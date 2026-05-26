@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 from common.models import IndexedTimeStampedModel
 from common.models import OwnedResourceModel
+from common.helpers import get_csv_dimensions
 from users.models import User
 
 #-------------------------------------------------------------------------------------------------
@@ -109,6 +110,9 @@ class DataSource(OwnedResourceModel):
 
     # file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=4194304, content_types="text/csv")
     file = PrivateFileField(upload_to=get_encoded_filepath, max_file_size=int(settings.MAX_FILE_SIZE), content_types="text/csv")
+    file_size = models.BigIntegerField(null=True, blank=True)
+    num_of_rows = models.BigIntegerField(null=True, blank=True)
+    num_of_columns = models.PositiveIntegerField(null=True, blank=True)
 
     shared_users = models.ManyToManyField(
         'users.User', blank=True,
@@ -124,6 +128,18 @@ class DataSource(OwnedResourceModel):
     def get_filename(self):
         return os.path.basename(self.file.name)
 
+    def get_file_size_display(self):
+        """Returns file size in human-readable format"""
+        if not self.file:
+            return "No file"
+
+        size = self.file.size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024.0:
+                return f"{size:.2f} {unit}"
+            size /= 1024.0
+        return f"{size:.2f} TB"
+
     def get_absolute_url(self):
         return reverse('datamanagement:datasource-detail', kwargs={'id': self.id})
 
@@ -138,6 +154,23 @@ class DataSource(OwnedResourceModel):
 
     @delete_previous_file
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.file:
+            try:
+                self.file_size = self.file.size
+            except Exception:
+                self.file_size = None
+
+            try:
+                num_rows, num_columns = get_csv_dimensions(self.file)
+                self.num_of_rows = num_rows
+                self.num_of_columns = num_columns
+            except Exception:
+                self.num_of_rows = None
+                self.num_of_columns = None
+        else:
+            self.file_size = None
+            self.num_of_rows = None
+            self.num_of_columns = None
         super(DataSource, self).save()
 
     @delete_previous_file

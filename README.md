@@ -73,6 +73,19 @@ The platform helps material scientists design new materials with:
   python manage.py runserver
   ```
 
+### Missing Data Info
+
+If you have an old database for your previous version of CADS and notice that some or all of that data does not contain file size info or number of rows and columns, then 
+- close the server, 
+- run the script below 
+  ```  
+    python manage.py backfill_file_size
+  ```
+- and restart 
+
+and all the old data should have the correct info. New data added after the feature update will get the correct meta data added automatically.
+
+
 ### docker-compose
 
 A docker-compose setting example is included. You can make a copy of `docker-compose.yml.example` and `nginx/nginx.conf.example`, then edit them to fit your requirements.

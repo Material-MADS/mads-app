@@ -1093,7 +1093,6 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "A web-based tool for visualizing and editing atomic structures using the Atomic Simulation Environment.",
-    devInfo: [{name: "Shotaro Okamoto", affiliation: "Hokkaido University", link: "https://github.com/shotaro-488"}],
     component: ASEView,
     settings: {
       options: {
@@ -1129,7 +1128,7 @@ export const config = [
     devInfo: [{
       name: "Shotaro Okamaoto",
       affiliation: "Hokkaido University",
-      link: ""
+      link: "https://github.com/shotaro-488"
     }],
   },
 
@@ -1204,9 +1203,13 @@ export const config = [
     devStage: "Draft",
     description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
     devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+
     // manual: "",
     // supervisors: [{name: "", affiliation: "", link: ""}],
     // academicInfo: [{title: "", link: ""}],
+
+    // customBtns: {name: '', icon: '', text: ''}
+
     component: Cads_Component_TemplateView,
     settings: {
       options: {
