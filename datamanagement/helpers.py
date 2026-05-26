@@ -66,6 +66,14 @@ class DataSourceTable(tables.Table):
 
     owned = tables.Column(accessor=tables.A("owner"), verbose_name="Owned")
 
+    file_size = tables.Column(
+        accessor="get_file_size_display",
+        verbose_name="File Size",
+        order_by="file_size",
+    )
+    num_of_rows = tables.Column(verbose_name="Rows")
+    num_of_columns = tables.Column(verbose_name="Columns")
+
     def render_description(self, value):
 
         # only takes the first line
@@ -92,6 +100,9 @@ class DataSourceTable(tables.Table):
         template_name = "django_tables2/bootstrap.html"
         fields = (
             "name",
+            "file_size",
+            "num_of_rows",
+            "num_of_columns",
             "owned",
             "accessibility",
             "modified",

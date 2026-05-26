@@ -28,5 +28,16 @@ from ..models import DataSource
 class DataSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataSource
-        fields = ['id', 'name', 'owner', 'description', 'file', 'accessibility', 'shared_users', 'shared_groups']
+        fields = [
+            'id',
+            'name',
+            'owner',
+            'description',
+            'file',
+            'accessibility',
+            'shared_users',
+            'shared_groups',
+            'num_of_rows',
+            'num_of_columns',
+        ]
 #-------------------------------------------------------------------------------------------------
