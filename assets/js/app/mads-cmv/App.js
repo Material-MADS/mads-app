@@ -24,6 +24,8 @@ import CmvBase from './containers/CmvBase';
 import ActionPanel from './containers/ActionPanel';
 import MessagePanel from './containers/MessagePanel';
 
+import AdvisorStandalone from './containers/AdvisorStandalone';
+
 //-------------------------------------------------------------------------------------------------
 
 
@@ -54,6 +56,8 @@ class App extends React.Component {
         <div className="ui divider" />
 
         <CmvBase />
+
+        <AdvisorStandalone />
 
         <MessagePanel />
 

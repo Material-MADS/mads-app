@@ -15,5 +15,6 @@
 
 const generalSettings = {
   reduxLoggingDisabled: true,
+  cadsAdvisorEnabled: false,
 }
 export default generalSettings

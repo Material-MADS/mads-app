@@ -47,7 +47,6 @@ import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
 import NetworkAnalysisView from './NetworkAnalysisView.js';
-import ASEView from './AseView'
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -62,6 +61,8 @@ import GaussianProcessView from './GaussianProcessView';
 import PeriodicTableView from './PeriodicTableView';
 import Molecule3DView from './Molecule3DView';
 import StatisticsView from './StatisticsView';
+import ASEView from './AseView'
+import NotesView from './NotesView';
 
 // Other
 import CadsiesView from './CadsiesView.js';
@@ -1131,6 +1132,38 @@ export const config = [
       link: "https://github.com/shotaro-488"
     }],
   },
+  //------------------------------------------
+
+  // Notes - A Customizable Notes Viewer and Editor
+  //----------------------------------------------------------------
+  {
+    type: 'notes',
+    name: 'Notes',
+    category: 'Static Data Visual Support',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "A support module for adding all forms of notes to the workspace to keep track of ones related thoughts while working.",
+    devInfo: [{name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en"}],
+    component: NotesView,
+    settings: {
+      options: {
+        title: "",
+        noteType: "None",
+        noteColor: "#FFF7CC",
+        textColor: "#000000",
+        signature: "",
+        content: "",
+        created: "",
+        modified: "",
+        extent: {
+          width: 300,
+          height: 300,
+        },
+      },
+    },
+    enabled: true
+  },
+  //------------------------------------------
 
 
   // OTHER CATEGORY

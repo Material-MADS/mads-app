@@ -63,6 +63,7 @@
     "react-hook-form": "^7.10.0",
     "react-hot-loader": "^4.13.0",
     "react-plotly.js": "^2.5.1",
+    "react-quill": "^2.0.0",
     "react-redux": "^7.2.4",
     "reactcss": "^1.2.3",
     "redux": "^4.1.0",
