@@ -23,6 +23,7 @@ import 'datatables.net-dt/css/jquery.dataTables.css';
 import $ from 'jquery';
 import 'semantic-ui-css';
 import 'imports-loader?imports=default|jquery|$!datatables.net';
+import './advisor-bootstrap';
 
 //-------------------------------------------------------------------------------------------------
 

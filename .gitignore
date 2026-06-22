@@ -56,3 +56,4 @@ yarn-error.log
 
 # Local production backfill info
 /production_backfill_info.txt
+/Tests and debug Info.md
