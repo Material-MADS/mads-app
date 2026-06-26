@@ -186,10 +186,10 @@ def get_mlp(data):
             for i in range(0, int(max_iter)):
                 mlp.partial_fit(X_train, y_train)
                 train_pred = mlp.predict(X_train)
-                val_pred = mlp.predict(X_val)
+                test_pred = mlp.predict(X_val)
 
                 curr_train_loss = mean_squared_error(y_train, train_pred)
-                curr_test_loss = mean_squared_error(y_test, test_pred)
+                curr_test_loss = mean_squared_error(y_val, test_pred)
                 train_loss.append(curr_train_loss)
                 test_loss.append(curr_test_loss)
 
@@ -259,7 +259,7 @@ def get_mlp(data):
             for i in range(0, int(max_iter)):
                 mlp.partial_fit(X_train, y_train)
                 curr_train_r2 = mlp.score(X_train, y_train)
-                curr_test_r2 = mlp.score(X_test, y_test)
+                curr_test_r2 = mlp.score(X_val, y_val)
                 train_r2.append(curr_train_r2)
                 test_r2.append(curr_test_r2)
 
@@ -318,7 +318,6 @@ def get_mlp(data):
         mlp = best_mlp
 
     cv_score = cross_validate(cv_mlp, X_train, y_train, scoring=scoring)
-    print(f"cv_score: {cv_score}")
 
     data["d1"] = d1
     data["d2"] = d2
