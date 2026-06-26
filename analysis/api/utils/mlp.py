@@ -19,7 +19,6 @@
 # -------------------------------------------------------------------------------------------------
 import numpy as np
 import pandas as pd
-import inspect
 import copy
 
 from sklearn.neural_network import MLPRegressor
@@ -119,7 +118,6 @@ def get_mlp(data):
 
     # split mode: Train-Val-Test Split => split the training set into training and validation sets
     if splitMode == "Train-Val-Test Split":
-        print("Train-Val-Test Split Mode: ON")
         val_size = float(test_size)
         val_split_ratio = val_size / (
             1 - val_size
@@ -139,10 +137,6 @@ def get_mlp(data):
         if splitMode == "Train-Val-Test Split":
             X_val = scaler.transform(X_val)
 
-        print("StandardScaler: ON")
-
-    else:
-        print("StandardScaler: OFF")
     # ----------------------------------------------
 
     # Count epochs(Loss, R2)------------------------
@@ -179,7 +173,6 @@ def get_mlp(data):
                     patience_counter += 1
 
                 if patience_counter >= patience:
-                    print("Early stopping triggered!")
                     break
 
         elif splitMode == "Train-Val-Test Split":
@@ -203,7 +196,6 @@ def get_mlp(data):
                     patience_counter += 1
 
                 if patience_counter >= patience:
-                    print("Early stopping triggered!")
                     break
 
             final_test_pred = mlp.predict(X_test)
@@ -252,7 +244,6 @@ def get_mlp(data):
                     patience_counter += 1
 
                 if patience_counter >= patience:
-                    print("Early stopping triggered!")
                     break
 
         elif splitMode == "Train-Val-Test Split":
@@ -272,7 +263,6 @@ def get_mlp(data):
                     patience_counter += 1
 
                 if patience_counter >= patience:
-                    print("Early stopping triggered!")
                     break
 
             final_test_r2 = mlp.score(X_test, y_test)
@@ -300,7 +290,6 @@ def get_mlp(data):
         data["coresponding_train_r2"] = cr_score
 
     else:  # True vs Predict-----------------------------------------------------------------------
-        print("True vs Predict")
         for i in range(0, int(max_iter)):
             mlp.partial_fit(X_train, y_train)
 
@@ -322,12 +311,6 @@ def get_mlp(data):
     data["d1"] = d1
     data["d2"] = d2
     data["scores"] = cv_score
-
-    # called from process_view(processor.py)-----------------------
-    caller_frame = inspect.currentframe().f_back
-    caller_name = caller_frame.f_code.co_name
-    print(f"Called from function: {caller_name}")
-    # ------------------------------------------------------------
 
     return data, mlp
 
