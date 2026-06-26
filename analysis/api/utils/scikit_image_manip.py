@@ -113,6 +113,38 @@ def get_scikit_image_manip(data):
             contrastImg_adapteq = skimage.exposure.equalize_adapthist(workingImg, clip_limit=clipLimitVal)
             workingImg = contrastImg_adapteq
 
+        # 8. HISTOGRAM MATCHING   (dType Out: float64)
+        if imgOpts['skImg'].get('matchHistogramEnabled', False) == True:
+            reference_image_string = imgOpts['skImg'].get('matchHistogramReferenceData', "")
+            if reference_image_string:
+                try:
+                    reference_image_data = reference_image_string.split("base64,")[1]
+                    reference_image = Image.open(BytesIO(base64.b64decode(reference_image_data)))
+                    reference_img = np.array(reference_image)
+                    if len(reference_img.shape) == 2:
+                        reference_img = skimage.color.gray2rgb(reference_img)
+                    if reference_img.shape[2] == 4:
+                        reference_img = skimage.color.rgba2rgb(reference_img)
+                        reference_img = reference_img[:, :, :3]
+
+                    if len(workingImg.shape) == 2:
+                        workingImg = skimage.color.gray2rgb(workingImg)
+                    if workingImg.shape[2] == 4:
+                        workingImg = skimage.color.rgba2rgb(workingImg)
+                        workingImg = workingImg[:, :, :3]
+
+                    channel_axis = -1 if workingImg.ndim == 3 else None
+                    workingImg = skimage.exposure.match_histograms(
+                        workingImg,
+                        reference_img,
+                        channel_axis=channel_axis
+                    )
+                    no_of_changes = no_of_changes + 1
+                except Exception as e:
+                    logger.info("Histogram matching failed: %s", e)
+            else:
+                logger.info("Histogram matching enabled but no reference image provided")
+
 
         # 8. SHARPEN      (dType Out: float64)
         if imgOpts['skImg']['sharpenEnabled'] == True:

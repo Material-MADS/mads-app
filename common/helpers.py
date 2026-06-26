@@ -77,6 +77,35 @@ class OwnedResourceModelFilterHelper(FormHelper):
 #-------------------------------------------------------------------------------------------------
 
 
+def get_csv_dimensions(file):
+    """Return row and column counts for a CSV file."""
+    filename, file_extension = os.path.splitext(file.name)
+
+    if file_extension.lower() != '.csv':
+        return None, None
+
+    try:
+        delimiter = '#'
+        possible_delimiters = [',', ';', '\t', '\s', '|']
+        file.seek(0)
+        df_check = pd.read_csv(file, sep=delimiter, nrows=2, encoding_errors='replace')
+        cellStr = df_check.iat[0, 0]
+        cnt = [
+            cellStr.count(','),
+            cellStr.count(';'),
+            cellStr.count('\t'),
+            cellStr.count('\s'),
+            cellStr.count('|'),
+        ]
+        delimiter = possible_delimiters[cnt.index(max(cnt))]
+        file.seek(0)
+
+        df = pd.read_csv(file, sep=delimiter, encoding_errors='replace', low_memory=False)
+        return len(df), len(df.columns)
+    except Exception:
+        return None, None
+
+
 #-------------------------------------------------------------------------------------------------
 def get_contents_from_file(file):
     """Read contents from the specified file only if the type of the file is "CSV".

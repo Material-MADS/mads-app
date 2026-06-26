@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y apt-transport-https
 
 RUN sh -c 'curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -' \
   && sh -c 'echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list' \
-  && sh -c 'curl -sL https://deb.nodesource.com/setup_14.x | bash -'
+  && sh -c 'apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1655A0AB68576280' \
+  && sh -c 'echo "deb https://deb.nodesource.com/node_14.x bullseye main" | tee /etc/apt/sources.list.d/nodesource.list'
 # sudo apt-get install -y nodejs
 
 RUN apt-get update && apt-get install -y \
@@ -31,13 +32,16 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN pip install pip --upgrade \
-  && pip install pipenv
+RUN pip install "pip<25" \
+  && pip install "setuptools<81" \
+  && pip install "pipenv==2023.12.1"
 
 COPY ./Pipfile /usr/src/app/
 COPY ./Pipfile.lock /usr/src/app/
 RUN pipenv install --deploy --system \
   && rm -rf ~/.cache/pipenv
+
+RUN pip install "setuptools==57.4.0"
 
 COPY ./package.json /usr/src/app/
 COPY ./yarn.lock /usr/src/app/

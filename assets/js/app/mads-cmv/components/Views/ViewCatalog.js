@@ -47,7 +47,6 @@ import HeatMapView from './HeatMapView';
 import PairwiseCorrelationView from './PairwiseCorrelationView';
 import NodeGraphView from './NodeGraphView';
 import NetworkAnalysisView from './NetworkAnalysisView.js';
-import ASEView from './AseView'
 
 // Machine Learning
 import RegressionView from './RegressionView';
@@ -63,6 +62,8 @@ import MLPView from './MLPView';
 import PeriodicTableView from './PeriodicTableView';
 import Molecule3DView from './Molecule3DView';
 import StatisticsView from './StatisticsView';
+import ASEView from './AseView'
+import NotesView from './NotesView';
 
 // Other
 import CadsiesView from './CadsiesView.js';
@@ -1156,9 +1157,41 @@ export const config = [
     devInfo: [{
       name: "Shotaro Okamaoto",
       affiliation: "Hokkaido University",
-      link: ""
+      link: "https://github.com/shotaro-488"
     }],
   },
+  //------------------------------------------
+
+  // Notes - A Customizable Notes Viewer and Editor
+  //----------------------------------------------------------------
+  {
+    type: 'notes',
+    name: 'Notes',
+    category: 'Static Data Visual Support',
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "A support module for adding all forms of notes to the workspace to keep track of ones related thoughts while working.",
+    devInfo: [{ name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en" }],
+    component: NotesView,
+    settings: {
+      options: {
+        title: "",
+        noteType: "None",
+        noteColor: "#FFF7CC",
+        textColor: "#000000",
+        signature: "",
+        content: "",
+        created: "",
+        modified: "",
+        extent: {
+          width: 300,
+          height: 300,
+        },
+      },
+    },
+    enabled: true
+  },
+  //------------------------------------------
 
 
   // OTHER CATEGORY
@@ -1231,9 +1264,14 @@ export const config = [
     devStage: "Draft",
     description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
     devInfo: [{ name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en" }],
+    devInfo: [{ name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en" }],
+
     // manual: "",
     // supervisors: [{name: "", affiliation: "", link: ""}],
     // academicInfo: [{title: "", link: ""}],
+
+    // customBtns: {name: '', icon: '', text: ''}
+
     component: Cads_Component_TemplateView,
     settings: {
       options: {

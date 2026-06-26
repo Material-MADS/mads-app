@@ -24,6 +24,7 @@ export * from './colorTags';
 export * from './userInfo';
 export * from './workspace';
 export * from './message';
+export * from './advisor';
 export * from './loading';
 export * from './prediction';
 

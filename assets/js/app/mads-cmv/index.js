@@ -26,6 +26,7 @@ import * as workspaceActions from './actions/workspace';
 import App from './containers/MadsApp';
 import * as reducers from './reducers';
 import generalSettings from '../../configSettings'
+import advisorApi from './advisorApi';
 import $ from 'jquery';
 
 //-------------------------------------------------------------------------------------------------
@@ -71,6 +72,8 @@ const store = createStore(
   rootReducer,
   composeEnhancers(applyMiddleware(...middleware)),
 );
+
+advisorApi.configureStore(store);
 //-------------------------------------------------------------------------------------------------
 
 

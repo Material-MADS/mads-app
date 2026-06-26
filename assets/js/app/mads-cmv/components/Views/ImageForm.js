@@ -19,8 +19,8 @@
 // Load required libraries
 //-------------------------------------------------------------------------------------------------
 import React, { useState } from 'react';
-import { Field, reduxForm, Label, change } from 'redux-form';
-import { Button, Form, Popup } from 'semantic-ui-react';
+import { Field, reduxForm, change } from 'redux-form';
+import { Button, Form, Popup, Label } from 'semantic-ui-react';
 
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
@@ -253,6 +253,11 @@ const ImageViewForm = (props) => {
 
   const [skImgEnhanceContrastEnabled, toggleSKImgEnhanceContrastEnabled] = useState( initialValues.options.skImg.enhanceContrastEnabled );
   if(!initialValues.options.skImg.enhanceContrastClipLimitValue){ initialValues.options.skImg.enhanceContrastClipLimitValue = 0.05 };
+  const [skImgMatchHistogramEnabled, toggleSKImgMatchHistogramEnabled] = useState( initialValues.options.skImg.matchHistogramEnabled );
+  if(!initialValues.options.skImg.matchHistogramEnabled){ initialValues.options.skImg.matchHistogramEnabled = false };
+  if(!initialValues.options.skImg.matchHistogramReferenceData){ initialValues.options.skImg.matchHistogramReferenceData = "" };
+  const [referenceImgPreview, setReferenceImgPreview] = useState(initialValues.options.skImg.matchHistogramReferenceData || noImg);
+  const [referenceImgLoaded, setReferenceImgLoaded] = useState(!!initialValues.options.skImg.matchHistogramReferenceData);
 
   const [skImgSharpenEnabled, toggleSKImgSharpenEnabled] = useState( initialValues.options.skImg.sharpenEnabled );
   if(!initialValues.options.skImg.sharpenRadiusValue){ initialValues.options.skImg.sharpenRadiusValue = 3 };
@@ -340,6 +345,23 @@ const ImageViewForm = (props) => {
     var failedSrc = event.target.src;
     $('#imgThumb').attr("src", blockedImg);
     setSubmitButtonDisable(true);
+  }
+
+  const referenceFileChange = (e) => {
+    var file = e.target.files[0];
+    if (!file) {
+      return;
+    }
+    var reader = new FileReader();
+
+    reader.onloadend = function(evt) {
+      if (evt.target.readyState == FileReader.DONE) {
+        props.change('options.skImg.matchHistogramReferenceData', evt.target.result);
+        setReferenceImgPreview(evt.target.result);
+        setReferenceImgLoaded(true);
+      }
+    };
+    reader.readAsDataURL(file);
   }
 
 
@@ -712,6 +734,42 @@ const ImageViewForm = (props) => {
                   type="number"
                   step={0.01}
                 />
+              </Form.Field>
+            </div>}
+          </Form.Field>
+          <Form.Field width={3}>
+            <label>Histogram Matching<Popup
+                trigger={<span style={{fontSize: "20px", color: "blue"}}><a className='infohelp' href="https://scikit-image.org/docs/dev/auto_examples/color_exposure/plot_histogram_matching.html" target="_blank">ⓘ</a></span>}
+                size='small'
+                wide='very'
+              >
+                <h4>skimage.exposure.match_histograms</h4>
+                <p>
+                  Adjust the image pixel values so that its intensity distribution matches a reference image.
+                  You must provide a reference image to use as the histogram target.
+                </p>
+              </Popup>
+              :
+             </label>
+            <Field
+              name="options.skImg.matchHistogramEnabled"
+              component={SemCheckbox}
+              toggle
+              onChange={(e, data) => { toggleSKImgMatchHistogramEnabled(data); }}
+            />
+            {skImgMatchHistogramEnabled && <div>
+              <Form.Field>
+                <label>Reference Image <Button as="label" htmlFor="refFile" type="button" color="blue" style={{fontSize: "14px", padding: "4px", fontWeight: "bold", height: "22px", marginLeft: "5px"}}>Load Reference</Button></label>
+                <input type="file" id="refFile" style={{ display: "none" }} onChange={referenceFileChange} />
+                <input type="hidden" name="options.skImg.matchHistogramReferenceData" />
+                {skImgMatchHistogramEnabled && !referenceImgLoaded && (
+                  <Label basic color='red' pointing='left' style={{marginBottom: '10px'}}>
+                    Histogram matching is enabled but no reference image is loaded.
+                  </Label>
+                )}
+              </Form.Field>
+              <Form.Field>
+                <img width="100%" id="refImgThumb" src={referenceImgPreview} crossOrigin="anonymous" alt="Reference preview" />
               </Form.Field>
             </div>}
           </Form.Field>
@@ -1580,11 +1638,24 @@ const ImageViewForm = (props) => {
 };
 //-------------------------------------------------------------------------------------------------
 
+const validate = values => {
+  const errors = {};
+  const skImg = values?.options?.skImg;
+
+  if (skImg?.matchHistogramEnabled && !skImg.matchHistogramReferenceData) {
+    errors.options = errors.options || {};
+    errors.options.skImg = errors.options.skImg || {};
+    errors.options.skImg.matchHistogramReferenceData = 'Reference image is required for histogram matching.';
+  }
+
+  return errors;
+};
 
 //-------------------------------------------------------------------------------------------------
 // Exporting and sharing this ReduxForm Module
 //-------------------------------------------------------------------------------------------------
 export default reduxForm({
   form: 'ImageView',
+  validate,
 })(ImageViewForm);
 //-------------------------------------------------------------------------------------------------

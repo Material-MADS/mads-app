@@ -53,3 +53,7 @@ tmp_email/
 .history
 yarn-error.log
 .VSCodeCounter/
+
+# Local production backfill info
+/production_backfill_info.txt
+/Tests and debug Info.md
