@@ -32,6 +32,13 @@ from sklearn.metrics import mean_squared_error
 # -------------------------------------------------------------------------------------------------
 def get_mlp(data):
     settings = data["view"]["settings"]
+
+    def get_safe(key, default, type_func=int):
+        val = settings.get(key, default)
+        if val == "" or val is None:
+            return default
+        return type_func(val)
+
     metric = settings["metric"]
     splitMode = settings.get(
         "splitMode", "Train-Val Split"
@@ -42,17 +49,23 @@ def get_mlp(data):
 
     preprocessing = settings.get("preprocessing", False)
     early_stopping = settings.get("early_stopping", False)
-    patience = settings.get("patience", 5)
+    patience = get_safe("patience", 5, int)
 
-    alpha = settings.get("alpha", 0.0001)
-    max_iter = settings.get("max_iter", 200)
-    random_state = settings.get("random_state", 1)
-    test_size = settings.get("test_size", 0.2)
-    learning_rate_init = settings.get("learning_rate_init", 0.001)
+    alpha = get_safe("alpha", 0.0001, float)
+    # alpha = settings.get("alpha", 0.0001)
+    max_iter = get_safe("max_iter", 200, int)
+    # max_iter = settings.get("max_iter", 200)
+    # random_state = settings.get("random_state", 1)
+    random_state = get_safe("random_state", 1, int)
+    # test_size = settings.get("test_size", 0.2)
+    test_size = get_safe("test_size", 0.2, float)
+    # learning_rate_init = settings.get("learning_rate_init", 0.001)
+    learning_rate_init = get_safe("learning_rate_init", 0.001, float)
 
-    layercount = settings.get("n_layers", 1)
+    layercount = get_safe("n_layers", 1, int)
     layer_list = []
-    for i in range(1, int(layercount + 1)):
+
+    for i in range(1, layercount + 1):
         layer_key = f"layer_{i}"
         if layer_key in settings:
             layer_list.append(int(settings.get(layer_key)))
@@ -78,18 +91,18 @@ def get_mlp(data):
 
     mlp = MLPRegressor(
         hidden_layer_sizes=hidden_layer_size,
-        alpha=float(alpha),
-        max_iter=int(max_iter),
-        random_state=int(random_state),
-        learning_rate_init=float(learning_rate_init),
+        alpha=alpha,
+        max_iter=max_iter,
+        random_state=random_state,
+        learning_rate_init=learning_rate_init,
     )
 
     cv_mlp = MLPRegressor(
         hidden_layer_sizes=hidden_layer_size,
-        alpha=float(alpha),
-        max_iter=int(max_iter),
-        random_state=int(random_state),
-        learning_rate_init=float(learning_rate_init),
+        alpha=alpha,
+        max_iter=max_iter,
+        random_state=random_state,
+        learning_rate_init=learning_rate_init,
     )
 
     data = {}

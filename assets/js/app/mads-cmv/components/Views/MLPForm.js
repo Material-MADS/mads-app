@@ -221,6 +221,9 @@ const MLP_Component_Form = forwardRef((props, ref) => {
     if (event === 'True vs Predict') {
       props.change('options.extent.width', 400);
       props.change('options.extent.height', 400);
+    } else if (event === 'Loss' || event === 'R2') {
+      props.change('options.extent.width', 600);
+      props.change('options.extent.height', 400);
     }
   }
 
