@@ -56,7 +56,7 @@ import OptimizerClassificationView from './OptimizerClassificationView';
 import ClassificationView from './ClassificationView';
 import TensorFlowView from './TensorFlowView';
 import GaussianProcessView from './GaussianProcessView';
-import MLPView from './MLPView';
+import MLP_Component_View from './MLPView';
 
 // Static Data Visual Support
 import PeriodicTableView from './PeriodicTableView';
@@ -1038,20 +1038,24 @@ export const config = [
   },
   //------------------------------------------
 
-  // THIS IS A TEMPLATE COMPONENT FOR COPYING WHEN CREATING NEW ONES
+  // MLP View - A Customizable MLP Line Plot
   //----------------------------------------------------------------
   {
     type: 'mlp',
     name: 'MLP',
     category: 'Machine Learning',
-    version: 0.1,
-    devStage: "Draft",
-    description: "This component is not a finished component, it is a template, that any developer building a new component should probably copy and start their development from for most convenience and ease.",
+    version: 1.0,
+    devStage: "Stable Release",
+    description: "This component allows the users to apply MLP algorithms for current active data and display the result accordingly.",
     devInfo: [{ name: "Miyu Shinotsuka", affiliation: "Hokkaido University", link: "" }],
-    // manual: "",
-    // supervisors: [{name: "", affiliation: "", link: ""}],
-    // academicInfo: [{title: "", link: ""}],
-    component: MLPView,
+    manual: "",
+    supervisors: [
+      { name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en" },
+      { name: "Yoshiki Hasukawa", affiliation: "Hokkaido University", link: "https://www.researchgate.net/profile/Yoshiki-Hasukawa" }
+    ],
+
+    // academicInfo: [{ title: "", link: "" }],
+    component: MLP_Component_View,
     settings: {
       options: {
         extent: {

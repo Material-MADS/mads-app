@@ -1,9 +1,9 @@
 # =================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
-#          Last Update: Q3 2023
+#          Last Update: Q3 2026
 # ________________________________________________________________________________________________
-# Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+# Authors: Miyu Shinotsuka[2026]
 # ________________________________________________________________________________________________
 # Description: Serverside (Django) rest api utils for the 'Analysis' page involving
 #              'MLP' components
@@ -11,7 +11,7 @@
 # Notes:  This is one of the REST API parts of the 'analysis' interface of the website that
 #         allows serverside work for the 'MLP' component.
 # ------------------------------------------------------------------------------------------------
-# References: numpy, pandas, inspect, copy and sklearn libs
+# References: numpy, pandas, copy and sklearn libs
 # =================================================================================================
 
 # -------------------------------------------------------------------------------------------------
@@ -52,14 +52,9 @@ def get_mlp(data):
     patience = get_safe("patience", 5, int)
 
     alpha = get_safe("alpha", 0.0001, float)
-    # alpha = settings.get("alpha", 0.0001)
     max_iter = get_safe("max_iter", 200, int)
-    # max_iter = settings.get("max_iter", 200)
-    # random_state = settings.get("random_state", 1)
     random_state = get_safe("random_state", 1, int)
-    # test_size = settings.get("test_size", 0.2)
     test_size = get_safe("test_size", 0.2, float)
-    # learning_rate_init = settings.get("learning_rate_init", 0.001)
     learning_rate_init = get_safe("learning_rate_init", 0.001, float)
 
     layercount = get_safe("n_layers", 1, int)
@@ -75,7 +70,7 @@ def get_mlp(data):
 
     dataset = data["data"]
 
-    # extract data from pandas dataframe---------
+    # extract columns from pandas dataframe---------
     columns_needed = feature_columns + [target_column]
     filtered_dataset = {col: dataset[col] for col in columns_needed if col in dataset}
     df = pd.DataFrame(filtered_dataset)
@@ -140,7 +135,7 @@ def get_mlp(data):
         )
     # ----------------------------------------------------------------------
 
-    # scaling ON/OFF-------------------------------
+    # scaling ON------------------------------------
     if preprocessing == True:
         scaler = StandardScaler()
         scaler.fit(X_train)

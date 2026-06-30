@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2026
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Miyu Shinotsuka [2026]
 // ________________________________________________________________________________________________
 // Description: This is the Inner workings and Content Manager Controler of the
 //              'MLP' View
@@ -11,7 +11,7 @@
 // Notes: 'MLPView' is the manager of all current input that controls the final
 //        view of the 'MLPVis' visualization component.
 // ------------------------------------------------------------------------------------------------
-// References: Internal ViewWrapper & Form Utility Support, Internal "cads_component_template"
+// References: Internal ViewWrapper & Form Utility Support, Internal "MLP"
 //             View & Form libs
 =================================================================================================*/
 
@@ -33,8 +33,10 @@ const settings = {
   options: { title: 'MLP' },
 };
 
+
 //-------------------------------------------------------------------------------------------------
-// The View Class for this Visualization Component
+// Works as a wrapper class for MLP_Component_View (a function component uses React hooks) and 
+// is necessary to work properly within CADS class system
 //-------------------------------------------------------------------------------------------------
 class MLP_Base_Component extends withCommandInterface(MLP_Component, MLP_Component_Form, settings) {
   handleSubmit = (values) => {
@@ -66,14 +68,14 @@ class MLP_Base_Component extends withCommandInterface(MLP_Component, MLP_Compone
   };
 
   render() {
-    const columns = typeof this.getColumnOptionArray === 'function'
-      ? this.getColumnOptionArray()
-      : [];
+    // const columns = typeof this.getColumnOptionArray === 'function'
+    //   ? this.getColumnOptionArray()
+    //   : [];
 
     const element = super.render();
 
     if (element) {
-      return React.cloneElement(element, { columns: columns });
+      return React.cloneElement(element);
     }
 
     return null;
@@ -130,8 +132,7 @@ const MLP_Component_View = (props) => {
     // Manages data changes in the view
     const data = { d1: { data: [] }, d2: { data: [] } };
 
-
-    // receive data from python => send data to MLPVis
+    // receive data from mlp.py => send data to MLPVis
     if (dataset[id]) {
       const metric = view.settings.metric;
 
@@ -162,7 +163,8 @@ const MLP_Component_View = (props) => {
           });
         }
 
-      } else if (dataset[id]['d1']['Predict']) { // True vs Predict plot
+        // True vs Predict plot
+      } else if (dataset[id]['d1']['Predict']) {
         xx = dataset[id]['d1']['Predict']; // y_train predicted
         xx2 = dataset[id]['d2']['Predict'] ? dataset[id]['d2']['Predict'] : [];  // y_test predicted
         yy = dataset[id]['d1']['True'] ? dataset[id]['d1']['True'] : [];  // y_train
@@ -187,7 +189,8 @@ const MLP_Component_View = (props) => {
         }
 
       }
-      else { // Prevent invalid values
+      // Prevent invalid values
+      else {
         xx = [];
         xx2 = [];
         yy = [];
@@ -246,7 +249,7 @@ const MLP_Component_View = (props) => {
     }
 
 
-    //----------data (→python)------------------------
+    //----------data (→mlp.py)---------------------------------
     const data = {};
     const df = new DataFrame(dataset.main.data);
     const tc = df.get(updatedValues.targetColumn);
@@ -269,7 +272,7 @@ const MLP_Component_View = (props) => {
     setVersion(v => v + 1);
 
     actions.sendRequestViewUpdate(view, updatedValues, data);
-    //---------------------------------------------------
+    //----------------------------------------------------------
   };
 
 

@@ -1,9 +1,9 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2026
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Miyu Shinotsuka [2026]
 // ________________________________________________________________________________________________
 // Description: This is the Settings Configuration Form for the 'MLP' View,
 //              driven by ReduxForm
@@ -23,7 +23,7 @@ import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } f
 import { Field, reduxForm, Label, change, formValueSelector } from 'redux-form';
 import { useSelector } from 'react-redux';
 
-import { Button, Form, Popup, Modal, Confirm, List } from 'semantic-ui-react';
+import { Button, Form, Popup, Modal, Confirm, List, ListItem } from 'semantic-ui-react';
 
 import SemanticDropdown from '../FormFields/Dropdown';
 import Input from '../FormFields/Input';
@@ -301,7 +301,7 @@ const MLP_Component_Form = forwardRef((props, ref) => {
     if (event) {
       if (!dirty) {
         const defVals = {
-          metric: metrics[1],
+          metric: metrics[0],
           preprocessing: true,
           early_stopping: false,
           patience: 5,
@@ -509,7 +509,12 @@ const MLP_Component_Form = forwardRef((props, ref) => {
               <span style={{ marginLeft: '5px' }}>
                 <Popup
                   trigger={<span style={{ fontSize: "13px", color: "blue" }}>ⓘ</span>}
-                  content='Max iter is the Maximum number of iterations over the training data.'
+                  content={<List>
+                    <ListItem>Max iter is the Maximum number of iterations over the training data.</ListItem>
+                    {!earlyStoppingValue && <ListItem>Early stopping disabled: Max iter is the same as the number of epochs.</ListItem>}
+                    {earlyStoppingValue && <ListItem>Early stopping enabled: Max iter is the same as the maximum number of epochs.</ListItem>}
+                  </List>}
+
                   position='top left'
                   size='small'
                 />

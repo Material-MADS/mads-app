@@ -1,16 +1,19 @@
 /*=================================================================================================
 // Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 //          Hokkaido University (2018)
-//          Last Update: Q3 2023
+//          Last Update: Q3 2026
 // ________________________________________________________________________________________________
-// Authors: Mikael Nicander Kuwahara (Lead Developer) [2021-]
+// Authors: Miyu Shinotsuka [2026]
 // ________________________________________________________________________________________________
 // Description: This is the React Component for the Visualization View of the
-//              'Cads_Component_Template' module
+//              'MLPVis' module
 // ------------------------------------------------------------------------------------------------
-// Notes: 'Cads_Component_Template' is a component that makes amazing things.
+// Notes: 'MLPVis' is a visualization component that applies MLPRegressor to the data and
+//        displays the result as a learning curve(R2, Loss) or a "True vs Predict" plot. 
+//        (rendered by the Bokeh-Charts library.)
 // ------------------------------------------------------------------------------------------------
-// References: React & prop-types Libs, 3rd party jquery, internal support methods fr. VisCompUtils
+// References: React, prop-types and semantic-view-ui Libs, 3rd party pandas, Bokeh, deepEqual, 
+//             jquery, lodash, and internal support methods fr. VisCompUtils
 =================================================================================================*/
 
 //-------------------------------------------------------------------------------------------------
@@ -19,7 +22,6 @@
 import React, { useState, useEffect, useRef, memo } from "react";
 import PropTypes from "prop-types";
 import { DataFrame, Series } from "pandas-js";
-// import Immutable from 'immutable';
 
 import ColorTag from '../../models/ColorTag';
 
@@ -32,14 +34,9 @@ import { Greys9 } from '@bokeh/bokehjs/build/js/lib/api/palettes';
 const Category10_10 = Category10.Category10_10;
 
 
-
-// import $ from "jquery";
-import { clearcoat } from "three/src/nodes/core/PropertyNode.js";
+import $ from "jquery";
 import { Props } from "@storybook/addon-docs";
-import { userData } from "three/src/nodes/accessors/UserDataNode.js";
 import _ from "lodash";
-import { op, train } from "@tensorflow/tfjs";
-import { param } from "jquery";
 //-------------------------------------------------------------------------------------------------
 
 
@@ -98,14 +95,19 @@ function MLP_Component(props) {
   const {
     data = {},
     mappings = {},
-    options = {},
+    options = {
+      title: "MLP",
+      color: defaultOptions.color,
+      selectionColor: defaultOptions.selectionColor,
+      nonselectionColor: defaultOptions.nonselectionColor,
+      extent: { width: 600, height: 400 },
+    },
     colorTags = [],
     selectedIndices = [],
     filteredIndices = [],
     onSelectedIndicesChange = undefined,
   } = props;
 
-  const params = Object.assign({}, defaultOptions, options);
 
   const rootNode = useRef(null);
   const cds = useRef(null);
@@ -118,6 +120,8 @@ function MLP_Component(props) {
   const [score, setScore] = useState({});
 
 
+
+
   const { x: xName, y: yName } = mappings;
   let internalData = data.d1 !== undefined ? data : { d1: { data: [] }, d2: { data: [] } };
 
@@ -126,17 +130,16 @@ function MLP_Component(props) {
   const isPlot = firstItem.True !== undefined;  // True vs Predict
 
   const handleSelectedIndicesChange = (props) => {
-    const { indices } = cds.selected;
-
-    if (selecting) {
+    const { indices } = cds.current.selected;
+    if (selecting.current) {
       return;
     };
 
     if (onSelectedIndicesChange && !deepEqual(lastSelections, indices)) {
-      selecting = true;
-      lastSelections = [...indices];
-      onSelectedIndicesChange(indices);
-      selecting = false;
+      selecting.current = true;
+      lastSelections.current = [...indices];
+      onSelectedIndicesChange = indices;
+      selecting.current = false;
     };
   };
 
@@ -222,6 +225,7 @@ function MLP_Component(props) {
       }
       //------------------------------------------------------------
 
+
       // set axes label & title-------------------------------------------
       if (isLoss) {
         mainFigure.current.yaxis[0].axis_label = 'MSE';
@@ -232,7 +236,7 @@ function MLP_Component(props) {
         mainFigure.current.yaxis[0].axis_label = xName + '--True';
         mainFigure.current.title.text = defaultOptions.title + ' (True vs Predict)';
 
-      } else {
+      } else { // R2
         mainFigure.current.yaxis[0].axis_label = 'R2';
         mainFigure.current.title.text = defaultOptions.title + ' (R2)';
       }
@@ -264,6 +268,7 @@ function MLP_Component(props) {
         });
       });
 
+
       cds.current.connect(cds.current.selected.change, () => {
         handleSelectedIndicesChange();
       });
@@ -285,7 +290,6 @@ function MLP_Component(props) {
 
       // Test or R2
       if (!internalData.d1.data[0].Predict) {
-        // let cds_train = new Bokeh.ColumnDataSource({ data: { x, y } });
 
         let line = new Bokeh.Line({
           x: { field: 'x' },
@@ -306,7 +310,6 @@ function MLP_Component(props) {
           location: isLoss ? "top_right" : "bottom_right"
         });
 
-        // mainFigure.current.add_glyph(line, cds_train);
         mainFigure.current.add_layout(legend);
 
         // Loss/R2 Test
@@ -322,7 +325,6 @@ function MLP_Component(props) {
             line_color: "red",
             source: cds_test,
             line_alpha: 0.7,
-            // legend_label: "Validation",
           });
 
           const line_renderer2 = mainFigure.current.add_glyph(line2, cds_test);
@@ -354,7 +356,7 @@ function MLP_Component(props) {
           }
         );
 
-        // y = x
+        // y = x----------------------------------------------
         let xMax = Math.max.apply(null, x);
         let xMin = Math.min.apply(null, x);
 
@@ -369,6 +371,7 @@ function MLP_Component(props) {
           line_width: 1,
         });
         mainFigure.current.add_glyph(line, source)
+        // ---------------------------------------------------
 
         // test data exists
         if (testData.metricsVal.length > 0 && testData.epoch.length > 0) {
@@ -420,7 +423,7 @@ function MLP_Component(props) {
     return () => {
       clearChart();
     };
-  }, [data]);
+  }, [data, options?.extent?.width, options?.extent?.height]);
 
   const internalDataKey = Object.keys(internalData);
 
@@ -458,7 +461,7 @@ function MLP_Component(props) {
     <div style={{ display: 'flex' }}>
       <div
         ref={rootNode}
-        key={JSON.stringify(internalData)}
+        key={internalData}
       />
 
       {cardCondition() && <div style={{ marginLeft: '10px', marginRight: '10px' }}>
