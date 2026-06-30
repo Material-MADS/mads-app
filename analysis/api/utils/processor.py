@@ -1,4 +1,4 @@
-#=================================================================================================
+# =================================================================================================
 # Project: CADS/MADS - An Integrated Web-based Visual Platform for Materials Informatics
 #          Hokkaido University (2018)
 #          Last Update: Q3 2023
@@ -13,11 +13,11 @@
 #         website that allows serverside work for the available components.
 # ------------------------------------------------------------------------------------------------
 # References: logging libs and all connected serverside available components
-#=================================================================================================
+# =================================================================================================
 
-#-------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Import required Libraries
-#-------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 from .smiles_table import get_mol_svg
 from .histogram import get_histograms
 from .feature_importance import get_feature_importance
@@ -41,6 +41,7 @@ from .monte_cat import get_monte_cat
 from .feature_assignment import get_feature_assignment
 from .catalyst_gene import get_catalyst_gene
 from .ase import get_ase
+from .mlp import get_mlp
 
 from .cads_component_template import get_cads_component_template_stuff
 
@@ -49,61 +50,72 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#-------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 
 processor_map = {
-    'moltable': get_mol_svg,
-    'histogram': get_histograms,
-    'feature-importance': get_feature_importance,
-    'clustering': get_clusters,
-    'regression': get_regression,
-    'descriptors': get_descriptors,
-    'optimizer': get_model,
-    'optimizer_model': get_model_rebuild,
-    'optimizerClassification': get_model,
-    'optimizerClassification_model': get_model_rebuild,
-    'classification': get_classification,
-    'pairwise-correlation': get_pairwise_correlation,
-    'pie': get_pie,
-    'scatter3D': get_scatter3D,
-    'statistics': get_statistics,
-    'custom': get_custom,
-    'imageView': get_scikit_image_manip,
-    'nodeGraph': get_node_graph,
-    'gaussianProcess': get_gaussian_process,
-    'cadsies': get_cadsies_stuff,
-    'networkAnalysis': get_network_analysis,
-    'featureEngineering': get_feature_engineering,
-    'monteCat': get_monte_cat,
-    'featureAssignment': get_feature_assignment,
-    'catalystGene': get_catalyst_gene,
-    'ase': get_ase,
-    'cads_component_template': get_cads_component_template_stuff,
+    "moltable": get_mol_svg,
+    "histogram": get_histograms,
+    "feature-importance": get_feature_importance,
+    "clustering": get_clusters,
+    "regression": get_regression,
+    "descriptors": get_descriptors,
+    "optimizer": get_model,
+    "optimizer_model": get_model_rebuild,
+    "optimizerClassification": get_model,
+    "optimizerClassification_model": get_model_rebuild,
+    "classification": get_classification,
+    "pairwise-correlation": get_pairwise_correlation,
+    "pie": get_pie,
+    "scatter3D": get_scatter3D,
+    "statistics": get_statistics,
+    "custom": get_custom,
+    "imageView": get_scikit_image_manip,
+    "nodeGraph": get_node_graph,
+    "gaussianProcess": get_gaussian_process,
+    "cadsies": get_cadsies_stuff,
+    "networkAnalysis": get_network_analysis,
+    "featureEngineering": get_feature_engineering,
+    "monteCat": get_monte_cat,
+    "featureAssignment": get_feature_assignment,
+    "catalystGene": get_catalyst_gene,
+    "ase": get_ase,
+    "mlp": get_mlp,
+    "cads_component_template": get_cads_component_template_stuff,
 }
 
 
-#-------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 def process_view(data):
     # logger.info(data['view']['type'])
 
-    result = {'status': 'error: data is incorrect'}
+    result = {"status": "error: data is incorrect"}
 
-    if data['view']['type'] in ['regression', 'classification', 'optimizer', 'optimizerClassification']:
-        result, _ = processor_map[data['view']['type']](data)
+    if data["view"]["type"] in [
+        "regression",
+        "classification",
+        "optimizer",
+        "optimizerClassification",
+        "mlp",  # added this line => no attributeError(mlp.py), model save successful(MLPRegressor)
+    ]:
+        result, _ = processor_map[data["view"]["type"]](data)
     else:
-        result = processor_map[data['view']['type']](data)
+        result = processor_map[data["view"]["type"]](data)
 
     return result
-#-------------------------------------------------------------------------------------------------
 
 
-#-------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------------------
 def get_model(data):
     # logger.info(data['view']['type'])
-    if data['view']['type'] in ['optimizer', 'optimizerClassification']:
-        data['view']['type'] = "optimizer_model"
-    _, model = processor_map[data['view']['type']](data)
+    if data["view"]["type"] in ["optimizer", "optimizerClassification"]:
+        data["view"]["type"] = "optimizer_model"
+    _, model = processor_map[data["view"]["type"]](data)
 
     return model
-#-------------------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------------------
