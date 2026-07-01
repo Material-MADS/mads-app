@@ -1047,7 +1047,7 @@ export const config = [
     version: 1.0,
     devStage: "Stable Release",
     description: "This component allows the users to apply MLP algorithms for current active data and display the result accordingly.",
-    devInfo: [{ name: "Miyu Shinotsuka", affiliation: "Hokkaido University", link: "" }],
+    devInfo: [{ name: "Miyu Shinotsuka", affiliation: "Hokkaido University", link: "https://github.com/shinotsukamiyuk4-code" }],
     manual: "",
     supervisors: [
       { name: "Mikael Nicander Kuwahara", affiliation: "Hokkaido University", link: "https://researchmap.jp/kuwahara_micke?lang=en" },
