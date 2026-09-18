@@ -316,6 +316,9 @@ def get_mlp(data):
 
     cv_score = cross_validate(cv_mlp, X_train, y_train, scoring=scoring)
 
+    cv_score["test_mse"] *= -1
+    cv_score["test_mae"] *= -1
+
     data["d1"] = d1
     data["d2"] = d2
     data["scores"] = cv_score
